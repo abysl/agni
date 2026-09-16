@@ -65,7 +65,28 @@ identities at creation, so an update does not silently alter a match in progress
 Wire protocol versions, plugin state versions, and application versions describe
 different boundaries. Review and test the affected boundary explicitly.
 
-## Storage and security
+## Session undo
+
+Host sessions retain at most 64 pre-intent checkpoints, including deterministic
+state, private dealer faces, hidden-play ownership, the card ID allocator, and
+the log boundary. One intent can append several entries; undo counts the intent
+and all its automatic effects as one action. Setup mutations (genesis, join,
+deal, clear, reset) establish a new history boundary.
+
+Undo requests carry a monotonic session revision, not a rewindable log length.
+Only one proposal can be active. Every other seated player must be connected
+and approve the proposal ID. Rejection, disconnection, or accepted play cancels
+the proposal. An unopposed host can restore immediately. Snapshots are local
+host state and are never broadcast.
+
+Restoration uses the engine's existing state-restore ABI and the native shadow;
+ordinary intents do not call the engine snapshot ABI. A client receives the
+retained log boundary and only its currently owed private faces. It replays
+the retained prefix, clears optimistic moves and stale face caches, then resumes.
+Reconnecting clients receive the retained log through the normal welcome flow.
+The protocol cannot make a player forget previously revealed information.
+
+## Storage and security boundaries
 
 Spirit Library stores content by hash and exchanges it between devices.
 Agni adds game-specific schemas and protocols; Spirit must not depend on Agni.

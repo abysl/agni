@@ -35,6 +35,14 @@ fn check_golden(name: &str, bytes: &[u8]) {
 
 fn client_messages() -> Vec<ClientMsg> {
     vec![
+        ClientMsg::RequestUndo {
+            actions: 3,
+            revision: 42,
+        },
+        ClientMsg::VoteUndo {
+            id: 2,
+            accept: true,
+        },
         ClientMsg::Join {
             name: "ada".into(),
             version: WIRE_VERSION,
@@ -133,6 +141,22 @@ fn host_messages() -> Vec<HostMsg> {
         },
     );
     vec![
+        HostMsg::Undo {
+            status: agni_net::session::UndoStatus {
+                revision: 42,
+                available: 5,
+                proposal: Some(agni_net::session::UndoProposal {
+                    id: 2,
+                    requester: 0,
+                    actions: 3,
+                    waiting: vec![1],
+                }),
+            },
+        },
+        HostMsg::RolledBack {
+            next_seq: 4,
+            faces: vec![(7, CardFace::named("private card"))],
+        },
         HostMsg::Welcome {
             version: WIRE_VERSION,
             seat: 1,
@@ -168,7 +192,7 @@ fn host_messages() -> Vec<HostMsg> {
 fn the_client_wire_encoding_is_pinned() {
     let messages = client_messages();
     let bytes: Vec<u8> = messages.iter().flat_map(encode_client).collect();
-    check_golden("client_v6.hex", &bytes);
+    check_golden("client_v7.hex", &bytes);
     for msg in &messages {
         assert_eq!(decode_client(&encode_client(msg)).unwrap(), *msg);
     }
@@ -178,7 +202,7 @@ fn the_client_wire_encoding_is_pinned() {
 fn the_host_wire_encoding_is_pinned() {
     let messages = host_messages();
     let bytes: Vec<u8> = messages.iter().flat_map(encode_host).collect();
-    check_golden("host_v6.hex", &bytes);
+    check_golden("host_v7.hex", &bytes);
     for msg in &messages {
         assert_eq!(decode_host(&encode_host(msg)).unwrap(), *msg);
     }

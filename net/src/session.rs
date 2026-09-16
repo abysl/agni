@@ -6,7 +6,8 @@ pub use crate::pins::{
 };
 pub use crate::proto::{
     decode_client, decode_host, default_seat_color, encode_client, encode_host, module_chunks,
-    roster_color, roster_playmat, version_mismatch, ClientMsg, HostMsg, SeatInfo, WireIntent,
-    MAX_MODULE_BYTES, MODULE_CHUNK_BYTES, SEAT_PICKABLE_COLORS, WIRE_VERSION,
+    roster_color, roster_playmat, version_mismatch, ClientMsg, HostMsg, SeatInfo, UndoProposal,
+    UndoStatus, WireIntent, MAX_MODULE_BYTES, MODULE_CHUNK_BYTES, SEAT_PICKABLE_COLORS,
+    WIRE_VERSION,
 };
 pub use agni_sim::wire::{hidden_face, DealGroup, DealTarget, WireFace, WireZone, ZoneDecl};

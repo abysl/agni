@@ -27,8 +27,9 @@ bash ci/check.sh
 ```
 
 This executes library tests for the core, simulation, plugin SDK, and shared
-deck model, then compile-checks every workspace target. It deliberately does
-not execute all networking and runtime-module tests.
+deck model, plus the session, undo, and wire-golden integration tests, then
+compile-checks every workspace target. It deliberately does not execute all
+networking and runtime-module tests.
 
 For a broader local run, install the WebAssembly target first:
 

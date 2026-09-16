@@ -5,7 +5,22 @@ use agni_sim::wire::{CounterTarget, DealGroup};
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 
-pub const WIRE_VERSION: u32 = 6;
+pub const WIRE_VERSION: u32 = 7;
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UndoProposal {
+    pub id: u64,
+    pub requester: u8,
+    pub actions: u32,
+    pub waiting: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UndoStatus {
+    pub revision: u64,
+    pub available: u32,
+    pub proposal: Option<UndoProposal>,
+}
 
 pub const MODULE_CHUNK_BYTES: usize = 256 << 10;
 
@@ -178,6 +193,14 @@ impl TryFrom<LogAction> for WireIntent {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ClientMsg {
+    RequestUndo {
+        actions: u32,
+        revision: u64,
+    },
+    VoteUndo {
+        id: u64,
+        accept: bool,
+    },
     Join {
         name: String,
         version: u32,
@@ -206,6 +229,13 @@ pub enum ClientMsg {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum HostMsg {
+    Undo {
+        status: UndoStatus,
+    },
+    RolledBack {
+        next_seq: u64,
+        faces: Vec<(u32, CardFace)>,
+    },
     Welcome {
         version: u32,
         seat: u8,

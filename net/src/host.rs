@@ -18,6 +18,9 @@ use std::fmt;
 
 pub type OwnerFaces = Vec<(u32, CardFace)>;
 
+mod undo;
+use undo::UndoHistory;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct HiddenPlay {
     seat: PlayerId,
@@ -115,6 +118,7 @@ pub struct HostSession {
     seat_nodes: BTreeMap<String, u8>,
     next_card_id: u32,
     served: BTreeMap<[u8; 32], Vec<u8>>,
+    undo: UndoHistory,
 }
 
 impl HostSession {
@@ -159,6 +163,7 @@ impl HostSession {
             seat_nodes: BTreeMap::new(),
             next_card_id: 0,
             served: BTreeMap::new(),
+            undo: UndoHistory::default(),
         };
         session.append(
             0,
@@ -277,6 +282,7 @@ impl HostSession {
             self.sent_faces
                 .retain(|(seat, held)| held != card || *seat == hider);
         }
+        self.undo.changed(&entry.action);
         self.log.push(entry.clone());
         Ok(entry)
     }
@@ -429,6 +435,7 @@ impl HostSession {
     }
 
     pub fn disconnect_all_guests(&mut self) {
+        self.undo.cancel();
         for info in self.roster.iter_mut() {
             if !info.host {
                 info.connected = false;
@@ -476,6 +483,7 @@ impl HostSession {
     }
 
     pub fn disconnect(&mut self, seat: u8) {
+        self.undo.cancel();
         if let Some(info) = self.roster.iter_mut().find(|info| info.seat == seat) {
             info.connected = false;
         }
@@ -768,6 +776,19 @@ impl HostSession {
 
     #[must_use = "the entries must reach every seat"]
     pub fn intent(&mut self, from: u8, intent: WireIntent) -> Result<Vec<LogEntry>, SessionError> {
+        let before = self.undo_checkpoint()?;
+        let result = self.apply_intent(from, intent);
+        if self.log.len() > before.log_len {
+            self.undo.remember(before);
+        }
+        result
+    }
+
+    fn apply_intent(
+        &mut self,
+        from: u8,
+        intent: WireIntent,
+    ) -> Result<Vec<LogEntry>, SessionError> {
         let mut unhide = None;
         let hidden = match &intent {
             WireIntent::MoveHidden { card, to, seat, .. } => {

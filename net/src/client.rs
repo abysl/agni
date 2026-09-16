@@ -380,6 +380,55 @@ impl ClientSession {
         self.pending.push(intent);
     }
 
+    pub fn rollback(
+        &mut self,
+        next_seq: u64,
+        faces: Vec<(u32, CardFace)>,
+    ) -> Result<(), EngineFault> {
+        let count = self
+            .log
+            .iter()
+            .take_while(|entry| entry.seq < next_seq)
+            .count();
+        if count == 0 || count >= self.log.len() || self.log[count].seq != next_seq {
+            return Err(EngineFault("invalid rollback boundary".into()));
+        }
+        let backup = agni_sim::log::encode_state(&self.state_cache);
+        self.engine
+            .restore(&agni_sim::log::encode_state(&LogState::new()))?;
+        let mut state = LogState::new();
+        let mut mirror = TableView::default();
+        let result = (|| {
+            for entry in &self.log[..count] {
+                let outcome = fold_shadowed(
+                    &mut *self.engine,
+                    self.plugin.as_deref_mut(),
+                    &mut state,
+                    entry,
+                    FoldMode::Sequenced,
+                    self.seat,
+                )?;
+                outcome
+                    .result
+                    .map_err(|error| EngineFault(format!("rollback replay: {error}")))?;
+                apply_deltas(&mut mirror, &outcome.deltas);
+            }
+            Ok::<_, EngineFault>(())
+        })();
+        if let Err(error) = result {
+            self.engine.restore(&backup)?;
+            return Err(error);
+        }
+        self.log.truncate(count);
+        self.state_cache = state;
+        self.mirror = mirror;
+        self.faces.clear();
+        self.harvest_spawned();
+        self.add_faces(faces);
+        self.pending.clear();
+        Ok(())
+    }
+
     pub fn view(&self) -> &TableView {
         &self.mirror
     }
