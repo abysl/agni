@@ -290,6 +290,31 @@ mod tests {
     }
 
     #[test]
+    fn ordering_temporary_before_the_lab_keeps_the_sprite_available_for_the_sacrifice() {
+        let mut fixture = with_a_friendly_sprite();
+        let mut ctx = fixture.ctx();
+        let hand = ctx.hand_of(0).len();
+        phases::start_turn(&mut ctx);
+        assert_eq!(ctx.blob.why, Some(PromptWhy::OrderTriggers { seat: 0 }));
+        answer(&mut ctx, 0, 1);
+        resolve_the_chain(&mut ctx);
+        assert!(ctx.on_board(SPRITE));
+        let options = prompts::offered(&ctx);
+        let pick = options
+            .iter()
+            .position(|option| option.label == format!("{{card {SPRITE}}}"))
+            .unwrap();
+        answer(&mut ctx, 0, pick as u16);
+        resolve_the_chain(&mut ctx);
+        assert!(ctx.card(SPRITE).is_none());
+        assert!(ctx
+            .blob
+            .log
+            .contains(&format!("{{card {SPRITE}}} is killed for a card")));
+        assert_eq!(ctx.hand_of(0).len(), hand + 1 + CARDS_PER_TURN);
+    }
+
+    #[test]
     fn an_uncontrolled_lab_is_silent_and_so_is_a_lab_held_by_the_other_seat() {
         let mut fixture = dusk_rose_lab();
         fixture.blob.set_holder(fixtures::BF1, None);
