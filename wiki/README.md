@@ -16,6 +16,7 @@ environment to understand it.
 | [Shared deck types](../games/deck/README.md) | Contributors to this subsystem | Read the stated prerequisites, then use as a focused reference |
 | [Rule references and pool data](../games/riftbound/rules/README.md) | Rule and test-data contributors | Reference provenance and machine-readable pool constraints |
 | [Agni architecture](design/architecture.md) | Developers new to the codebase | Responsibilities, vocabulary, and code navigation |
+| [Two-player matchmaking](design/matchmaking.md) | Application and transport contributors | Gossip advertisements, authenticated reservations, cancellation, and tests |
 | [Game counters](design/counters.md) | Contributors to this subsystem | Read the stated prerequisites, then use as a focused reference |
 | [Deck import and resolution](design/deck-import.md) | Contributors to this subsystem | Read the stated prerequisites, then use as a focused reference |
 | [Building and integrating game plugins](design/plugins.md) | Contributors to this subsystem | Read the stated prerequisites, then use as a focused reference |

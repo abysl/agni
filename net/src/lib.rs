@@ -3,6 +3,7 @@
 pub mod bridge;
 pub mod client;
 pub mod host;
+pub mod matchmaking;
 pub mod pins;
 pub mod proto;
 pub mod session;

@@ -23,8 +23,38 @@ pub type HostFuture = Pin<Box<dyn Future<Output = ()>>>;
 
 static NET_EVENTS: Mutex<Vec<NetToGame>> = Mutex::new(Vec::new());
 static HOST_TX: Mutex<Option<UnboundedSender<(u64, HostMsg)>>> = Mutex::new(None);
-static CLIENT_TX: Mutex<Option<UnboundedSender<ClientMsg>>> = Mutex::new(None);
+static CLIENT: Mutex<ClientLink> = Mutex::new(ClientLink {
+    generation: 0,
+    tx: None,
+});
 static JOIN_REQUESTS: Mutex<Vec<String>> = Mutex::new(Vec::new());
+
+struct ClientLink {
+    generation: u64,
+    tx: Option<UnboundedSender<ClientMsg>>,
+}
+
+fn client_event(event: &NetToGame) -> bool {
+    matches!(
+        event,
+        NetToGame::Connected | NetToGame::FromHost { .. } | NetToGame::Dropped { .. }
+    )
+}
+
+pub fn cancel_join() {
+    JOIN_REQUESTS.lock().clear();
+    let mut client = CLIENT.lock();
+    client.generation = client.generation.wrapping_add(1);
+    client.tx = None;
+    NET_EVENTS.lock().retain(|event| !client_event(event));
+}
+
+fn push_join(generation: u64, event: NetToGame) {
+    let client = CLIENT.lock();
+    if client.generation == generation {
+        push(event);
+    }
+}
 
 pub enum NetToGame {
     HostReady,
@@ -144,30 +174,64 @@ pub fn host_addr(mesh: &Mesh, host_id: &str) -> Option<EndpointAddr> {
         .or_else(|| host_id.parse::<EndpointId>().ok().map(EndpointAddr::new))
 }
 
-pub async fn run_join(
+pub fn run_join(
     endpoint: spirit_node::iroh::Endpoint,
     mesh: Arc<Mesh>,
     addr: EndpointAddr,
     host_id: String,
     name: String,
+) -> HostFuture {
+    let generation = {
+        let mut client = CLIENT.lock();
+        client.generation = client.generation.wrapping_add(1);
+        client.tx = None;
+        NET_EVENTS.lock().retain(|event| !client_event(event));
+        client.generation
+    };
+    Box::pin(run_join_attempt(
+        endpoint, mesh, addr, host_id, name, generation,
+    ))
+}
+
+async fn run_join_attempt(
+    endpoint: Endpoint,
+    mesh: Arc<Mesh>,
+    addr: EndpointAddr,
+    host_id: String,
+    name: String,
+    generation: u64,
 ) {
+    if CLIENT.lock().generation != generation {
+        return;
+    }
     let mut link = match table::join_via(&endpoint, addr).await {
         Ok(link) => link,
         Err(error) => {
-            mesh.forget_table(&host_id);
-            push(NetToGame::Dropped {
-                reason: unreachable_reason(&error.to_string()),
-            });
+            if CLIENT.lock().generation == generation {
+                mesh.forget_table(&host_id);
+            }
+            push_join(
+                generation,
+                NetToGame::Dropped {
+                    reason: unreachable_reason(&error.to_string()),
+                },
+            );
             return;
         }
     };
     let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<ClientMsg>();
-    *CLIENT_TX.lock() = Some(tx);
+    {
+        let mut client = CLIENT.lock();
+        if client.generation != generation {
+            return;
+        }
+        client.tx = Some(tx);
+    }
     link.send(encode_client(&ClientMsg::Join {
         name,
         version: WIRE_VERSION,
     }));
-    push(NetToGame::Connected);
+    push_join(generation, NetToGame::Connected);
     let mut seated = false;
     loop {
         tokio::select! {
@@ -175,18 +239,18 @@ pub async fn run_join(
                 Some(JoinEvent::Frame(bytes)) => {
                     seated = true;
                     if let Some(msg) = decode_host(&bytes) {
-                        push(NetToGame::FromHost { msg });
+                        push_join(generation, NetToGame::FromHost { msg });
                     }
                 }
                 Some(JoinEvent::Closed(reason)) => {
-                    if !seated {
+                    if !seated && CLIENT.lock().generation == generation {
                         mesh.forget_table(&host_id);
                     }
-                    push(NetToGame::Dropped { reason });
+                    push_join(generation, NetToGame::Dropped { reason });
                     break;
                 }
                 None => {
-                    push(NetToGame::Dropped { reason: "link closed".into() });
+                    push_join(generation, NetToGame::Dropped { reason: "link closed".into() });
                     break;
                 }
             },
@@ -196,7 +260,10 @@ pub async fn run_join(
             },
         }
     }
-    *CLIENT_TX.lock() = None;
+    let mut client = CLIENT.lock();
+    if client.generation == generation {
+        client.tx = None;
+    }
 }
 
 pub fn send_to(conn: u64, msg: HostMsg) {
@@ -206,7 +273,41 @@ pub fn send_to(conn: u64, msg: HostMsg) {
 }
 
 pub fn send_to_host(msg: ClientMsg) {
-    if let Some(tx) = CLIENT_TX.lock().as_ref() {
+    if let Some(tx) = CLIENT.lock().tx.as_ref() {
         let _ = tx.send(msg);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn cancelled_join_events_cannot_replace_the_next_session() {
+        cancel_join();
+        let old = CLIENT.lock().generation;
+        push(NetToGame::HostReady);
+        push_join(old, NetToGame::Connected);
+        cancel_join();
+        push_join(
+            old,
+            NetToGame::Dropped {
+                reason: "late failure".into(),
+            },
+        );
+        push_join(
+            old,
+            NetToGame::FromHost {
+                msg: HostMsg::End {
+                    reason: "late reply".into(),
+                },
+            },
+        );
+        let events = drain_events();
+        assert_eq!(events.len(), 1);
+        assert!(matches!(events[0], NetToGame::HostReady));
+        let current = CLIENT.lock().generation;
+        push_join(current, NetToGame::Connected);
+        assert!(matches!(drain_events().as_slice(), [NetToGame::Connected]));
     }
 }
