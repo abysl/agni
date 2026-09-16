@@ -337,11 +337,11 @@ pub fn token_table() -> Vec<TokenDecl> {
             ..unit("Sprite", 3, Some("ogn-274-298"))
         },
         unit("Recruit", 1, Some("ogn-272-298")),
-        unit("Bird", 1, None),
-        unit("Sand Soldier", 2, None),
-        unit("Mech", 3, None),
-        unit("Shadow Clone", 0, None),
-        unit("Tentacle", 1, None),
+        unit("Bird", 1, Some("unl-t02")),
+        unit("Sand Soldier", 2, Some("sfd-t02")),
+        unit("Mech", 3, Some("sfd-t01")),
+        unit("Shadow Clone", 0, Some("ven-t05")),
+        unit("Tentacle", 1, Some("ven-t06")),
         TokenDecl {
             name: "Gold".into(),
             kind: "Gear".into(),
@@ -826,7 +826,7 @@ mod tests {
         for name in ["Shadow Clone", "Tentacle", "Sand Soldier"] {
             let decl = by_name(name);
             assert_eq!(decl.kind, KIND_UNIT);
-            assert!(decl.art.is_none());
+            assert!(decl.art.is_some());
             assert!(!decl.temporary);
         }
         let mut names: Vec<&str> = tokens.iter().map(|decl| decl.name.as_str()).collect();

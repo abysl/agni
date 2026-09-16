@@ -3,10 +3,10 @@ use super::prelude::{
     Token, ONE_ENERGY,
 };
 use super::{
-    base_name, Card, Flow, Grant, Item, Keyword, Scope, Source, Stage, Static, Timing, KIND_GEAR,
+    base_name, Card, Flow, Grant, Item, Keyword, Scope, Source, Stage, Static, Timing,
     TOKEN_SAND_SOLDIER,
 };
-use crate::engine::ctx::{Ctx, Event};
+use crate::engine::ctx::Ctx;
 
 const SOLDIER_ARRIVES_READY: bool = false;
 
@@ -20,15 +20,7 @@ fn a_sand_soldier(ctx: &Ctx, _: u32, unit: u32) -> bool {
 }
 
 pub fn played_an_equipment_this_turn(ctx: &Ctx, seat: u8) -> bool {
-    ctx.events.iter().any(|event| {
-        matches!(
-            event,
-            Event::Played { card, controller, kind, .. }
-                if *controller == seat
-                    && kind == KIND_GEAR
-                    && ctx.script(*card).is_some_and(Card::is_equipment)
-        )
-    })
+    ctx.blob.seat(seat).equipment_played
 }
 
 fn armed_this_turn(ctx: &Ctx, source: Source) -> bool {
@@ -74,7 +66,8 @@ pub static CARD: Card = with_statics(
 mod tests {
     use super::*;
     use crate::cards::prelude::WEAPONMASTER_TARGET;
-    use crate::cards::{script_of, SelfCost, Trigger, KIND_UNIT};
+    use crate::cards::{script_of, SelfCost, Trigger, KIND_GEAR, KIND_UNIT};
+    use crate::engine::ctx::{Cause, Event};
     use crate::engine::fixtures::{self, Fixture};
     use crate::engine::legal::Reason;
     use crate::engine::{activate, priority, statics};
@@ -130,6 +123,103 @@ mod tests {
         fixtures::play_from_hand(ctx, 0, fixtures::HAND_GEAR).unwrap();
         fixtures::pass_until_open(ctx);
         assert!(ctx.on_board(fixtures::HAND_GEAR));
+    }
+
+    fn request(fixture: &mut Fixture, run: impl FnOnce(&mut Ctx)) {
+        let mut ctx = fixture.ctx();
+        run(&mut ctx);
+        assert!(ctx.fault.is_none());
+        let table = ctx.table.clone();
+        drop(ctx);
+        fixture.commit(table);
+        fixture.blob = crate::state::GameBlob::decode(&fixture.blob.encode()).unwrap();
+    }
+
+    #[test]
+    fn reported_equipment_unlocks_azir_and_weaponmaster_across_requests() {
+        for (name, energy, domain) in [
+            ("B.F. Sword", 4, "Order"),
+            ("Soul Sword", 1, "Calm"),
+            ("Hand Hammer", 2, "Calm"),
+        ] {
+            let mut fixture = shurima();
+            let gear = fixture.table.card_mut(fixtures::HAND_GEAR).unwrap();
+            gear.name = name.into();
+            gear.energy = Some(energy);
+            gear.domain = vec![domain.into()];
+            for id in 90..98 {
+                fixture
+                    .table
+                    .cards
+                    .push(fixtures::rune(id, 0, domain, false));
+            }
+            fixture.table.next_id = 100;
+            fixture.resolve();
+            request(&mut fixture, |ctx| {
+                fixtures::play_from_hand(ctx, 0, fixtures::HAND_GEAR).unwrap();
+                fixtures::pass_until_open(ctx);
+            });
+            request(&mut fixture, |ctx| {
+                assert!(ctx.events.is_empty());
+                assert!(
+                    activate::offers(ctx, 0)
+                        .iter()
+                        .any(|offer| offer.source == AZIR && offer.enabled),
+                    "{name}"
+                );
+                activate::activate(ctx, 0, AZIR, 0).unwrap();
+            });
+            request(&mut fixture, fixtures::pass_until_open);
+            request(&mut fixture, |ctx| {
+                assert_eq!(soldiers_of(ctx, 0).len(), 1);
+                fixtures::choose(ctx, 0, &format!("{{card {}}}", fixtures::HAND_GEAR)).unwrap();
+            });
+            request(&mut fixture, |ctx| {
+                let runes = ctx.runes_of(0).len();
+                fixtures::pass_until_open(ctx);
+                let soldier = soldiers_of(ctx, 0)[0];
+                assert_eq!(
+                    crate::cards::prelude::attached_to(ctx, fixtures::HAND_GEAR),
+                    Some(soldier),
+                    "{name}"
+                );
+                assert_eq!(
+                    ctx.runes_of(0).len(),
+                    runes - 1,
+                    "a domain-specific Equip cost is not discounted"
+                );
+            });
+        }
+    }
+
+    #[test]
+    fn equipment_history_survives_its_removal_but_expires_with_the_turn() {
+        let mut fixture = shurima();
+        request(&mut fixture, play_the_boots);
+        request(&mut fixture, |ctx| {
+            ctx.kill(fixtures::HAND_GEAR, Cause::Rule);
+        });
+        request(&mut fixture, |ctx| {
+            assert!(played_an_equipment_this_turn(ctx, 0));
+            assert!(!played_an_equipment_this_turn(ctx, 1));
+            crate::engine::expiry::at_expiration(ctx);
+        });
+        let ctx = fixture.ctx();
+        assert!(!played_an_equipment_this_turn(&ctx, 0));
+        assert!(!activate::offers(&ctx, 0)
+            .iter()
+            .any(|offer| offer.source == AZIR));
+    }
+
+    #[test]
+    fn non_equipment_gear_does_not_unlock_azir() {
+        let mut fixture = shurima();
+        fixture.table.card_mut(fixtures::HAND_GEAR).unwrap().name = "Ravenborn Tome".into();
+        fixture.resolve();
+        request(&mut fixture, play_the_boots);
+        let ctx = fixture.ctx();
+        assert_eq!(ctx.blob.seat(0).gear_played, 1);
+        assert!(!played_an_equipment_this_turn(&ctx, 0));
     }
 
     #[test]
@@ -317,7 +407,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "engine gap · per-turn counters: the blob keeps no record of the kinds played this turn, so an Equipment played in an earlier request is invisible to the gate; SeatState wants an equipment_played flag reset at Expiration"]
     fn an_equipment_played_in_an_earlier_request_still_opens_the_gate() {
         let mut fixture = shurima();
         {
@@ -327,6 +416,7 @@ mod tests {
             drop(ctx);
             fixture.commit(table);
         }
+        fixture.blob = crate::state::GameBlob::decode(&fixture.blob.encode()).unwrap();
         let mut ctx = fixture.ctx();
         assert!(ctx.events.is_empty(), "a fresh request");
         assert!(played_an_equipment_this_turn(&ctx, 0));

@@ -98,3 +98,21 @@ malicious host and should not be described as one.
 
 Continue with [development](../development.md), or use the
 [reference index](../README.md) for module, counter, and importer details.
+
+## Riftbound 0.8.1 state and presentation
+
+The Riftbound plugin uses blob version 15. Each seat persists an
+`equipment_played` flag when a played Equipment event is raised; Expiration
+clears it. Azir's condition reads that history, not the current request's
+temporary event list. Versions 13 and 14 remain readable and default the new
+field to false; their snapshots do not contain earlier Equipment history.
+
+After accepted enforced actions, the plugin publishes computed Might minus
+printed Might through the existing Might counter. It does not add another
+modifier to the rules calculation. This keeps conditional effects such as
+Steel Paws' Empower visible, including when the condition stops applying.
+Free-table manual counters and hidden faces are not overwritten.
+
+Token declarations include print identifiers; renderers can resolve artwork
+at runtime without bundling card images. These changes do not require a wire
+protocol change. Kai's maintenance release pins a wire-7 revision in Cargo.lock.

@@ -373,7 +373,7 @@ mod tests {
                     let count = reader.array_len().unwrap();
                     writer.array(count);
                     for _ in 0..count {
-                        row(&mut reader, bytes, &mut writer, 16, 14);
+                        row(&mut reader, bytes, &mut writer, 17, 14);
                     }
                 }
                 "c" => {

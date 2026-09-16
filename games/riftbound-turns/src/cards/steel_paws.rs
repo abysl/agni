@@ -137,4 +137,62 @@ mod tests {
         assert!(!ctx.is_empowered(PAWS));
         assert_eq!(ctx.current_might(PAWS), 0);
     }
+
+    #[test]
+    fn resolved_empower_publishes_seven_might_across_requests_without_double_counting() {
+        use crate::engine::ctx::COUNTER_MIGHT;
+        use crate::state::GameBlob;
+        use crate::TurnEvent;
+        use agni_plugin_sdk::decide::{Action, Request};
+        use agni_plugin_sdk::table::Target;
+
+        let mut fixture = workshop(7);
+        for (seat, event) in [
+            (
+                0,
+                TurnEvent::Activate {
+                    source: PAWS,
+                    ability: 0,
+                },
+            ),
+            (0, TurnEvent::Pass),
+            (1, TurnEvent::Pass),
+        ] {
+            let request = Request {
+                plugin_state: fixture.blob.encode(),
+                players: 2,
+                seat,
+                action: Action::Game(event.encode()),
+                table: fixture.table.clone(),
+            };
+            let verdict = crate::engine::decide(&request, fixture.blob.clone()).unwrap();
+            for effect in verdict.effects {
+                fixture.table.apply(&effect, seat).unwrap();
+            }
+            fixture.blob = GameBlob::decode(&verdict.plugin_state.unwrap()).unwrap();
+            fixture.resolve();
+        }
+        let mut ctx = fixture.ctx();
+        assert!(ctx.is_empowered(PAWS));
+        assert_eq!(ctx.current_might(PAWS), 7);
+        assert_eq!(
+            ctx.table.counter(Target::Card(PAWS), COUNTER_MIGHT),
+            Some(7)
+        );
+        ctx.sync_might();
+        assert_eq!(ctx.current_might(PAWS), 7);
+        assert_eq!(
+            ctx.table.counter(Target::Card(PAWS), COUNTER_MIGHT),
+            Some(7)
+        );
+        ctx.disempower(PAWS);
+        ctx.sync_might();
+        assert_eq!(ctx.current_might(PAWS), 0);
+        assert_eq!(
+            ctx.table
+                .counter(Target::Card(PAWS), COUNTER_MIGHT)
+                .unwrap_or(0),
+            0
+        );
+    }
 }
