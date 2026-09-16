@@ -149,3 +149,40 @@ fn a_host_alone_undoes_without_a_vote_and_bad_replica_boundaries_are_atomic() {
         .unwrap());
     assert_eq!(host.state(), &before);
 }
+
+#[test]
+fn undo_history_is_bounded_and_refused_intents_do_not_count() {
+    let (mut host, mut client) = table();
+    play(&mut host, &mut client, 0);
+    for n in 0..70 {
+        host.intent(
+            0,
+            WireIntent::Annotate {
+                card: 0,
+                key: "mark".into(),
+                value: Some(vec![n].into()),
+            },
+        )
+        .unwrap();
+    }
+    let revision = host.undo_status().revision;
+    assert_eq!(host.undo_status().available, 64);
+    assert!(host
+        .intent(
+            0,
+            WireIntent::Move {
+                card: u32::MAX,
+                to: Zone::Board,
+                seat: 0,
+                index: 0
+            }
+        )
+        .is_err());
+    assert_eq!(host.undo_status().revision, revision);
+    assert_eq!(host.undo_status().available, 64);
+    assert!(host.request_undo(0, 65, revision).is_err());
+    host.request_undo(0, 64, revision).unwrap();
+    let id = host.undo_status().proposal.unwrap().id;
+    assert!(host.vote_undo(1, id, true).unwrap());
+    assert!(host.undo_status().revision > revision);
+}

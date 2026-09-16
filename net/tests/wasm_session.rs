@@ -60,6 +60,45 @@ fn wasm_engine() -> Box<WasmEngine> {
     Box::new(load_engine(hardened_engine(), BUDGET).unwrap())
 }
 
+#[test]
+fn a_wasm_host_and_replica_restore_undo_and_continue_playing() {
+    let mut host =
+        HostSession::with_engine("host", TableConfig::default(), wasm_engine(), None).unwrap();
+    host.join("guest").unwrap();
+    host.deal(0, faces("card", 1)).unwrap();
+    let before = encode_state(host.state());
+    let mut client = ClientSession::from_welcome_with(
+        1,
+        host.roster(),
+        host.log().to_vec(),
+        wasm_engine(),
+        None,
+    )
+    .unwrap();
+    let play = WireIntent::Move {
+        card: 0,
+        to: WireZone::Board,
+        seat: 0,
+        index: 0,
+    };
+    for entry in host.intent(0, play.clone()).unwrap() {
+        assert!(client.apply(entry).unwrap());
+    }
+    host.request_undo(0, 1, host.undo_status().revision)
+        .unwrap();
+    let id = host.undo_status().proposal.unwrap().id;
+    assert!(host.vote_undo(1, id, true).unwrap());
+    client
+        .rollback(host.state().next_seq, host.faces_owed_to(1))
+        .unwrap();
+    assert_eq!(encode_state(host.state()), before);
+    assert_eq!(encode_state(client.state()), before);
+    for entry in host.intent(0, play).unwrap() {
+        assert!(client.apply(entry).unwrap());
+    }
+    assert_eq!(encode_state(host.state()), encode_state(client.state()));
+}
+
 fn faces(prefix: &str, n: usize) -> Vec<CardFace> {
     (0..n)
         .map(|i| CardFace::named(format!("{prefix} {i}")))
