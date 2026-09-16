@@ -1,12 +1,19 @@
-# agni-deck
+# Shared deck types
 
-The deck shapes every game crate shares: `CardName`, the generic
-`DeckEntry<C>` (a card plus its copy count) and the helpers that operate on a
-zone of entries — `push` merges a card into a zone by equality, `total` sums
-the copies, `expand` repeats each card by its count, `flatten` turns a zone
-back into names.
+Audience: Rust developers integrating a game-specific deck model with Agni.
 
-`agni-riftbound` and `agni-mtg` alias `DeckEntry` to their own `ResolvedCard`
-and keep their genuinely different pieces (deck anatomy, zone table, deal
-plan) to themselves. The importers build on the same helpers so a third game
-adds a vocabulary, not a copy of the deck machinery.
+This crate contains the deck pieces several games share: named entries with
+counts, expansion/flattening helpers, and saved snapshots. It does not decide
+a particular game's deck-construction rules.
+
+A snapshot records cards grouped into zones. Its identity represents the
+card list rather than presentation details such as a display name or artwork.
+That allows clients to rename a saved deck without treating it as new content.
+
+Use a game's resolved-card type with the shared entry helpers instead of
+implementing another count/expansion loop. Keep game-specific legality in that
+game's crate.
+
+Run `cargo test --locked -p agni-deck` from the repository root.
+When adding snapshot fields, test old data without the new field and verify
+whether the field should affect identity.

@@ -22,10 +22,10 @@ agni-riftbound = { path = "../games/riftbound" }
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 agni-engine-host = { path = "../engine/host" }
 agni-harden = { path = "../plugins/harden" }
-spirit-sdk = { git = "https://git.rae.blue/abysl/spirit-library" }
+spirit-sdk = { git = "https://github.com/abysl/spirit-library" }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-spirit-node = { git = "https://git.rae.blue/abysl/spirit-library", default-features = false, features = [
+spirit-node = { git = "https://github.com/abysl/spirit-library", default-features = false, features = [
   "native",
 ] }
 tokio = { version = "1", default-features = false, features = [
@@ -36,7 +36,7 @@ tokio = { version = "1", default-features = false, features = [
 ] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-spirit-node = { git = "https://git.rae.blue/abysl/spirit-library", default-features = false }
+spirit-node = { git = "https://github.com/abysl/spirit-library", default-features = false }
 tokio = { version = "1", default-features = false, features = [
   "sync",
   "macros",

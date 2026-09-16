@@ -7,7 +7,7 @@ edition = "2021"
 blake3 = "1"
 radix-wasm-instrument = "=1.0.0"
 serde = { version = "1", features = ["derive"] }
-spirit-sdk = { git = "https://git.rae.blue/abysl/spirit-library" }
+spirit-sdk = { git = "https://github.com/abysl/spirit-library" }
 wasm-encoder = "=0.29.0"
 wasmparser = "=0.107.0"
 

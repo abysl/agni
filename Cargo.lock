@@ -3701,6 +3701,7 @@ checksum = "023a211cb3138dbc438680b32560ad89f699977624c9f8dbb95a47d5b4c07dd3"
 [[package]]
 name = "spirit-core"
 version = "0.1.0"
+source = "git+https://github.com/abysl/spirit-library#f54d79a8302f5430acb840aa7cc820672d7b56d7"
 dependencies = [
  "blake3",
  "ciborium",
@@ -3712,6 +3713,7 @@ dependencies = [
 [[package]]
 name = "spirit-index"
 version = "0.1.0"
+source = "git+https://github.com/abysl/spirit-library#f54d79a8302f5430acb840aa7cc820672d7b56d7"
 dependencies = [
  "ciborium",
  "serde",
@@ -3721,6 +3723,7 @@ dependencies = [
 [[package]]
 name = "spirit-node"
 version = "0.1.0"
+source = "git+https://github.com/abysl/spirit-library#f54d79a8302f5430acb840aa7cc820672d7b56d7"
 dependencies = [
  "ciborium",
  "getrandom 0.4.3",
@@ -3741,6 +3744,7 @@ dependencies = [
 [[package]]
 name = "spirit-routing"
 version = "0.1.0"
+source = "git+https://github.com/abysl/spirit-library#f54d79a8302f5430acb840aa7cc820672d7b56d7"
 dependencies = [
  "ciborium",
  "spirit-core",
@@ -3750,6 +3754,7 @@ dependencies = [
 [[package]]
 name = "spirit-schema"
 version = "0.1.0"
+source = "git+https://github.com/abysl/spirit-library#f54d79a8302f5430acb840aa7cc820672d7b56d7"
 dependencies = [
  "ciborium",
  "serde",
@@ -3759,6 +3764,7 @@ dependencies = [
 [[package]]
 name = "spirit-sdk"
 version = "0.1.0"
+source = "git+https://github.com/abysl/spirit-library#f54d79a8302f5430acb840aa7cc820672d7b56d7"
 dependencies = [
  "spirit-core",
  "spirit-index",

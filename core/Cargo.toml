@@ -7,4 +7,4 @@ edition = "2021"
 serde = { version = "1", features = ["derive"] }
 
 [dev-dependencies]
-spirit-sdk = { git = "https://git.rae.blue/abysl/spirit-library" }
+spirit-sdk = { git = "https://github.com/abysl/spirit-library" }

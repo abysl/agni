@@ -1,45 +1,63 @@
 # Agni
 
-> "Form is a duel."
+Agni is a Rust framework for building digital card games. It keeps track of
+cards, players, and actions, and lets several devices follow the same game.
+It does not draw a table: an application supplies the interface.
 
-Agni is a deterministic card-game engine: table state, replayable simulation,
-network sessions, plugin hosting, and user-run card importers. It is built on
-top of [Spirit Library](https://github.com/abysl/spirit-library), the generic
-content mesh underneath it.
+Its central rule is reproducibility. Starting with the same game state and
+applying the same ordered actions must produce the same result on every device.
+That makes replay and multiplayer agreement possible.
 
-Clients handle everything else. [Kai](https://github.com/abysl/kai) does UX,
-rendering and QR pairing; other front ends can use the same simulation boundary.
-Front ends never mutate game state:
-dropping a card emits a request that agni's session stack orders and folds.
+## What is included?
 
-agni ships **neutral**: no game's rules are enforced by shipped code, and no
-card content is distributed with the repo or the builds. Rules belong to
-user-installed plugins binding through `plugins/`; card content arrives via
-user-run importers against third-party public services (Scryfall and
-Riftcodex today) into the user's own spirit store. This is the Cockatrice
-posture, on purpose.
+- Shared card-table state and an action log that can be replayed.
+- Host and client sessions for multiplayer applications.
+- An engine that can run as a WebAssembly module.
+- Tools for preparing game plugins with explicit execution limits.
+- Deck types and optional importers for supported games.
 
-## Structure
+A **plugin** decides what a particular game's rules allow. **WebAssembly**
+is a portable executable format used here to run the engine and plugins
+behind a defined interface.
 
-| Crate | Role |
-|---|---|
-| `core/` | game-agnostic table state — cards, zones, ownership, seeded RNG, `Intent` |
-| `sim/` | the deterministic action log — entries, validation, the fold every replica runs; the wire face/zone types, the mirrored `TableView`, the engine ABI and the `ModuleCall`/`AbiEngine` hosting seam, genesis module pins |
-| `engine/wasm/`, `engine/host/` | the engine.wasm guest and its wasmi host |
-| `net/` | multiplayer over spirit — the host sequencer and client sessions (`Result`-returning, never panicking on a peer's input), the versioned CBOR wire protocol, the `spirit-table/1` transport, the bridge clients drain |
-| `importers/` | user-run card importers: the game-neutral art journal and deck-list machinery, the MTG (Scryfall) and Riftbound (Riftcodex) importers behind cargo features, and their bins |
-| `plugins/` | the trait surface user-installed card scripts bind to, keyed by card identity; `plugins/harden` mints wasm modules; `plugins/sdk` is the dependency-free guest toolkit (CBOR, request/verdict/view codecs, turn-order and pass-window primitives, the export macro); `plugins/{riftbound,mtg}` are the two guest plugins |
-| `games/{riftbound,mtg,abysswalker}/` | per-game zone tables, deal plans and deck-shape types for importers and deck models; `games/riftbound/rules` holds the Core Rules text and `games/riftbound-turns` the turn machine the Riftbound plugin runs |
+Agni is under active development; its APIs and protocols are not stable.
+It is not a standalone game, an official game client, or a complete anti-cheat
+system.
 
-## Design
+## Start here
 
-- [`wiki/design/architecture.md`](wiki/design/architecture.md) — determinism,
-  replay, plugins over spirit, front-end boundaries, the crate map
-- [Kai deterministic log](https://github.com/abysl/kai/blob/main/wiki/design/deterministic-log.md)
-  — the action log agni-sim implements
-- [`wiki/design/plugins.md`](wiki/design/plugins.md) — plugins as pure deciders
-  in the fold, the SDK, verdict effects, and the Riftbound rules as built
-- [`wiki/design/deck-import.md`](wiki/design/deck-import.md) — how a deck link
-  resolves against Riftcodex and the store catalogue, and the retry and
-  `unresolved` report that replaced the silent drop
-- [`plans/implementation-plan.md`](plans/implementation-plan.md)
+If you want a graphical card table, see [Kai](https://github.com/abysl/kai).
+If you want to contribute to the framework, begin with
+[Contributing](CONTRIBUTING.md) and the [development guide](wiki/development.md).
+
+With a current Rust toolchain, a first focused test is:
+
+```sh
+git clone https://github.com/abysl/agni.git
+cd agni
+cargo test --locked -p agni-plugin-sdk
+```
+
+The development guide explains the remaining checks and optional tools.
+
+## Related projects and current boundaries
+
+[Spirit Library](https://github.com/abysl/spirit-library) provides content
+storage and peer communication.
+[agni-rfb](https://github.com/abysl/agni-rfb) is the separately maintained
+Riftbound plugin repository.
+
+The separation is not complete: this workspace still contains Riftbound
+crates and references used by existing clients and tests. Do not assume a
+build of this repository contains only game-neutral code. The
+[architecture guide](wiki/design/architecture.md) explains the current layout.
+
+## Documentation and license
+
+The [documentation index](wiki/README.md) distinguishes introductory guides,
+implementation references, and historical design records.
+
+Project code is licensed under [GNU GPL version 3](LICENSE). That license
+does not grant rights to third-party games, card images, rules publications,
+or dependencies. Do not include downloaded game content in release artifacts
+without reviewing its provenance and redistribution terms.

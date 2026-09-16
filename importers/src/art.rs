@@ -5,7 +5,7 @@ use std::io::{Read, Write};
 use std::path::PathBuf;
 use std::time::Duration;
 
-pub const USER_AGENT: &str = "agni-importers/0.1 (personal card store; contact dev@rae.blue)";
+pub const USER_AGENT: &str = "agni-importers/0.1 (+https://github.com/abysl/agni)";
 
 pub struct Progress {
     pub done: usize,
