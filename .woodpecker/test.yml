@@ -1,0 +1,18 @@
+when:
+  - event: push
+    branch: main
+  - event: pull_request
+
+labels:
+  backend: docker
+
+steps:
+  - name: checks
+    image: nixos/nix:2.34.8
+    environment:
+      AGNI_IMPORTER_FEATURES: agni-importers/scryfall,agni-importers/riftbound-gateway,agni-importers/mtg-native
+    commands:
+      - nix profile add nixpkgs#devenv
+      - devenv shell -- fmt-check
+      - devenv shell -- unit-test
+      - devenv shell -- clippy
