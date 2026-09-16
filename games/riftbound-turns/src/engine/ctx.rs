@@ -1197,6 +1197,25 @@ impl<'a> Ctx<'a> {
         total.max(0)
     }
 
+    pub fn sync_might(&mut self) {
+        if !self.blob.is_enforced() {
+            return;
+        }
+        let values: Vec<_> = self
+            .faces_on_board()
+            .filter(|card| is_unit_face(card) && !card.is_hidden() && !self.is_facedown(card.id))
+            .map(|card| {
+                (
+                    card.id,
+                    self.current_might(card.id) - self.printed_might(card.id),
+                )
+            })
+            .collect();
+        for (card, value) in values {
+            self.set_counter(card, COUNTER_MIGHT, value);
+        }
+    }
+
     fn keyword_bonus(&self, card: u32, pick: fn(Keyword) -> Option<u8>) -> i32 {
         let printed: i32 = self
             .script(card)
@@ -1437,6 +1456,21 @@ impl<'a> Ctx<'a> {
     }
 
     pub fn raise(&mut self, event: Event) {
+        if let Event::Played {
+            card,
+            controller,
+            ref kind,
+            ..
+        } = event
+        {
+            if kind == KIND_GEAR
+                && self
+                    .script(card)
+                    .is_some_and(|script| script.is_equipment())
+            {
+                self.blob.seat_mut(controller).equipment_played = true;
+            }
+        }
         self.events.push(event);
     }
 

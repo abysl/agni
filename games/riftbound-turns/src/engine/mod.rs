@@ -99,6 +99,7 @@ pub fn decide(request: &Request, mut blob: GameBlob) -> Result<Verdict, Refusal>
 }
 
 fn finish(mut ctx: Ctx) -> Result<Verdict, Refusal> {
+    ctx.sync_might();
     if ctx.won.is_some() {
         hide::game_over(&mut ctx);
     }
@@ -109,6 +110,7 @@ fn finish(mut ctx: Ctx) -> Result<Verdict, Refusal> {
 }
 
 fn finish_lenient(mut ctx: Ctx) -> Verdict {
+    ctx.sync_might();
     if ctx.won.is_some() {
         hide::game_over(&mut ctx);
     }

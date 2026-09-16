@@ -6,7 +6,7 @@ use agni_plugin_sdk::prompt::Prompt;
 use agni_plugin_sdk::turns::{PassWindow, TurnOrder};
 use std::sync::OnceLock;
 
-pub const BLOB_VERSION: u64 = 14;
+pub const BLOB_VERSION: u64 = 15;
 pub const NARRATION_LINES: usize = 12;
 pub const DIE_SIDES: u8 = 6;
 
@@ -575,6 +575,7 @@ pub struct SeatState {
     pub cards_played: u8,
     pub spells_played: u8,
     pub gear_played: u8,
+    pub equipment_played: bool,
     pub gear_abilities_activated: u8,
     pub promises: Vec<Promise>,
     pub pool: Pool,
@@ -603,12 +604,13 @@ impl SeatState {
         self.next_spell_bonus = 0;
         self.spell_bonus = (0, 0);
         self.gear_played = 0;
+        self.equipment_played = false;
         self.gear_abilities_activated = 0;
         self.pool = Pool::default();
     }
 
     fn write(&self, writer: &mut Writer) {
-        writer.array(16);
+        writer.array(17);
         writer.unsigned(u64::from(self.setup.code()));
         writer.unsigned(u64::from(self.draws));
         writer.bool(self.played_main);
@@ -633,6 +635,7 @@ impl SeatState {
         writer.array(2);
         writer.unsigned(u64::from(self.spell_bonus.0));
         writer.unsigned(u64::from(self.spell_bonus.1));
+        writer.bool(self.equipment_played);
     }
 
     fn read_version(reader: &mut Reader, version: u64) -> Option<Self> {
@@ -641,7 +644,8 @@ impl SeatState {
             || version == 9 && len != 10
             || version == 10 && len != 11
             || (11..=12).contains(&version) && len != 14
-            || version >= 13 && len != 16
+            || (13..=14).contains(&version) && len != 16
+            || version >= 15 && len != 17
         {
             return None;
         }
@@ -752,6 +756,7 @@ impl SeatState {
                 ),
             }
         };
+        let equipment_played = version >= 15 && bool_of(reader)?;
         Some(Self {
             setup,
             draws,
@@ -766,6 +771,7 @@ impl SeatState {
             next_unit_enters_ready,
             chosen_champion,
             gear_played,
+            equipment_played,
             gear_abilities_activated,
             next_spell_bonus,
             spell_bonus,
@@ -2900,7 +2906,7 @@ impl GameBlob {
 
     pub fn decode(bytes: &[u8]) -> Option<Self> {
         let version = match discriminator(bytes) {
-            Some(("v", version @ (7 | 9 | 10 | 11 | 12 | 13 | 14))) => version,
+            Some(("v", version @ (7 | 9 | 10 | 11 | 12 | 13 | 14 | 15))) => version,
             _ => return None,
         };
         let mut reader = Reader::new(bytes);
@@ -3149,7 +3155,7 @@ mod tests {
         );
         assert_eq!(started.core().unwrap().first, 1);
         assert!(bytes.len() < 40, "a quiet blob is small: {}", bytes.len());
-        assert_eq!(GameBlob::default().encode(), [0xa1, 0x61, b'v', 0x0e]);
+        assert_eq!(GameBlob::default().encode(), [0xa1, 0x61, b'v', 0x0f]);
     }
 
     #[test]
@@ -3232,6 +3238,7 @@ mod tests {
         busy.seat_mut(0).cards_played = 2;
         busy.seat_mut(0).spells_played = 1;
         busy.seat_mut(0).gear_played = 1;
+        busy.seat_mut(0).equipment_played = true;
         busy.seat_mut(0).gear_abilities_activated = 1;
         busy.seat_mut(1).promises = vec![Promise {
             kind: PromiseKind::Any,
@@ -3487,6 +3494,7 @@ mod tests {
         assert_eq!(decoded.seat(0).cards_played, 2);
         assert_eq!(decoded.seat(0).spells_played, 1);
         assert_eq!(decoded.seat(0).gear_played, 1);
+        assert!(decoded.seat(0).equipment_played);
         assert_eq!(decoded.seat(0).gear_abilities_activated, 1);
         assert_eq!(decoded.seat(1).promises, busy.seat(1).promises);
         assert_eq!(decoded.seat(1).promises.len(), 1);
@@ -3757,6 +3765,20 @@ mod tests {
             PlayLock::CARDS
         );
         assert!(PlayLock::NONE.is_empty());
+    }
+
+    #[test]
+    fn legacy_seat_rows_have_no_equipment_play_history() {
+        let mut writer = Writer::new();
+        SeatState::default().write(&mut writer);
+        let mut bytes = writer.finish();
+        bytes[0] = 0x90;
+        bytes.pop();
+        for version in [13, 14] {
+            let decoded = SeatState::read_version(&mut Reader::new(&bytes), version).unwrap();
+            assert!(!decoded.equipment_played);
+        }
+        assert!(SeatState::read_version(&mut Reader::new(&bytes), BLOB_VERSION).is_none());
     }
 
     #[test]
@@ -4101,12 +4123,14 @@ mod tests {
                 }
             ]
         );
-        assert_eq!(decoded.encode(), bytes);
+        let mut current = bytes.to_vec();
+        current[3] = BLOB_VERSION as u8;
+        assert_eq!(decoded.encode(), current);
 
         let xd = bytes.windows(2).position(|window| window == b"xd").unwrap() - 1;
         let mut reordered = bytes[..xd + 4].to_vec();
         reordered.extend_from_slice(&[0x83, 0x01, 0x0a, 0x02, 0x83, 0x00, 0x09, 0x00]);
-        assert_eq!(GameBlob::decode(&reordered).unwrap().encode(), bytes);
+        assert_eq!(GameBlob::decode(&reordered).unwrap().encode(), current);
         let mut duplicate = bytes[..xd + 4].to_vec();
         let header = duplicate.len() - 1;
         duplicate[header] = 0x83;
