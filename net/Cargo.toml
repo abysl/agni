@@ -1,0 +1,46 @@
+[package]
+name = "agni-net"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+agni-core = { path = "../core" }
+agni-sim = { path = "../sim" }
+blake3 = "1"
+ciborium = "0.2"
+n0-future = "0.3"
+parking_lot = "0.12"
+serde = { version = "1", features = ["derive"] }
+serde_bytes = "0.11"
+
+[dev-dependencies]
+agni-plugin-sdk = { path = "../plugins/sdk" }
+agni-riftbound-turns = { path = "../games/riftbound-turns" }
+agni-mtg = { path = "../games/mtg" }
+agni-riftbound = { path = "../games/riftbound" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
+agni-engine-host = { path = "../engine/host" }
+agni-harden = { path = "../plugins/harden" }
+spirit-sdk = { path = "../../../spirit/spirit/sdk" }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+spirit-node = { path = "../../../spirit/spirit/node", default-features = false, features = [
+  "native",
+] }
+tokio = { version = "1", default-features = false, features = [
+  "sync",
+  "macros",
+  "rt-multi-thread",
+  "time",
+] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+spirit-node = { path = "../../../spirit/spirit/node", default-features = false }
+tokio = { version = "1", default-features = false, features = [
+  "sync",
+  "macros",
+] }
+
+[lib]
+name = "agni_net"

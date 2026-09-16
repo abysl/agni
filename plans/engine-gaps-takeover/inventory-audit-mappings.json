@@ -1,0 +1,73 @@
+{
+  "version": 1,
+  "replacements": [
+    {
+      "original": {
+        "path": "games/riftbound-turns/src/cards/towering_pairofant.rs",
+        "function": "played_after_a_unit_died_this_turn_it_enters_ready"
+      },
+      "classification": "engine_gap",
+      "expected_labels": ["statics"],
+      "reason": "The original cross-request behavior is split into same-request and earlier-request coverage.",
+      "replacements": [
+        {
+          "path": "games/riftbound-turns/src/cards/towering_pairofant.rs",
+          "function": "played_after_a_unit_died_this_request_it_enters_ready"
+        },
+        {
+          "path": "games/riftbound-turns/src/cards/towering_pairofant.rs",
+          "function": "played_after_a_unit_died_in_an_earlier_request_this_turn_it_enters_ready"
+        }
+      ]
+    },
+    {
+      "original": {
+        "path": "games/riftbound-turns/src/cards/rift_herald.rs",
+        "function": "the_knell_offers_only_affordable_units_and_reports_a_hand_play"
+      },
+      "classification": "engine_gap",
+      "expected_labels": ["play"],
+      "reason": "Limited hand plays are covered by separate owner-view and public-face replacements.",
+      "replacements": [
+        {
+          "path": "games/riftbound-turns/src/cards/rift_herald.rs",
+          "function": "the_seats_own_view_greys_the_hand_cards_it_sees_are_no_payable_unit_and_the_play_reports_the_hand"
+        },
+        {
+          "path": "games/riftbound-turns/src/cards/rift_herald.rs",
+          "function": "the_knell_withholds_only_a_public_face_that_is_no_payable_unit_and_reports_a_hand_play"
+        }
+      ]
+    },
+    {
+      "original": {
+        "path": "games/riftbound-turns/src/cards/herald_of_scales.rs",
+        "function": "playing_a_dragon_with_the_herald_in_play_costs_two_energy_less"
+      },
+      "classification": "engine_gap",
+      "expected_labels": ["economy"],
+      "reason": "The opponent fixture was contradictory; the seat-local economy test is the corrected replacement.",
+      "replacements": [
+        {
+          "path": "games/riftbound-turns/src/cards/herald_of_scales.rs",
+          "function": "the_engine_prices_each_seats_dragons_by_its_own_herald_and_pays_the_discount"
+        }
+      ]
+    },
+    {
+      "original": {
+        "path": "games/riftbound-turns/src/cards/fallen_feline.rs",
+        "function": "playing_her_names_a_spell_and_the_opponents_copies_are_refused_while_she_stands_afield"
+      },
+      "classification": "rules_question",
+      "expected_labels": ["integration"],
+      "reason": "The old closing assertion plays Defy after the Spark has resolved; the active replacement keeps Defy on the chain.",
+      "replacements": [
+        {
+          "path": "games/riftbound-turns/src/cards/fallen_feline.rs",
+          "function": "her_controller_names_a_spell_and_the_opponents_copies_are_refused_while_she_stands_afield"
+        }
+      ]
+    }
+  ]
+}

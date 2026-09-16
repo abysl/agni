@@ -1,0 +1,193 @@
+use super::prelude::{attachments_of, equip, gear, while_attached, with_statics};
+use super::{Card, Cost, Domain, Grant, Keyword, Power};
+use crate::engine::ctx::Ctx;
+
+pub const EQUIP: Cost = Cost {
+    energy: 0,
+    power: &[Power::Domain(Domain::Mind)],
+};
+
+pub const MIGHT_BONUS: i16 = 1;
+pub const GRANTED_TAG: &str = "Mech";
+
+pub static EFFECT_TEXT: &[Grant] = &[Grant::Might(MIGHT_BONUS)];
+
+pub fn is_mech_by_hexplate(ctx: &Ctx, unit: u32) -> bool {
+    attachments_of(ctx, unit).into_iter().any(|gear| {
+        ctx.script(gear)
+            .is_some_and(|script| std::ptr::eq(script, &CARD))
+    })
+}
+
+pub static CARD: Card = with_statics(
+    gear(
+        "Experimental Hexplate",
+        &[Keyword::Equip(EQUIP)],
+        &[equip(EQUIP)],
+    ),
+    &[while_attached(EFFECT_TEXT)],
+);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::cards::prelude::{attached_to, FRIENDLY_UNIT};
+    use crate::cards::{script_of, SelfCost, Static, Timing, Trigger};
+    use crate::engine::ctx::{Cause, Ctx, Killed, Location};
+    use crate::engine::fixtures::{self, Fixture};
+    use crate::engine::legal::Reason;
+    use crate::engine::{activate, cleanup, play as play_engine, priority};
+    use crate::state::PromptWhy;
+    use crate::Refusal;
+    use agni_plugin_sdk::table::CardInfo;
+
+    const HEXPLATE: u32 = 90;
+    const OTHER_GEAR: u32 = 91;
+    const EQUIP_INDEX: u8 = 0;
+
+    fn hexplate(seat: u8) -> CardInfo {
+        let mut card = fixtures::gear(HEXPLATE, fixtures::BASE, seat, "Experimental Hexplate", 1);
+        card.domain = vec!["Mind".into()];
+        card
+    }
+
+    fn armed() -> Fixture {
+        let mut fixture = Fixture::enforced();
+        fixture.table.cards.push(hexplate(0));
+        {
+            let held = fixture.table.card_mut(42).unwrap();
+            held.domain = vec!["Mind".into()];
+            held.name = "Mind Rune".into();
+        }
+        fixture.resolve();
+        assert!(std::ptr::eq(
+            fixture.scripts.of_card(HEXPLATE).unwrap(),
+            &CARD
+        ));
+        fixture
+    }
+
+    fn resolve_chain(ctx: &mut Ctx) {
+        priority::pass(ctx, 0).unwrap();
+        priority::pass(ctx, 1).unwrap();
+    }
+
+    fn equip_vi(ctx: &mut Ctx) {
+        activate::activate(ctx, 0, HEXPLATE, EQUIP_INDEX).unwrap();
+        assert!(matches!(
+            ctx.blob.why,
+            Some(PromptWhy::Target { spec: 0, .. })
+        ));
+        fixtures::choose(ctx, 0, "{card 50}").unwrap();
+        resolve_chain(ctx);
+    }
+
+    #[test]
+    fn the_script_is_a_mind_equipment_with_plus_one_whose_mech_tag_is_a_seam() {
+        assert!(std::ptr::eq(
+            script_of("Experimental Hexplate").unwrap(),
+            &CARD
+        ));
+        assert_eq!(CARD.name, "Experimental Hexplate");
+        assert_eq!(CARD.keywords, [Keyword::Equip(EQUIP)]);
+        assert_eq!(CARD.equip_cost(), Some(EQUIP));
+        assert_eq!(CARD.abilities.len(), 1);
+        let equip = &CARD.abilities[0];
+        assert_eq!(equip.trigger, Trigger::Activated(Timing::Sorcery));
+        assert_eq!(equip.cost, Some(EQUIP));
+        assert_eq!(equip.self_cost, SelfCost::Free);
+        assert_eq!(equip.label, Some("equip"));
+        assert_eq!(equip.targets[0].filter, FRIENDLY_UNIT);
+        assert!(CARD.has_static(Static::WhileAttached(&[])));
+        assert!(matches!(CARD.attached_grants(), [Grant::Might(1)]));
+        assert_eq!(MIGHT_BONUS, 1);
+        assert_eq!(GRANTED_TAG, "Mech");
+    }
+
+    #[test]
+    fn the_wearer_gets_plus_one_and_reads_as_a_mech_only_while_the_hexplate_is_on_it() {
+        let mut fixture = armed();
+        fixture
+            .table
+            .cards
+            .push(fixtures::gear(OTHER_GEAR, fixtures::BASE, 0, "Trinket", 1));
+        fixture.resolve();
+        let mut ctx = fixture.ctx();
+        assert!(!is_mech_by_hexplate(&ctx, fixtures::VI));
+        equip_vi(&mut ctx);
+        assert_eq!(attached_to(&ctx, HEXPLATE), Some(fixtures::VI));
+        assert_eq!(ctx.runes_of(0).len(), 3, "the Mind rune recycled");
+        assert_eq!(ctx.current_might(fixtures::VI), 4);
+        assert!(is_mech_by_hexplate(&ctx, fixtures::VI));
+        assert!(!is_mech_by_hexplate(&ctx, fixtures::THEIR_UNIT));
+        ctx.attach(OTHER_GEAR, fixtures::THEIR_UNIT);
+        assert!(
+            !is_mech_by_hexplate(&ctx, fixtures::THEIR_UNIT),
+            "another gear grants no tag"
+        );
+        assert_eq!(ctx.location(HEXPLATE), Some(Location::Base(0)));
+        ctx.detach(HEXPLATE);
+        assert!(!is_mech_by_hexplate(&ctx, fixtures::VI));
+        assert_eq!(ctx.current_might(fixtures::VI), 3);
+        drop(ctx);
+
+        let mut fixture = armed();
+        let mut ctx = fixture.ctx();
+        equip_vi(&mut ctx);
+        assert_eq!(ctx.kill(HEXPLATE, Cause::Rule), Killed::Yes);
+        cleanup::run(&mut ctx, None);
+        assert!(!is_mech_by_hexplate(&ctx, fixtures::VI));
+        assert_eq!(ctx.current_might(fixtures::VI), 3);
+        assert!(ctx.fault.is_none());
+    }
+
+    #[test]
+    fn the_other_seat_an_enemy_wearer_a_missing_mind_rune_and_an_attached_hexplate_are_refused() {
+        let mut fixture = armed();
+        let mut ctx = fixture.ctx();
+        assert_eq!(
+            activate::activate(&mut ctx, 1, HEXPLATE, EQUIP_INDEX),
+            Err(Refusal::Illegal(Reason::NotYourCard))
+        );
+        activate::activate(&mut ctx, 0, HEXPLATE, EQUIP_INDEX).unwrap();
+        assert_eq!(
+            play_engine::choose_targets(&mut ctx, 1, 0, &[fixtures::THEIR_UNIT]),
+            Err(Refusal::Illegal(Reason::NotALegalTarget))
+        );
+        fixtures::choose(&mut ctx, 0, "cancel").unwrap();
+        assert_eq!(ctx.runes_of(0).len(), 4);
+        drop(ctx);
+
+        let mut broke = Fixture::enforced();
+        broke.table.cards.push(hexplate(0));
+        broke.resolve();
+        let mut ctx = broke.ctx();
+        assert_eq!(
+            activate::activate(&mut ctx, 0, HEXPLATE, EQUIP_INDEX),
+            Err(Refusal::NoPowerOf)
+        );
+        drop(ctx);
+
+        let mut fixture = armed();
+        let mut ctx = fixture.ctx();
+        equip_vi(&mut ctx);
+        assert_eq!(
+            activate::activate(&mut ctx, 0, HEXPLATE, EQUIP_INDEX),
+            Err(Refusal::Illegal(Reason::Attached))
+        );
+    }
+
+    #[test]
+    #[ignore = "engine gap · tags on the face: CardInfo carries no tags and Grant has no Tag arm, so nothing asks is_mech_by_hexplate; with a tags row, Grant::Tag(GRANTED_TAG) on the effect text, Filter::Tag and Ctx::has_tag consulting the attachments' grants, the wearer is a Mech to every Mech effect"]
+    fn the_effect_text_grants_the_mech_tag_the_face_can_carry() {
+        assert_eq!(
+            CARD.attached_grants().len(),
+            2,
+            "the tag grant beside the bonus"
+        );
+        let mut fixture = armed();
+        let mut ctx = fixture.ctx();
+        equip_vi(&mut ctx);
+        assert!(is_mech_by_hexplate(&ctx, fixtures::VI));
+    }
+}

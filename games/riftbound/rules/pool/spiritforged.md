@@ -1,0 +1,232 @@
+# Spiritforged (SFD)
+
+Provenance: the Spiritforged set, every base print sfd-001 to sfd-221 in collector order and the set's Gold token face sfd-t03, from the Riftcodex catalog dump of 2026-09-10; alternate art, overnumbered and signature prints resolve to the base name through base_name; text from Riftcodex by riftbound id, with the attached line of each Equipment appended from the card image (the catalog omits it, the might badge last as +N :rb_might:) and the two keyword lines the catalog prints without brackets (Laurent Bladekeeper's [Ganking], Windsinger's [Hidden]) bracketed
+
+Scripted: partial
+
+A set file, not a deck: it carries no deck block and no coaching. Every card line reads byte for byte as it does in the deck files that share it. The Gold print is the token face of the set; the engine spawns tokens by name, so it carries no script of its own. The set prints no runes. Partial because 22 cards are stubs whose whole text waits on an engine primitive, each named by its card file's ignored test and listed under "M11 — what Spiritforged still needs" in the rules-engine design doc; every other card is scripted (191 run on the M0–M10 vocabulary, 8 are vanillas whose printed keywords are the whole script).
+
+## Cards
+
+- **Against the Odds** (sfd-001-221; Spell; Fury; 2E): [Reaction] (Play any time, even before spells and abilities resolve.)Give a friendly unit at a battlefield +2 :rb_might: this turn for each enemy unit there.
+- **Armed Assailant** (sfd-002-221; Unit; Fury; 6E 1P 6M): [Accelerate] (You may pay :rb_energy_1::rb_rune_fury: as an additional cost to have me enter ready.)[Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for :rb_rune_rainbow: less, even if it's already attached.)
+- **Blood Rush** (sfd-003-221; Spell; Fury; 1E): [Action] (Play on your turn or in showdowns.)[Repeat] :rb_energy_1: (You may pay the additional cost to repeat this spell's effect.)Give a unit [Assault 2]. (+2 :rb_might: while it's an attacker.)
+- **Bushwhack** (sfd-004-221; Spell; Fury; 2E 1P): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)Friendly units enter ready this turn. Play a Gold gear token exhausted.
+- **Detonate** (sfd-005-221; Spell; Fury; 1E 1P): Kill a gear. Its controller draws 2.
+- **Eager Drakehound** (sfd-006-221; Unit; Fury; 3E 1P 3M): I enter ready.
+- **Gem Jammer** (sfd-007-221; Unit; Fury; 2E 2M): When you play me, give a unit [Ganking] this turn. (It can move from battlefield to battlefield.)
+- **Sentinel Adept** (sfd-008-221; Unit; Fury; 3E 3M): [Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for :rb_rune_rainbow: less, even if it's already attached.)
+- **Serrated Dirk** (sfd-009-221; Gear; Fury; 1E): [Equip] :rb_rune_fury: (:rb_rune_fury:: Attach this to a unit you control.)[Assault 2] (+2 :rb_might: while I'm an attacker.)+0 :rb_might:
+- **Void Drone** (sfd-010-221; Unit; Fury; 3E 3M): I cost :rb_energy_2: less to play from anywhere other than your hand.
+- **Angle Shot** (sfd-011-221; Spell; Fury; 2E): [Reaction] (Play any time, even before spells and abilities resolve.)Choose a unit and an Equipment with the same controller. Attach that Equipment to that unit or detach that Equipment from that unit. Draw 1.
+- **Battering Ram** (sfd-012-221; Unit; Fury; 5E 5M): I cost :rb_energy_1: less for each card you've played this turn, to a minimum of :rb_energy_1:.
+- **Blast Corps Cadet** (sfd-013-221; Unit; Fury; 2E 2M): You may pay :rb_energy_1::rb_rune_fury: as an additional cost to play me.When you play me, if you paid the additional cost, deal 2 to a unit at a battlefield.
+- **Minotaur Reckoner** (sfd-014-221; Unit; Fury; 5E 5M): Units can't move to base.
+- **Perched Grimwyrm** (sfd-015-221; Unit; Fury; 4E 5M): Play me only to a battlefield you conquered this turn. (You can't play me anywhere else.)
+- **Recurve Bow** (sfd-016-221; Gear; Fury; 2E): [Equip] :rb_rune_fury: (:rb_rune_fury:: Attach this to a unit you control.)When I attack or defend, deal 2 to an enemy unit here.+0 :rb_might:
+- **Sudden Storm** (sfd-017-221; Spell; Fury; 3E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Deal 2 to a unit at a battlefield. If it's attacking, deal 4 to it instead.
+- **Void Hatchling** (sfd-018-221; Unit; Fury; 2E 2M): If you would reveal cards from a deck, look at the top card first. You may recycle it. Then reveal those cards.
+- **Assembly Rig** (sfd-019-221; Gear; Fury; 4E): :rb_energy_1::rb_rune_fury:, Recycle a unit from your trash, :rb_exhaust:: Play a 3 :rb_might: Mech unit token to your base.
+- **Draven - Vanquisher** (sfd-020-221; Unit/Champion; Fury; 4E 4M): When I win a combat, play a Gold gear token exhausted.When I attack or defend, you may pay :rb_rune_fury:. If you do, give me +2 :rb_might: this turn.
+- **Ferrous Forerunner** (sfd-021-221; Unit; Fury; 6E 1P 6M): [Deathknell] — Play two 3 :rb_might: Mech unit tokens to your base. (When I die, get the effect.)
+- **Long Sword** (sfd-022-221; Gear; Fury; 2E 1P): [Quick-Draw] (This has [Reaction]. When you play it, attach it to a unit you control.)[Equip] :rb_rune_fury: (:rb_rune_fury:: Attach this to a unit you control.)+2 :rb_might:
+- **Piercing Light** (sfd-023-221; Spell; Fury; 2E 1P): [Repeat] :rb_energy_2::rb_rune_fury: (You may pay the additional cost to repeat this spell's effect.)Deal 2 to a unit at a battlefield, then deal 2 to up to one other unit.
+- **Rell - Magnetic** (sfd-024-221; Unit/Champion; Fury; 4E 4M): [Tank] (I must be assigned combat damage first.)When I attack, you may play an Equipment with Energy cost no more than :rb_energy_2:, ignoring its cost, and attach it to me.
+- **Rengar - Pouncing** (sfd-025-221; Unit/Champion; Fury; 3E 1P 3M): [Reaction] (Play any time, even before spells and abilities resolve, including to a battlefield you control.)[Assault 2] (+2 :rb_might: while I'm an attacker.)I can be played to a battlefield you're attacking.
+- **Rumble - Hotheaded** (sfd-026-221; Unit/Champion; Fury; 4E 4M): Your Mechs each have [Assault]. (+1 :rb_might: while we're attackers.)When I conquer, you may recycle another friendly unit to play a Mech from your trash. Reduce its Energy cost by the Might of the unit you recycled.
+- **Dunebreaker** (sfd-027-221; Unit; Fury; 7E 1P 7M): If you have two or fewer cards in your hand, I enter ready.When I hold, draw 2.
+- **Lucian - Gunslinger** (sfd-028-221; Unit/Champion; Fury; 3E 2M): [Assault] (+1 :rb_might: while I'm an attacker.)When I attack, deal damage equal to my [Assault] to an enemy unit here.
+- **Rek'Sai - Breacher** (sfd-029-221; Unit/Champion; Fury; 3E 3M): [Accelerate] (You may pay :rb_energy_1::rb_rune_fury: as an additional cost to have me enter ready.)[Assault] (+1 :rb_might: while I'm an attacker.)Friendly units played from anywhere other than a player's hand have [Accelerate].
+- **Skyfall of Areion** (sfd-030-221; Gear; Fury; 3E): [Equip] :rb_energy_1::rb_rune_fury: (:rb_energy_1::rb_rune_fury:: Attach this to a unit you control.)My hold effects are also conquer effects, and vice versa.+2 :rb_might:
+- **Desert's Call** (sfd-031-221; Spell; Calm; 2E): [Repeat] :rb_energy_2: (You may pay the additional cost to repeat this spell's effect.)Play a 2 :rb_might: Sand Soldier unit token.
+- **Disarming Rake** (sfd-032-221; Unit; Calm; 3E 1P 2M): When you play me, you may kill a gear.
+- **Doran's Shield** (sfd-033-221; Gear; Calm; 1E): [Equip] :rb_rune_calm: (:rb_rune_calm:: Attach this to a unit you control.)[Tank] (I must be assigned combat damage first.)+1 :rb_might:
+- **Feral Strength** (sfd-034-221; Spell; Calm; 2E): [Reaction] (Play any time, even before spells and abilities resolve.)[Repeat] :rb_energy_2: (You may pay the additional cost to repeat this spell's effect.)Give a unit +2 :rb_might: this turn.
+- **Guardian of the Passage** (sfd-035-221; Unit; Calm; 6E 6M): When I hold, you may return a unit or gear from your trash to your hand.
+- **Lonely Poro** (sfd-036-221; Unit; Calm; 2E 2M): [Deathknell] — If I died alone, draw 1. (When I die, get the effect. I'm alone if there are no other friendly units here.)
+- **Navori Scout** (sfd-037-221; Unit; Calm; 4E 4M): [Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)
+- **Ribbon Dancer** (sfd-038-221; Unit; Calm; 3E 3M): When I move to a battlefield, give another friendly unit +1 :rb_might: this turn.
+- **Royal Entourage** (sfd-039-221; Unit; Calm; 3E 1P 4M): When you play me, ready or exhaust a legend.
+- **Thwonk!** (sfd-040-221; Spell; Calm; 2E): [Action] (Play on your turn or in showdowns.)[Repeat] :rb_energy_2: (You may pay the additional cost to repeat this spell's effect.)Stun an attacking unit. (It doesn't deal combat damage this turn.)
+- **Apprentice Smith** (sfd-041-221; Unit; Calm; 2E 2M): When I move, reveal the top card of your Main Deck. If it's a gear, draw it. Otherwise, recycle it.
+- **Brutalizer** (sfd-042-221; Gear; Calm; 2E): [Equip] :rb_rune_calm: (:rb_rune_calm:: Attach this to a unit you control.)If this was attached to me this turn, I have an additional +2 :rb_might:.+1 :rb_might:
+- **Emperor's Divide** (sfd-043-221; Spell; Calm; 2E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Move any number of friendly units at a battlefield to their base.
+- **Legion Quartermaster** (sfd-044-221; Unit; Calm; 3E 4M): As an additional cost to play me, return a friendly gear to its owner's hand.
+- **Not So Fast** (sfd-045-221; Spell; Calm; 2E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Counter an enemy spell or ability that chooses a friendly unit or gear.
+- **Poro Snax** (sfd-046-221; Gear; Calm; 1E 1P): When you play this, draw 1.:rb_energy_1::rb_rune_calm:, :rb_exhaust:, Kill this: Draw 1.
+- **Simian Ancestor** (sfd-047-221; Unit; Calm; 5E 1P 5M): When you buff me, ready me.
+- **Stellacorn Herder** (sfd-048-221; Unit; Calm; 4E 3M): When I move, draw 1.
+- **Aphelios - Exalted** (sfd-049-221; Unit/Champion; Calm; 4E 1P 4M): When you attach an Equipment to me, choose one that hasn't been chosen this turn —Ready 2 runes.Channel 1 rune exhausted.Buff a friendly unit.
+- **Azir - Ascendant** (sfd-050-221; Unit/Champion; Calm; 6E 1P 6M): :rb_rune_calm:: [Action] — Choose a unit you control. Move me to its location and it to my original location. If it's equipped, you may attach one of its Equipment to me. Use only once per turn.
+- **Guardian Angel** (sfd-051-221; Gear; Calm; 2E): [Equip] :rb_rune_calm: (:rb_rune_calm:: Attach this to a unit you control.)If I would die, kill Guardian Angel instead. Heal me, exhaust me, and recall me.+1 :rb_might:
+- **Heart of Dark Ice** (sfd-052-221; Gear; Calm; 3E 1P): :rb_exhaust:: Give a unit +3 :rb_might: this turn.
+- **Janna - Savior** (sfd-053-221; Unit/Champion; Calm; 3E 1P 3M): [Reaction] (Play any time, even before spells and abilities resolve, including to a battlefield you control.)When you play me, heal your units here, then move an enemy unit from here to its base.
+- **Jax - Unmatched** (sfd-054-221; Unit/Champion; Calm; 5E 1P 5M): [Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)Each Equipment in your hand has [Quick-Draw]. (It gains [Reaction]. When you play it, attach it to a unit you control.)
+- **Needlessly Large Yordle** (sfd-055-221; Unit; Calm; 10E 3P 5M): [Shield 5] (+5 :rb_might: while I'm a defender.)[Tank] (I must be assigned combat damage first.)I cost :rb_energy_2::rb_rune_calm: less for each point you scored from holding this turn.
+- **Sterak's Gage** (sfd-056-221; Gear; Calm; 3E 2P): [Quick-Draw] (This has [Reaction]. When you play it, attach it to a unit you control.)[Equip] :rb_rune_calm: (:rb_rune_calm:: Attach this to a unit you control.)+3 :rb_might:
+- **Irelia - Fervent** (sfd-057-221; Unit/Champion; Calm; 5E 4M): [Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)When you choose or ready me, give me +1 :rb_might: this turn.
+- **Ornn - Blacksmith** (sfd-058-221; Unit/Champion; Calm; 5E 1P 5M): When you play me or when I hold, look at the top 4 cards of your Main Deck. You may reveal a gear from among them and draw it. Then recycle the rest.
+- **Svellsongur** (sfd-059-221; Gear; Calm; 3E 1P): [Equip] :rb_energy_1::rb_rune_calm: (:rb_energy_1::rb_rune_calm:: Attach this to a unit you control.)As this is attached to a unit, copy that unit's text to this Equipment's effect text for as long as this is attached to it.+0 :rb_might:
+- **Tianna Crownguard** (sfd-060-221; Unit; Calm; 7E 2P 4M): [Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)While I'm at a battlefield, opponents can't score points.
+- **Aspiring Engineer** (sfd-061-221; Unit; Mind; 3E 1P 3M): When you play me, return a gear from your trash to your hand.
+- **Bubble Bot** (sfd-062-221; Unit; Mind; 3E 3M): When you play me, ready another friendly Mech.
+- **Chemtech Cask** (sfd-063-221; Gear; Mind; 1E): When you play a spell on an opponent's turn, you may exhaust me to play a Gold gear token exhausted.
+- **Cloth Armor** (sfd-064-221; Gear; Mind; 1E): [Quick-Draw] (This has [Reaction]. When you play it, attach it to a unit you control.)[Equip] :rb_rune_mind: (:rb_rune_mind:: Attach this to a unit you control.)[Shield 2] (+2 :rb_might: while I'm a defender.)+0 :rb_might:
+- **Forecaster** (sfd-065-221; Unit; Mind; 2E 2M): Your Mechs have [Vision]. (When you play us, look at the top card of your Main Deck. You may recycle it.)
+- **Frigid Touch** (sfd-066-221; Spell; Mind; 2E): [Reaction] (Play any time, even before spells and abilities resolve.)[Repeat] :rb_energy_2: (You may pay the additional cost to repeat this spell's effect.)Give a unit -2 :rb_might: this turn.
+- **Frostcoat Cub** (sfd-067-221; Unit; Mind; 3E 3M): You may pay :rb_rune_mind: as an additional cost to play me.When you play me, if you paid the additional cost, give a unit -2 :rb_might: this turn.
+- **Gearhead** (sfd-068-221; Unit; Mind; 5E 3M): [Accelerate] (You may pay :rb_energy_1::rb_rune_mind: as an additional cost to have me enter ready.)Each Equipment attached to me gives double its base Might bonus.
+- **Plundering Poro** (sfd-069-221; Unit; Mind; 2E 2M): When I conquer, play a Gold gear token exhausted.
+- **Wages of Pain** (sfd-070-221; Spell; Mind; 3E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Deal 3 to a unit at a battlefield. Play a Gold gear token exhausted.
+- **Breakneck Mech** (sfd-071-221; Unit; Mind; 8E 2P 7M): Your Mechs have [Deflect] and [Ganking]. (Opponents must pay :rb_rune_rainbow: to choose us with a spell or ability. We can move from battlefield to battlefield.)I enter ready if you control another Mech.
+- **Dropboarder** (sfd-072-221; Unit; Mind; 4E 4M): When you play me, if you control two or more gear, ready me.
+- **Experimental Hexplate** (sfd-073-221; Gear; Mind; 1E): [Equip] :rb_rune_mind: (:rb_rune_mind:: Attach this to a unit you control.)I am a Mech.+1 :rb_might:
+- **Pickpocket** (sfd-074-221; Unit; Mind; 3E 3M): When you play me, you may kill a gear with Energy cost no more than :rb_energy_1:. If you do, play a Gold gear token exhausted.
+- **Prize of Progress** (sfd-075-221; Unit; Mind; 4E 1P 3M): When you use an activated ability of a gear, give me +1 :rb_might: this turn.
+- **Production Surge** (sfd-076-221; Spell; Mind; 4E 1P): This costs :rb_energy_2: less if you control a Mech.Play a 3 :rb_might: Mech unit token to your base.Draw 1.
+- **Rocket Barrage** (sfd-077-221; Spell; Mind; 4E 1P): [Repeat] :rb_energy_4::rb_rune_mind: (You may pay the additional cost to repeat this spell's effect, and may make different choices.)Choose one —Deal 4 to a unit in a base.Kill a gear.
+- **Temporal Portal** (sfd-078-221; Gear; Mind; 3E): :rb_rune_rainbow:, :rb_exhaust:: Give the next spell you play this turn [Repeat] equal to its cost. (You may pay the additional cost to repeat the spell's effect.)
+- **Bard - Mercurial** (sfd-079-221; Unit/Champion; Mind; 4E 1P 4M): You may exhaust your legend as an additional cost to play me.When you play me, if you paid the additional cost, move any number of your units to an open battlefield.
+- **Bellows Breath** (sfd-080-221; Spell; Mind; 1E 1P): [Action] (Play on your turn or in showdowns.)[Repeat] :rb_energy_1::rb_rune_mind: (You may pay the additional cost to repeat this spell's effect.)Deal 1 to up to three units at the same location.
+- **Card Sharp** (sfd-081-221; Unit; Mind; 3E 3M): When you play me, you and each opponent may play a Gold gear token exhausted. For each opponent who did, you play a Gold gear token exhausted.
+- **Ezreal - Dashing** (sfd-082-221; Unit/Champion; Mind; 4E 1P 3M): When I attack or defend, deal damage equal to my Might to an enemy unit here.I don't deal combat damage.:rb_rune_mind:: [Action] — Move me to your base.
+- **Hextech Anomaly** (sfd-083-221; Gear; Mind; 3E 1P): :rb_exhaust:: [Reaction] — Pay any amount of :rb_rune_rainbow: to [Add] that much Energy. (Abilities that add resources can't be reacted to.)
+- **Jayce - Man of Progress** (sfd-084-221; Unit/Champion; Mind; 4E 4M): When you play me, you may kill a friendly gear. If you do, you may play a gear with Energy cost no more than :rb_energy_7: from hand this turn, ignoring its Energy cost. (You must still pay its Power cost.)
+- **Ornn - Forge God** (sfd-085-221; Unit/Champion; Mind; 6E 4M): [Deflect 2] (Opponents must pay :rb_rune_rainbow::rb_rune_rainbow: to choose me with a spell or ability.)[Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for :rb_rune_rainbow: less, even if it's already attached.)I have +1 :rb_might: for each friendly gear.
+- **World Atlas** (sfd-086-221; Gear; Mind; 3E): [Equip] :rb_rune_mind: (:rb_rune_mind:: Attach this to a unit you control.)When I hold, play two Gold gear tokens exhausted.+2 :rb_might:
+- **Premonition** (sfd-087-221; Spell; Mind; 2E 3P): [Reaction] (Play any time, even before spells and abilities resolve.)Draw 3.
+- **Renata Glasc - Mastermind** (sfd-088-221; Unit/Champion; Mind; 5E 4M): :rb_energy_1::rb_rune_mind:: Draw 1.:rb_energy_4::rb_rune_mind::rb_rune_mind::rb_rune_mind::rb_rune_mind:, :rb_exhaust:: Score 1 point.Use my abilities only while I'm at a battlefield.
+- **Rumble - Scrapper** (sfd-089-221; Unit/Champion; Mind; 5E 1P 4M): Your Mechs have +1 :rb_might: (including me).When I hold, play a 3 :rb_might: Mech unit token to your base.
+- **The Zero Drive** (sfd-090-221; Gear; Mind; 3E): [Equip] :rb_energy_1::rb_rune_mind: (:rb_energy_1::rb_rune_mind:: Attach this to a unit you control.):rb_energy_3::rb_rune_mind:, Banish this: Play all units banished with this, ignoring their costs. (Use only if unattached.)[Deathknell] — Banish me. (When I die, get the effect.)+2 :rb_might:
+- **Buhru Captain** (sfd-091-221; Unit; Body; 3E 1P 3M): When you play me, you may draw 1 or buff me. (To buff a unit, give it a +1 :rb_might: buff if it doesn't already have one.)
+- **Combat Chef** (sfd-092-221; Unit; Body; 5E 5M): [Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for :rb_rune_rainbow: less, even if it's already attached.)
+- **Dauntless Vanguard** (sfd-093-221; Unit; Body; 4E 1P 4M): You may play me to an occupied enemy battlefield.
+- **Direwing** (sfd-094-221; Unit; Body; 7E 7M): I enter ready if you control another Dragon.
+- **Doran's Blade** (sfd-095-221; Gear; Body; 2E): [Equip] :rb_rune_body: (:rb_rune_body:: Attach this to a unit you control.)+2 :rb_might:
+- **Laurent Bladekeeper** (sfd-096-221; Unit; Body; 3E 3M): [Ganking] (I can move from battlefield to battlefield.)
+- **Punch First** (sfd-097-221; Spell; Body; 1E 2P): [Action] (Play on your turn or in showdowns.)Give a unit +5 :rb_might: this turn.
+- **Sea Monkey** (sfd-098-221; Unit; Body; 2E 2M): You may pay :rb_energy_1: as an additional cost to play me.When you play me, if you paid the additional cost, buff me. (Give me a +1 :rb_might: buff if I don't already have one.)
+- **Veteran Poro** (sfd-099-221; Unit; Body; 2E 2M): [Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for :rb_rune_rainbow: less, even if it's already attached.)
+- **Yordle Explorer** (sfd-100-221; Unit; Body; 4E 4M): When you play a card with Power cost :rb_rune_rainbow::rb_rune_rainbow: or more, draw 1.
+- **Fae Dragon** (sfd-101-221; Unit; Body; 7E 1P 7M): When you play me, buff up to four friendly units. (Give each a +1 :rb_might: buff if it doesn't have one.)When you spend a buff, play a Gold gear token exhausted.
+- **Hexdrinker** (sfd-102-221; Gear; Body; 2E): [Equip] :rb_rune_body: (:rb_rune_body:: Attach this to a unit you control.)[Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)+1 :rb_might:
+- **Jaull-Fish** (sfd-103-221; Unit; Body; 7E 2P 6M): [Accelerate] (You may pay :rb_energy_1::rb_rune_body: as an additional cost to have me enter ready.)I cost :rb_energy_2: less for each of your [Mighty] units. (A unit is Mighty while it has 5+ :rb_might:.)
+- **Petricite Monument** (sfd-104-221; Gear; Body; 2E): [Temporary] (Kill this at the start of its controller's Beginning Phase, before scoring.)Friendly units have [Deflect]. (Opponents must pay :rb_rune_rainbow: to choose them with a spell or ability.)
+- **Ruin Runner** (sfd-105-221; Unit; Body; 6E 5M): I can't be chosen by enemy spells and abilities.
+- **Show of Strength** (sfd-106-221; Spell; Body; 2E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Draw 1 for each of your [Mighty] units. (A unit is Mighty while it has 5+ :rb_might:.)
+- **Strike Down** (sfd-107-221; Spell; Body; 3E 1P): Choose an equipped friendly unit. It deals damage equal to its Might to an enemy unit. Then detach an Equipment from it.
+- **Warmog's Armor** (sfd-108-221; Gear; Body; 1E): [Equip] :rb_rune_body: (:rb_rune_body:: Attach this to a unit you control.)When I conquer, buff me. (If I don't have a buff, I get a +1 :rb_might: buff.)+1 :rb_might:
+- **Akshan - Mischievous** (sfd-109-221; Unit/Champion; Body; 4E 4M): [Weaponmaster]You may pay :rb_rune_body::rb_rune_body: as an additional cost to play me.When you play me, if you paid the additional cost, move an enemy gear to your base. You control it until I leave the board. If it's an Equipment, attach it to me.
+- **Fiora - Peerless** (sfd-110-221; Unit/Champion; Body; 3E 1P 3M): When I attack or defend one on one, double my Might this combat.
+- **Here to Help** (sfd-111-221; Spell; Body; 2E 1P): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)You may play a unit from hand to a battlefield you control, reducing its cost by :rb_energy_3:.
+- **Kato the Arm** (sfd-112-221; Unit; Body; 4E 1P 3M): [Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)When I move to a battlefield, give a friendly unit my keywords and +:rb_might: equal to my Might this turn.
+- **Lucian - Merciless** (sfd-113-221; Unit/Champion; Body; 3E 3M): [Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for :rb_rune_rainbow: less, even if it's already attached.)The first time I conquer each turn, ready me.
+- **Marching Orders** (sfd-114-221; Spell; Body; 3E): [Action] (Play on your turn or in showdowns.)[Repeat] :rb_energy_3: (You may pay the additional cost to repeat this spell's effect.)Choose a friendly unit anywhere and an enemy unit at a battlefield. They deal damage equal to their Mights to each other.
+- **Trinity Force** (sfd-115-221; Gear; Body; 4E): [Equip] :rb_rune_body: (:rb_rune_body:: Attach this to a unit you control.)When I hold, score 1 point.+2 :rb_might:
+- **Yone - Blademaster** (sfd-116-221; Unit/Champion; Body; 5E 1P 5M): [Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for :rb_rune_rainbow: less, even if it's already attached.)When I conquer an open battlefield, deal damage equal to my Might to an enemy unit in a base.
+- **Ancient Henge** (sfd-117-221; Gear; Body; 2E 1P): :rb_exhaust:: [Reaction] — Pay any amount of Energy to [Add] that much :rb_rune_rainbow:. (Abilities that add resources can't be reacted to.)
+- **Boneshiver** (sfd-118-221; Gear; Body; 3E): [Equip] :rb_energy_1::rb_rune_body: (:rb_energy_1::rb_rune_body:: Attach this to a unit you control.)When I conquer, channel 1 rune exhausted.+2 :rb_might:
+- **Jax - Unrelenting** (sfd-119-221; Unit/Champion; Body; 4E 1P 3M): [Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for :rb_rune_rainbow: less, even if it's already attached.)When you attach an Equipment to me, you may pay :rb_energy_1: to draw 1.
+- **Sivir - Ambitious** (sfd-120-221; Unit/Champion; Body; 6E 3P 7M): [Deflect 2] (Opponents must pay :rb_rune_rainbow::rb_rune_rainbow: to choose me with a spell or Ability.)When I conquer after an attack, if you assigned 5 or more excess damage to enemy units, you may deal that much to an enemy unit.
+- **Black Market Broker** (sfd-121-221; Unit; Chaos; 3E 3M): When you play a card from face down, play a Gold gear token exhausted.
+- **Called Shot** (sfd-122-221; Spell; Chaos; 0E 1P): [Action] (Play on your turn or in showdowns.)[Repeat] :rb_rune_chaos: (You may pay the additional cost to repeat this spell's effect.)Look at the top 2 cards of your Main Deck. Draw one and recycle the other.
+- **Corrupt Enforcer** (sfd-123-221; Unit; Chaos; 3E 1P 4M): When I move to a battlefield, discard 1.When I win a combat, draw 1.
+- **Doran's Ring** (sfd-124-221; Gear; Chaos; 1E): [Equip] :rb_rune_chaos: (:rb_rune_chaos:: Attach this to a unit you control.)When I conquer, discard 1, then draw 1.+1 :rb_might:
+- **Fae Porter** (sfd-125-221; Unit; Chaos; 4E 4M): When I move to a battlefield, you may pay :rb_rune_chaos: to move a unit you control to the same battlefield.
+- **Loyal Pup** (sfd-126-221; Unit; Chaos; 3E 3M): When you defend at a battlefield, you may move me there.
+- **Master Bingwen** (sfd-127-221; Unit; Chaos; 6E 6M): [Weaponmaster] (When you play me, you may [Equip] one of your Equipment to me for :rb_rune_rainbow: less, even if it's already attached.)
+- **Overzealous Fan** (sfd-128-221; Unit; Chaos; 2E 2M): When I defend, you may kill me to move an attacking unit to its base.
+- **Temptation** (sfd-129-221; Spell; Chaos; 2E): [Repeat] :rb_energy_2: (You may pay the additional cost to repeat this spell's effect.)Move an enemy unit to a location where there's a unit with the same controller.
+- **Treasure Hunter** (sfd-130-221; Unit; Chaos; 2E 1M): When I move, play a Gold gear token exhausted.
+- **Ancient Warmonger** (sfd-131-221; Unit; Chaos; 5E 4M): [Accelerate] (You may pay :rb_energy_1::rb_rune_chaos: as an additional cost to have me enter ready.)I have [Assault] equal to the number of enemy units here. (+1 :rb_might: while I'm an attacker for each instance of Assault.)
+- **Beast Below** (sfd-132-221; Unit; Chaos; 7E 2P 8M): When you play me, return another friendly unit and an enemy unit to their owners' hands.
+- **Boots of Swiftness** (sfd-133-221; Gear; Chaos; 3E): [Equip] :rb_rune_chaos: (:rb_rune_chaos:: Attach this to a unit you control.)[Ganking] (I can move from battlefield to battlefield.)+2 :rb_might:
+- **Cull** (sfd-134-221; Gear; Chaos; 1E): [Equip] :rb_rune_chaos: (:rb_rune_chaos:: Attach this to a unit you control.)When I conquer, play a Gold gear token exhausted.+1 :rb_might:
+- **Factory Recall** (sfd-135-221; Spell; Chaos; 1E): [Action] (Play on your turn or in showdowns.)Return a gear to its owner's hand.
+- **Hard Bargain** (sfd-136-221; Spell; Chaos; 2E): [Reaction] (Play any time, even before spells and abilities resolve.)[Repeat] :rb_energy_2: (You may pay the additional cost to repeat this spell's effect.)Counter a spell unless its controller pays :rb_energy_2:.
+- **Harpoon Squad** (sfd-137-221; Unit; Chaos; 4E 4M): When I move from a battlefield, give me +2 :rb_might: this turn.
+- **Windsinger** (sfd-138-221; Unit; Chaos; 2E 1M): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)When you play me, you may return another unit at a battlefield with 3 :rb_might: or less to its owner's hand.
+- **Edge of Night** (sfd-139-221; Gear; Chaos; 3E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)When you play this from face down, attach it to a unit you control here.[Equip] :rb_rune_chaos: (:rb_rune_chaos:: Attach this to a unit you control.)+2 :rb_might:
+- **Fizz - Trickster** (sfd-140-221; Unit/Champion; Chaos; 3E 1P 3M): When you play me, you may play a spell from your trash with Energy cost no more than :rb_energy_3:, ignoring its Energy cost. Recycle that spell after you play it. (You must still pay its Power cost.)
+- **Irelia - Graceful** (sfd-141-221; Unit/Champion; Chaos; 4E 1P 4M): Your spells that choose me cost :rb_energy_1: or :rb_rune_rainbow: less.
+- **Jae Medarda** (sfd-142-221; Unit; Chaos; 5E 2P 5M): When you choose me with a spell, draw 1.
+- **Sivir - Mercenary** (sfd-143-221; Unit/Champion; Chaos; 4E 1P 4M): [Accelerate] (You may pay :rb_energy_1::rb_rune_chaos: as an additional cost to have me enter ready.)If you've spent at least :rb_rune_rainbow::rb_rune_rainbow: this turn, I have +2 :rb_might: and [Ganking]. (I can move from battlefield to battlefield.)
+- **Spirit Wheel** (sfd-144-221; Gear; Chaos; 2E): When you choose a friendly unit, you may pay :rb_energy_1: and exhaust this to draw 1.
+- **Switcheroo** (sfd-145-221; Spell; Chaos; 2E 2P): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Swap the Might of two units at the same battlefield this turn.
+- **Vex - Cheerless** (sfd-146-221; Unit/Champion; Chaos; 5E 1P 5M): While I'm in combat, friendly spells cost :rb_energy_1::rb_rune_rainbow: less to a minimum of :rb_energy_1:, and enemy spells cost :rb_energy_1::rb_rune_rainbow: more.
+- **Downwell** (sfd-147-221; Spell; Chaos; 8E 2P): Return all units and gear to their owners' hands.
+- **Draven - Audacious** (sfd-148-221; Unit/Champion; Chaos; 6E 1P 6M): [Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)The first time I win a combat each turn, you score 1 point.When I die in combat, choose an opponent. They score 1 point.
+- **Ezreal - Prodigy** (sfd-149-221; Unit/Champion; Chaos; 3E 1P 3M): When you play me, discard 1, then draw 2.Optional additional costs you pay cost :rb_energy_1: or :rb_rune_rainbow: less.
+- **Last Rites** (sfd-150-221; Gear; Chaos; 3E): [Equip] — :rb_rune_chaos:, Recycle 2 cards from your trash (Pay the cost: Attach this to a unit you control.)When I conquer or hold, you may play a unit from your trash. (You still pay its costs.)+2 :rb_might:
+- **Bonds of Strength** (sfd-151-221; Spell; Order; 2E): [Reaction] (Play any time, even before spells and abilities resolve.)[Repeat] :rb_energy_2: (You may pay the additional cost to repeat this spell's effect.)Give two friendly units each +1 :rb_might: this turn.
+- **Eminent Benefactor** (sfd-152-221; Unit; Order; 6E 5M): When I hold, play two Gold gear tokens exhausted.
+- **Eye of the Herald** (sfd-153-221; Gear; Order; 1E): [Equip] :rb_rune_order: (:rb_rune_order:: Attach this to a unit you control.)When I move, play a 1 :rb_might: Recruit unit token here.+0 :rb_might:
+- **Guards!** (sfd-154-221; Spell; Order; 3E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)Play a 2 :rb_might: Sand Soldier unit token. You may pay :rb_rune_order: to ready it.
+- **Honest Broker** (sfd-155-221; Unit; Order; 2E 2M): [Deathknell] — Play a Gold gear token exhausted. (When I die, get the effect.)
+- **Laurent Duelist** (sfd-156-221; Unit; Order; 4E 3M): [Assault 2] (+2 :rb_might: while I'm an attacker.)
+- **Royal Guard** (sfd-157-221; Unit; Order; 4E 2M): When you play me, play a 2 :rb_might: Sand Soldier unit token here.
+- **Sandshifter** (sfd-158-221; Unit; Order; 5E 2P 6M): When you play me, kill an enemy unit with 3 :rb_might: or less.
+- **Trusty Ramhound** (sfd-159-221; Unit; Order; 2E 2M): While you have another unit here, I have +1 :rb_might:.
+- **Zaun Punk** (sfd-160-221; Unit; Order; 3E 3M): You may kill a friendly gear as an additional cost to play me.When you play me, if you paid the additional cost, kill a gear.
+- **B.F. Sword** (sfd-161-221; Gear; Order; 4E): [Equip] :rb_rune_order: (:rb_rune_order:: Attach this to a unit you control.)+3 :rb_might:
+- **Blood Money** (sfd-162-221; Spell; Order; 2E): [Action] (Play on your turn or in showdowns.)Kill a unit at a battlefield with 2 :rb_might: or less. If it was an enemy unit, play a Gold gear token exhausted. If it was a friendly unit, play two Gold gear tokens exhausted.
+- **Deathgrip** (sfd-163-221; Spell; Order; 2E): [Reaction] (Play any time, even before spells and abilities resolve.)Kill a friendly unit to give +:rb_might: equal to its Might to another friendly unit this turn. Draw 1.
+- **Drag Under** (sfd-164-221; Spell; Order; 5E 1P): [Action] (Play on your turn or in showdowns.)I cost :rb_energy_2: less to play from anywhere other than your hand.Kill a unit at a battlefield.
+- **Glasc Mixologist** (sfd-165-221; Unit; Order; 5E 1P 5M): [Deathknell] — You may play a unit with cost no more than :rb_energy_3: and no more than :rb_rune_rainbow: from your trash, ignoring its cost. (When I die, get the effect.)
+- **Rally the Troops** (sfd-166-221; Spell; Order; 2E): [Action] (Play on your turn or in showdowns.)When a friendly unit is played this turn, buff it. (If it doesn't have a buff, it gets a +1 :rb_might: buff.)Draw 1.
+- **Unsung Hero** (sfd-167-221; Unit; Order; 2E 2M): [Deathknell] — If I was [Mighty], draw 2. (When I die, get the effect. I'm Mighty while I have 5+ :rb_might:.)
+- **Vanguard Armory** (sfd-168-221; Gear; Order; 7E 1P): :rb_exhaust:: Play three 1 :rb_might: Recruit unit tokens. (You may play them to different locations.)
+- **Altar of Memories** (sfd-169-221; Gear; Order; 2E): When a friendly unit dies, you may exhaust me to draw 1, then put a card from your hand on the top or bottom of your Main Deck.
+- **Rek'Sai - Swarm Queen** (sfd-170-221; Unit/Champion; Order; 5E 1P 5M): When I attack, you may reveal the top 2 cards of your Main Deck. You may play one. Then recycle the rest. If the played card is a unit, you may play it here.
+- **Renata Glasc - Industrialist** (sfd-171-221; Unit/Champion; Order; 4E 1P 4M): Your tokens enter ready.
+- **Sacred Shears** (sfd-172-221; Gear; Order; 2E 1P): [Equip] :rb_rune_order: (:rb_rune_order:: Attach this to a unit you control.)[Deathknell] — Draw 1. (When I die, get the effect.)+1 :rb_might:
+- **Soraka - Wanderer** (sfd-173-221; Unit/Champion; Order; 4E 1P 4M): I must be assigned combat damage last.If another unit you control here would die, if it has less Might than me, instead heal it, exhaust it, and recall it. (Send it to base. This isn't a move.)
+- **Trove Golem** (sfd-174-221; Unit; Order; 8E 2P 9M): When you play me, play four Gold gear tokens exhausted.
+- **Undertitan** (sfd-175-221; Unit; Order; 6E 1P 5M): When you play me, give your other units +2 :rb_might: this turn.As I'm revealed from your deck, [Add] :rb_energy_2:.
+- **Xin Zhao - Vigilant** (sfd-176-221; Unit/Champion; Order; 3E 1P 4M): [Tank] (I must be assigned combat damage first.)I enter ready if you have two or more other units in your base.
+- **Azir - Sovereign** (sfd-177-221; Unit/Champion; Order; 4E 4M): [Accelerate] (You may pay :rb_energy_1::rb_rune_order: as an additional cost to have me enter ready.)When I attack, you may move any number of your token units to this battlefield.
+- **Blade of the Ruined King** (sfd-178-221; Gear; Order; 3E 1P): [Equip] — :rb_rune_order:, Kill a friendly unit (Pay the cost: Attach this to a unit you control.)+4 :rb_might:
+- **Corina Veraza** (sfd-179-221; Unit; Order; 7E 1P 6M): [Accelerate] (You may pay :rb_energy_1::rb_rune_order: as an additional cost to have me enter ready.)When I move to a battlefield, play three 1 :rb_might: Recruit unit tokens here.
+- **Fiora - Worthy** (sfd-180-221; Unit/Champion; Order; 3E 3M): When a unit you control becomes [Mighty], you may pay :rb_rune_order: to ready it. (A unit is Mighty while it has 5+ :rb_might:.)
+- **Rumble - Mechanized Menace** (sfd-181-221; Legend; Fury/Mind; ): Your Mechs have [Shield]. (+1 :rb_might: while they're defenders.)
+- **Danger Zone** (sfd-182-221; Spell/Signature; Fury/Mind; 1E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)[Repeat] :rb_energy_1::rb_rune_rainbow: (You may pay the additional cost to repeat this spell's effect.)Give your Mechs +1 :rb_might: this turn.
+- **Lucian - Purifier** (sfd-183-221; Legend; Fury/Body; ): Your Equipment each give [Assault]. (+1 :rb_might: while equipped unit is an attacker.)
+- **Relentless Pursuit** (sfd-184-221; Spell/Signature; Fury/Body; 2E 1P): [Action] (Play on your turn or in showdowns.)Move a friendly unit. You may attach an Equipment with the same controller to it. This turn, that unit has &quot;When I conquer, you may move me to my base.&quot;
+- **Draven - Glorious Executioner** (sfd-185-221; Legend; Fury/Chaos; ): When you win a combat, draw 1. (You win if only your units remain after combat.)
+- **Spinning Axe** (sfd-186-221; Gear/Signature; Fury/Chaos; 2E 1P): [Quick-Draw] (This has [Reaction]. When you play it, attach it to a unit you control.)[Equip] :rb_rune_rainbow: (:rb_rune_rainbow:: Attach this to a unit you control.)[Temporary] (If this is unattached, kill it at the start of its controller's Beginning Phase, before scoring.)+3 :rb_might:
+- **Rek'sai - Void Burrower** (sfd-187-221; Legend; Fury/Order; ): When you conquer, you may exhaust me to reveal the top 2 cards of your Main Deck. You may play one. Then recycle the rest.
+- **Void Rush** (sfd-188-221; Spell/Signature; Fury/Order; 2E 1P): Reveal the top 2 cards of your Main Deck. You may play one of them, reducing its cost by :rb_energy_2:. Draw any you did not play this way.
+- **Ornn - Fire Below the Mountain** (sfd-189-221; Legend; Calm/Mind; ): :rb_exhaust:: [Reaction] — [Add] :rb_rune_rainbow:. Use only to play gear or use gear abilities. (Abilities that add resources can't be reacted to.)
+- **Forgefire Cape** (sfd-190-221; Gear/Signature; Calm/Mind; 4E 2P): [Unique] (Your deck can have only 1 card with this name.)[Equip] :rb_rune_rainbow: (:rb_rune_rainbow:: Attach this to a unit you control.)When I attack or defend, deal 2 to all enemy units here.+3 :rb_might:
+- **Rabadon's Deathcrown** (sfd-191-221; Gear/Signature; Calm/Mind; 4E 2P): [Unique] (Your deck can have only 1 card with this name.)[Equip] :rb_rune_rainbow: (:rb_rune_rainbow:: Attach this to a unit you control.)Your spells and abilities deal 3 Bonus Damage (while this is attached).+3 :rb_might:
+- **Shurelya's Requiem** (sfd-192-221; Gear/Signature; Calm/Mind; 4E 2P): [Unique] (Your deck can have only 1 card with this name.)[Equip] :rb_rune_rainbow: (:rb_rune_rainbow:: Attach this to a unit you control.)When you play this, ready your units.Your units here have [Ganking]. (We can move from battlefield to battlefield.)+2 :rb_might:
+- **Jax - Grandmaster At Arms** (sfd-193-221; Legend; Calm/Body; ): :rb_energy_1:, :rb_exhaust:: Attach a detached Equipment you control to a unit you control.:rb_exhaust:: Attach an attached Equipment you control to a unit you control.
+- **Counter Strike** (sfd-194-221; Spell/Signature; Calm/Body; 2E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Choose a unit. The next time that unit would be dealt damage this turn, prevent it. Draw 1.
+- **Irelia - Blade Dancer** (sfd-195-221; Legend; Calm/Chaos; ): When you choose a friendly unit, you may exhaust me and pay :rb_rune_rainbow: to ready it.When you conquer, you may pay :rb_energy_1: to ready me.
+- **Defiant Dance** (sfd-196-221; Spell/Signature; Calm/Chaos; 1E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Give a unit +2 :rb_might: this turn and another unit -2 :rb_might: this turn.
+- **Azir - Emperor of the Sands** (sfd-197-221; Legend; Calm/Order; ): Your Sand Soldiers have [Weaponmaster].:rb_energy_1:, :rb_exhaust:: Play a 2 :rb_might: Sand Soldier unit token to your base. Use only if you've played an Equipment this turn.
+- **Arise!** (sfd-198-221; Spell/Signature; Calm/Order; 6E 1P): Play a 2 :rb_might: Sand Soldier unit token for each Equipment you control. Then ready two of them.
+- **Ezreal - Prodigal Explorer** (sfd-199-221; Legend; Mind/Chaos; ): :rb_exhaust:: [Reaction] — Draw 1. Use only if you've chosen enemy units and/or gear twice this turn with spells or unit abilities.
+- **Arcane Shift** (sfd-200-221; Spell/Signature; Mind/Chaos; 3E 1P): [Action] (Play on your turn or in showdowns.)Banish a friendly unit, then its owner plays it, ignoring its cost. Deal 3 to an enemy unit at a battlefield. Banish this.
+- **Renata Glasc - Chem-Baroness** (sfd-201-221; Legend; Mind/Order; ): When you or an ally hold, you may exhaust me to play a Gold gear token exhausted.While your score is within 3 points of the Victory Score, your Gold [ADD] an additional :rb_energy_1:.
+- **Hostile Takeover** (sfd-202-221; Spell/Signature; Mind/Order; 5E 2P): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)Take control of an enemy unit at a battlefield. Ready it. (Start a combat if other enemies are there. Otherwise, conquer.)Lose control of that unit and recall it at end of turn. (Send it to base. This isn't a move.)
+- **Sivir - Battle Mistress** (sfd-203-221; Legend; Body/Chaos; ): When you recycle a rune, you may exhaust me to play a Gold gear token exhausted.When one or more enemy units die, ready me.
+- **On the Hunt** (sfd-204-221; Spell/Signature; Body/Chaos; 1E 2P): Ready your units.
+- **Fiora - Grand Duelist** (sfd-205-221; Legend; Body/Order; ): When one of your units becomes [Mighty], you may exhaust me to channel 1 rune exhausted. (A unit is Mighty while it has 5+ :rb_might:.)
+- **Riposte** (sfd-206-221; Spell/Signature; Body/Order; 2E 2P): [Reaction] (Play any time, even before spells and abilities resolve.)Choose a friendly unit and a spell. Counter that spell and give that unit +:rb_might: equal to that spell's Energy cost this turn.
+- **Emperor's Dais** (sfd-207-221; Battlefield; Colorless; ): When you conquer here, you may pay :rb_energy_1: and return a unit you control here to its owner's hand. If you do, play a 2 :rb_might: Sand Soldier unit token here.
+- **Forge of the Fluft** (sfd-208-221; Battlefield; Colorless; ): While you control this battlefield, friendly legends have &quot;:rb_exhaust:: Attach an Equipment you control to a unit you control.&quot;
+- **Forgotten Monument** (sfd-209-221; Battlefield; Colorless; ): Players can't score here until their third turn.
+- **Hall of Legends** (sfd-210-221; Battlefield; Colorless; ): When you conquer here, you may pay :rb_energy_1: to ready your legend.
+- **Marai Spire** (sfd-211-221; Battlefield; Colorless; ): While you control this battlefield, friendly [Repeat] costs cost :rb_energy_1: less.
+- **Minefield** (sfd-212-221; Battlefield; Colorless; ): When you conquer here, put the top 2 cards of your Main Deck into your trash.
+- **Ornn's Forge** (sfd-213-221; Battlefield; Colorless; ): While you control this battlefield, the first friendly non-token gear played each turn costs :rb_energy_1: less.
+- **Power Nexus** (sfd-214-221; Battlefield; Colorless; ): When you hold here, you may pay :rb_rune_rainbow::rb_rune_rainbow::rb_rune_rainbow::rb_rune_rainbow: to score 1 point.
+- **Ravenbloom Conservatory** (sfd-215-221; Battlefield; Colorless; ): When you defend here, reveal the top card of your Main Deck. If it's a spell, put it in your hand. Otherwise, recycle it.
+- **Rockfall Path** (sfd-216-221; Battlefield; Colorless; ): Units can't be played here.
+- **Seat of Power** (sfd-217-221; Battlefield; Colorless; ): When you conquer here, draw 1 for each other battlefield you or allies control..
+- **Sunken Temple** (sfd-218-221; Battlefield; Colorless; ): When you conquer here with one or more [Mighty] units, you may pay :rb_energy_1: to draw 1. (A unit is Mighty while it has 5+ :rb_might:.)
+- **The Papertree** (sfd-219-221; Battlefield; Colorless; ): When you hold here, each player channels 1 rune exhausted.
+- **Treasure Hoard** (sfd-220-221; Battlefield; Colorless; ): When you conquer here, you may pay :rb_energy_1: to play a Gold gear token exhausted.
+- **Veiled Temple** (sfd-221-221; Battlefield; Colorless; ): When you conquer here, you may ready a friendly gear. If it's an Equipment, you may detach it.
+- **Gold // Buff** (sfd-t03; Gear/Token; Colorless; ): Kill this, :rb_exhaust:: [Reaction] — [Add] :rb_rune_rainbow:. (Abilities that add resources can't be reacted to.)

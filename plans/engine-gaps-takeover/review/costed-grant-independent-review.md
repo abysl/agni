@@ -1,0 +1,37 @@
+# A9 independent review
+
+Reviewed `871e7e45..7dee611e` in the reconciliation worktree: production repair `e86d828a`, legacy compatibility tests `7dee611e`. Read-only inspection, no builds or tests run by this reviewer; `git diff --check` passed. Latest user agni rules and the deterministic plugin boundary govern this review.
+
+The owned representation is sound by inspection. No production correctness regression identified. `CostedGrant` releases its power vector with ordinary state lifetime, and all production references to the global interner, leaked slices, and `cost::to_script` are removed. The existing costed tags and `[kind, energy, power-codes, expiry]` encoding are preserved. Printed Flow/Repeat precedence, the static Repeat fallback, first-granted-cost selection, unsupported dynamic Equip/Empower refusal, and expiry behavior remain intact. Kennen's four symbolic printed-cost branches match the existing printed runtime mapping. No rule or card knowledge was moved into the generic engine or spirit.
+
+## Before closing A9
+
+- **P2, acceptance coverage:** `games/riftbound-turns/src/cards/kennen_storm_of_shuriken.rs::tests::the_lent_spell_can_be_played_from_the_trash_for_its_cost_this_turn` only checks offers and `legal::classify`, then expires the grant. It does not play/pay or reconstruct state. `engine/ctx.rs::tests::grants_refuse_unread_costed_keywords_and_a_swept_card_unstuns_without_an_effect` compares decoded rows but continues with the original context. The new hardened history test uses EndTurn, so it exercises decoding and expiry rather than the changed cost consumption path. Add one bounded regression that grants Flow, serializes/reconstructs, and actually plays/pays in a later request, asserting price and rune/payment effects. This is an unmet concrete audit acceptance criterion, not a demonstrated production bug. It should precede the claim that A9 has no remaining debt.
+
+## Followups and evidence limits
+
+- **P3, harness fidelity:** `net/tests/riftbound_turns.rs::hardened_plugin_costed_grant_results_do_not_depend_on_instance_history` manually constructs `DecideRequest` while retaining `state.plugin_state` inside the request. `sim::engine::native_decide_request` validates the entry and removes that duplicated field. Prefer that constructor to compare exact engine-produced requests. The SDK currently ignores the duplicated nested field; no behavioral divergence is established.
+- **P3, wording:** `plans/engine-gaps-takeover/review/reconcile-costed-grants.md:3` says the generic converter discarded runtime cost kinds. More precisely, it could not represent arbitrary AnyOf/XP/burn/floating values; its sole production caller passed printed cost, whose extra fields are zero and whose AnyOf domains match the card. This review does not establish a historical incorrect Kennen price. Amend the claim rather than imply a reproduced gameplay defect.
+- **P3, coverage:** legacy fixtures author whole v7/v9/v10 documents independently of GameBlob's encoder and assert canonical output bytes. They establish layout migration and representative nondefault-field preservation. Negative coverage currently tests version/layout rejection and truncation at the document tail; it does not directly test unknown costed kinds, unknown Power codes, malformed grant rows, or invalid grant expiry. Decode code rejects these by inspection and drops owned allocations normally. Duplicate-kind and printed-before-granted precedence have no new focused regression, but their behavior is unchanged in the diff.
+
+The hardened history test now uses genuinely separate cold view and cold decide modules, asserts acceptance and no reason for a valid EndTurn, compares native results, then repeats after additional costed views and a reset view. Equality covers the decoded Verdict (including emitted effects and its state byte buffer) and PluginView. It does not compare raw CBOR verdict/view encoding, record gas consumption, execute a reset decision, or test every allocator history. Together with the structural removal of the semantic cache, it is useful evidence for the bounded repair. Neither this review nor the test establishes a previously reproduced failure at the default 100,000,000 budget, or universal allocator-level gas equality.
+
+The worker/coordinator must supply passing full turns, warnings-denied clippy, scoped formatting, wasm, and hardened parity results before integration. No additional production implementation is requested beyond any defect revealed by the payment regression.
+
+## Followup disposition: 46de0af0 and 67c55ffb
+
+Reviewed the followup diff only, without builds/tests. The new `a_saved_lent_flow_grant_pays_and_banishes_the_spell_after_reload` test completes the real Kennen conquer/grant path, saves the projected table and encoded blob, drops the context, decodes the blob into a fresh context, then activates `IMPLICIT_FLOW`. Its assertions check two ready runes spent, the already-exhausted Fury rune recycled for power, the spell entering the chain, and resolution to banishment. This closes the P2 payment/reconstruction acceptance gap for the bounded A9 representation repair. It exercises the native internal action boundary after reload, not a separate full encoded decide request; the hardened test separately covers encoded request decoding and cold/warm parity.
+
+The final `grants_flow(...) == None` is an availability assertion, not proof that the row was deleted: that accessor returns early outside trash. Do not describe it as a direct storage-reset assertion. This does not block the payment regression's purpose.
+
+The history test now calls `native_decide_request`, and the repair note distinguishes an unrepresentable arbitrary runtime cost from an established historical wrong Kennen price. Those two P3 findings are closed. No remaining review blocker for A9, subject to the coordinator's passing gates. Previously listed broader coverage and evidence limits still apply.
+
+## A10: separate multiple-cost-instance followup
+
+Confirmed directly against the pinned local Core Rules and code; this is legacy rules debt, not an A9 regression:
+
+- Rule 829.1.c.3 (`games/riftbound/rules/riftbound-core-rules-v2026-07-16.txt:7279`) lets the controller select among distinct Flow costs. Current `Ctx::flow_of` gives printed cost precedence; `Ctx::granted_cost` takes the first matching row. A9 preserves that behavior but does not make it rules-correct.
+- Rules 820.1.c.2 and 820.3 (lines 6982 and 7022) make each Repeat cost independently optional, with one additional execution for each paid instance. Current `engine/cost.rs::repeat_of_item` and `granted_repeat` take the first result. In preserved economy commit `1c790ef1`, `promised_repeat_of` collapses matching promises with `.any`, and `promised` uses one `repeated` boolean, so multiple Temporal Portal/Academy promises coalesce. Rule 820.1.c.3 also restricts each individual Repeat cost to one payment.
+- In that economy commit, `promises_covering` maps all original indices above 255 to 255 using `.min(u8::MAX)`, creating identity aliases. Assign this to A6's finite-limit audit.
+
+Assign multiple Flow choice and independently payable Repeat instances to C3, after A4a stable ability/grant identity and A5 persisted suspension/atomic rollback foundations. Acceptance should explicitly include printed plus multiple granted costs and two Temporal Portal/Academy promises; existing two-card Repeat-variant inventory alone is insufficient. Keep this separate from A9 integration.

@@ -1,0 +1,1463 @@
+{
+"clusters": [
+{
+"key": "unit-dies-friendly",
+"title": "UnitDies(Who) trigger subject",
+"lane": "triggers",
+"order": 1,
+"depends_on": [],
+"primitive": "cards/mod.rs: add Trigger::UnitDies(Who) (Who::Friendly, and Who::Enemy as the EnemyUnitDies alias) and a `buffed: bool` on Noted (engine/ctx.rs Event::Died.noted, filled by kill.rs before the card state is dropped). engine/triggers.rs matches: on Event::Died { card, controller, unit: true, .. } hand every in-play source of the same controller (Friendly) or the other seat (Enemy) the dead unit as the subject/argument, excluding the source itself for Friendly (that stays Trigger::Death). Conditions (viktor_leader, shard_of_undoing, vanguard_helm) read the subject and Noted.buffed. Once::PerTurn already works for wraith_of_echoes. Rules 359.3, 465.",
+"tests": [
+"games/riftbound-turns/src/cards/altar_of_memories.rs:392 a_friendly_unit_dying_asks_to_exhaust_the_altar_draws_one_and_places_a_card",
+"games/riftbound-turns/src/cards/shard_of_undoing.rs:305 the_first_friendly_death_in_your_beginning_phase_makes_each_opponent_kill_one_of_theirs",
+"games/riftbound-turns/src/cards/viktor_leader.rs:197 a_friendly_units_death_queues_his_trigger_and_his_own_recruits_death_does_not",
+"games/riftbound-turns/src/cards/vicious_snapjaws.rs:151 every_other_friendly_death_gains_one_xp_and_an_enemy_death_gains_nothing",
+"games/riftbound-turns/src/cards/spectral_centaur.rs:197 every_other_friendly_death_gives_two_might_this_turn_and_an_enemy_death_gives_nothing",
+"games/riftbound-turns/src/cards/wraith_of_echoes.rs:154 the_first_friendly_death_each_turn_draws_one_and_the_second_draws_nothing",
+"games/riftbound-turns/src/cards/vanguard_helm.rs:148 a_buffed_friendly_unit_dying_triggers_the_helm_to_buff_another"
+]
+},
+{
+"key": "wearer-abilities",
+"title": "Equipment abilities on the wearer (Grant::Ability)",
+"lane": "triggers",
+"order": 2,
+"depends_on": [
+"unit-dies-friendly"
+],
+"primitive": "cards/mod.rs: add Grant::Ability(&'static [Ability]) usable inside Static::WhileAttached. engine/triggers.rs sources/find_among/matches: for every unit, also walk the Grant::Ability lists of its attached gear (attach.rs granted_statics) and of any copied_text (svellsongur, 136.2.c), resolving each as the WEARER's own ability: Source { card: wearer, ability: index offset into a granted range }, Who::Me = the wearer, the wearer's controller as the trigger's controller. Ability lookup by Source (triggers::ability_of / activate::ability_at) must resolve the offset range back to the gear's script so the run and candidates are found. skyfall_of_areion needs matches to consult matches_through_the_skyfall (a Conquer match also fires the wearer's Hold abilities and vice versa) \u2014 model it as a Grant on WhileAttached that triggers::matches consults when the wearer's own triggers are matched. sacred_shears also needs Trigger::UnitDies(Who::Friendly) granted through this path (depends on unit-dies-friendly). eye_of_the_herald's Recruit and trapping-style token faces keep their hand-built faces here.",
+"tests": [
+"games/riftbound-turns/src/cards/blighted_battleaxe.rs:332 at_the_end_of_your_turn_a_wearer_that_did_not_conquer_drops_the_axe_and_takes_four",
+"games/riftbound-turns/src/cards/cull.rs:247 a_conquer_by_the_wearer_queues_the_gold_trigger",
+"games/riftbound-turns/src/cards/boneshiver.rs:144 a_conquer_by_the_wearer_channels_through_the_engine",
+"games/riftbound-turns/src/cards/forgefire_cape.rs:175 an_attack_by_the_wearer_blazes_through_the_engine",
+"games/riftbound-turns/src/cards/dorans_ring.rs:153 a_conquer_by_the_wearer_cycles_a_card_through_the_engine",
+"games/riftbound-turns/src/cards/last_rites.rs:345 while_attached_the_wearers_conquer_or_hold_may_play_a_unit_from_your_trash",
+"games/riftbound-turns/src/cards/eye_of_the_herald.rs:192 a_move_by_the_wearer_plays_a_recruit_through_the_engine",
+"games/riftbound-turns/src/cards/pendulum_blade.rs:283 a_move_by_the_wearer_swings_through_the_engine",
+"games/riftbound-turns/src/cards/recurve_bow.rs:213 an_attack_by_the_wearer_shoots_through_the_engine",
+"games/riftbound-turns/src/cards/trinity_force.rs:130 a_hold_by_the_wearer_scores_through_the_engine",
+"games/riftbound-turns/src/cards/warmogs_armor.rs:134 a_conquer_by_the_wearer_buffs_it_through_the_engine",
+"games/riftbound-turns/src/cards/world_atlas.rs:133 a_hold_by_the_wearer_plays_the_golds_through_the_engine",
+"games/riftbound-turns/src/cards/skyfall_of_areion.rs:185 a_hold_by_the_wearer_queues_both_of_its_triggers_through_the_engine",
+"games/riftbound-turns/src/cards/svellsongur.rs:198 while_attached_the_wearer_has_its_own_text_twice",
+"games/riftbound-turns/src/cards/sacred_shears.rs:160 the_wearers_death_draws_one_through_the_engine"
+]
+},
+{
+"key": "lent-activated-abilities",
+"title": "Activated abilities lent by another card (Grant::Ability with UnitsHere/legend scope)",
+"lane": "triggers",
+"order": 3,
+"depends_on": [
+"wearer-abilities"
+],
+"primitive": "engine/activate.rs ability_at and offers: beside the source's own script, list Grant::Ability entries projected onto the unit by Static::Aura { scope: UnitsHere } (gardens_of_becoming::lent_ability), onto the holder's legend by a new Scope::Legend on Static::Aura (forge_of_the_fluft::lent_ability), and Heimerdinger - Inventor's borrowed abilities: an activation whose source is the borrowing card and whose ability index points into another card's script (activate::activate takes a (source, script_card, index) triple; pay_self exhausts the borrower, not the owner). Offers disappear when the unit leaves the scope. Uses the Grant::Ability arm and Source-offset resolution from wearer-abilities.",
+"tests": [
+"games/riftbound-turns/src/cards/gardens_of_becoming.rs:217 a_unit_here_lists_and_activates_the_lent_ability_and_loses_it_when_it_leaves",
+"games/riftbound-turns/src/cards/forge_of_the_fluft.rs:350 while_the_forge_is_held_the_holders_legend_lists_and_activates_the_lent_ability",
+"games/riftbound-turns/src/cards/heimerdinger_inventor.rs:172 activating_a_borrowed_ability_exhausts_him_and_not_its_owner"
+]
+},
+{
+"key": "excess-combat-damage",
+"title": "Excess combat damage recorded per attack",
+"lane": "triggers",
+"order": 4,
+"depends_on": [
+"wearer-abilities"
+],
+"primitive": "engine/combat.rs: when lethal is assigned, record excess = assigned - remaining Might per defender and sum it per attack into a blob row (SeatState or a per-zone record) keyed by attacking seat and zone, kept for the turn (cleared at Expiration), not healed away by cleanup::after_combat. Expose Ctx::excess_damage_in_attack(seat, zone) -> Option<u8>; tryndamere_barbarian::excess_damage_assigned_in_my_attack reads it. Conditions on Conquer/CombatWon triggers (Sivir, Tryndamere, Vi, Yeti, Trapping Grounds) read it when queued. hextech_gauntlets:350 also needs the wearer's conquer trigger from wearer-abilities. Rules 712-715.",
+"tests": [
+"games/riftbound-turns/src/cards/sivir_ambitious.rs:227 five_excess_damage_after_her_attack_may_be_dealt_to_an_enemy_unit",
+"games/riftbound-turns/src/cards/tryndamere_barbarian.rs:162 five_excess_damage_after_his_attack_scores_a_second_point_when_the_trigger_resolves",
+"games/riftbound-turns/src/cards/trapping_grounds.rs:403 three_excess_damage_after_an_attack_plays_a_bird_when_the_trigger_resolves",
+"games/riftbound-turns/src/cards/vi_piltover_enforcer.rs:280 three_excess_damage_after_an_attack_lets_her_exhaust_to_ready_a_unit",
+"games/riftbound-turns/src/cards/yeti_brawler.rs:177 four_excess_damage_after_his_attack_plays_two_golds_and_two_excess_does_not",
+"games/riftbound-turns/src/cards/hextech_gauntlets.rs:350 a_conquer_after_an_attack_with_three_excess_draws_one_through_the_engine"
+]
+},
+{
+"key": "trigger-subject-widening",
+"title": "Who::Enemy / Who::Any on Move, Attacks, ChosenFriendly, Readied",
+"lane": "triggers",
+"order": 5,
+"depends_on": [],
+"primitive": "cards/mod.rs: add Who::Enemy and Who::Any. engine/ctx.rs Event::Moved gains `by: Option<u8>` (the seat whose spell/ability moved the unit; None for a standard move) set by march::effect_move and Ctx::move_unit callers. engine/triggers.rs matches: Trigger::Move { of: Enemy|Any } admits movers of the other seat / any seat and hands the mover as the subject; Trigger::Attacks(Who::Enemy) hands an enemy attacker to a legend's or battlefield's condition (ahri_nine_tailed_fox::an_enemy_unit_attacks_a_battlefield_you_control); Trigger::ChosenFriendly with Who::Any lets the opponent choosing their own unit count (the_dreaming_tree); Trigger::Readied(Who::Friendly) hands the readied unit over as the subject instead of matching only the source (pirates_haven). Volibear and Blast Cone read Event::Moved.by for 'an opponent's effect'.",
+"tests": [
+"games/riftbound-turns/src/cards/blast_cone.rs:303 moving_an_enemy_unit_asks_to_exhaust_the_cone_and_yes_stuns_it",
+"games/riftbound-turns/src/cards/ahri_nine_tailed_fox.rs:224 an_enemy_marching_into_her_held_battlefield_fires_the_trigger_through_the_engine",
+"games/riftbound-turns/src/cards/back_alley_bar.rs:230 an_enemy_unit_moved_from_here_by_an_effect_gets_the_bonus_too",
+"games/riftbound-turns/src/cards/volibear_imposing.rs:220 an_opponent_moving_to_another_battlefield_draws_him_one_when_the_trigger_resolves",
+"games/riftbound-turns/src/cards/the_dreaming_tree.rs:268 the_opponent_choosing_their_own_unit_here_with_a_spell_draws_too",
+"games/riftbound-turns/src/cards/pirates_haven.rs:166 readying_a_friendly_unit_gives_it_one_might_this_turn"
+]
+},
+{
+"key": "combat-ended-trigger",
+"title": "Trigger::CombatEnded(Who) with a per-turn damage record",
+"lane": "triggers",
+"order": 6,
+"depends_on": [],
+"primitive": "cards/mod.rs: Trigger::CombatEnded(Who). engine/cleanup.rs after_combat: raise Event::CombatEnded { zone, units: Vec<u32>, result } listing every unit that was in the combat, won, lost or drawn, BEFORE healing; triggers::matches queues it for each listed unit with Who::Me = that unit. CardState gains damage_taken_this_turn (u8, written by Ctx::damage, reset at Expiration) so affectionate_poro's condition can read damage after after_combat healed the board (the Poro draws only if it took none).",
+"tests": [
+"games/riftbound-turns/src/cards/affectionate_poro.rs:131 a_combat_the_poro_was_in_ending_draws_a_card_unless_it_was_hit",
+"games/riftbound-turns/src/cards/mournful_witness.rs:149 a_combat_the_witness_was_in_ending_empowers_it_whatever_the_result"
+]
+},
+{
+"key": "showdown-begins-trigger",
+"title": "Trigger::ShowdownBegins(Where::Here)",
+"lane": "triggers",
+"order": 7,
+"depends_on": [],
+"primitive": "cards/mod.rs: Trigger::ShowdownBegins(Where). engine/showdown.rs open (combat and non-combat showdowns, 464.2.b): raise Event::ShowdownBegins { zone, attacker: u8, defender: u8 } as the showdown opens; triggers::matches queues battlefield cards at that zone (Where::Here) and units standing there (Diana - Lunari's controller pays the energy). threshold_of_the_gray's run banks one energy per side through the existing next_discount; the per-seat pool is the economy lane's banked-rune-pool and not needed for this test.",
+"tests": [
+"games/riftbound-turns/src/cards/diana_lunari.rs:412 a_showdown_beginning_at_her_battlefield_asks_for_the_energy",
+"games/riftbound-turns/src/cards/threshold_of_the_gray.rs:205 combat_starting_here_adds_one_energy_to_each_side"
+]
+},
+{
+"key": "attached-trigger",
+"title": "Trigger::Attached(Who::Me) and per-turn mode memory",
+"lane": "triggers",
+"order": 8,
+"depends_on": [],
+"primitive": "engine/attach.rs attach: raise Event::Attached { gear, to, by }. cards/mod.rs: Trigger::Attached(Who) matched with the wearer as Who::Me (Jax pays one energy to draw). For Aphelios, CardState gains modes_used_this_turn: u8 bitmask (reset at Expiration) written by the script through Ctx::mark_mode(card, index) and read by modes_left; the Resume candidates already carry labels, so the offer drops modes already marked this turn.",
+"tests": [
+"games/riftbound-turns/src/cards/jax_unrelenting.rs:209 equipping_him_asks_for_one_energy_and_pays_it_to_draw_one",
+"games/riftbound-turns/src/cards/aphelios_exalted.rs:261 equipping_him_offers_a_mode_not_yet_chosen_this_turn"
+]
+},
+{
+"key": "stunned-event",
+"title": "Event::Stunned and Trigger::Stunned / YouStunEnemy",
+"lane": "triggers",
+"order": 9,
+"depends_on": [],
+"primitive": "engine/ctx.rs Ctx::stun: raise Event::Stunned { units: Vec<u32>, by: u8 (controller of the stunning item) } once per stun instruction (a batch of units is one event). Noted gains `stunned: bool` filled by kill.rs before the state is dropped. cards/mod.rs: Trigger::Stunned(Who) where Who::You matches by == source controller and the condition filters enemy units (eclipse_herald, vex_mocking read a stunned enemy at a battlefield as the subject; leona_radiant_dawn queues once per batch).",
+"tests": [
+"games/riftbound-turns/src/cards/eclipse_herald.rs:115 stunning_an_enemy_unit_queues_his_trigger_and_a_friendly_stun_does_not",
+"games/riftbound-turns/src/cards/leona_radiant_dawn.rs:205 stunning_one_or_more_enemy_units_queues_her_once_and_she_buffs_a_friendly_unit",
+"games/riftbound-turns/src/cards/vex_mocking.rs:256 stunning_an_enemy_at_a_battlefield_queues_her_and_a_friendly_stun_does_not"
+]
+},
+{
+"key": "died-killer",
+"title": "Event::Died carries its killer",
+"lane": "triggers",
+"order": 10,
+"depends_on": [
+"stunned-event"
+],
+"primitive": "engine/ctx.rs Event::Died gains `killer: Option<Killer>` (Killer { item: u16, controller: u8, kind: Spell|Ability|Combat|Rule }) filled by kill.rs from Cause. cards/mod.rs: Trigger::UnitKilledBy(KilledBy::YourSpell | YourItem | Enemy). solari_shrine's condition reads killer.controller == you and noted.stunned (depends on stunned-event for Noted.stunned).",
+"tests": [
+"games/riftbound-turns/src/cards/solari_shrine.rs:139 killing_a_stunned_enemy_unit_asks_to_exhaust_the_shrine_and_draws_one"
+]
+},
+{
+"key": "buffed-events",
+"title": "Event::Buffed / Event::BuffSpent and their triggers",
+"lane": "triggers",
+"order": 11,
+"depends_on": [],
+"primitive": "engine/ctx.rs: Ctx::buff raises Event::Buffed { card, by: controller of the buffing item }; Ctx::spend_buff raises Event::BuffSpent { card, by }. cards/mod.rs: Trigger::Buffed(Who) (Who::Me the source itself, Who::Friendly a friendly unit handed over as the subject) and Trigger::BuffSpent(Who::You). Mistfall offers with_cost + exhausting_self to ready the buffed unit; Simian Ancestor readies himself; Fae Dragon mints an exhausted Gold per spent buff.",
+"tests": [
+"games/riftbound-turns/src/cards/mistfall.rs:136 buffing_a_friendly_unit_offers_a_body_rune_and_the_exhaust_to_ready_it",
+"games/riftbound-turns/src/cards/simian_ancestor.rs:122 buffing_him_readies_him_when_the_trigger_resolves",
+"games/riftbound-turns/src/cards/fae_dragon.rs:263 spending_a_buff_plays_an_exhausted_gold_when_the_trigger_resolves"
+]
+},
+{
+"key": "became-mighty-event",
+"title": "Event::BecameMighty raised by every Might writer",
+"lane": "triggers",
+"order": 12,
+"depends_on": [],
+"primitive": "engine/ctx.rs: every writer that changes current_might (Ctx::might, buff, empower, grants recompute after attach/detach, aura changes) compares current_might before and after and raises Event::BecameMighty { card, threshold } when it crosses 5 upward (709), and Event::MightReached { card, n } for the thresholds a script registers (Renekton at 10). cards/mod.rs: Trigger::BecameMighty(Who) and Trigger::MightReached(Who, u8). Fiora - Worthy: optional(with_cost(triggered(BecameMighty(Friendly)), ORDER)); Fiora - Grand Duelist queues once; Renekton - Brute empowers himself after the sixth activation.",
+"tests": [
+"games/riftbound-turns/src/cards/fiora_worthy.rs:148 a_friendly_unit_crossing_to_five_might_offers_an_order_rune_to_ready_it",
+"games/riftbound-turns/src/cards/fiora_grand_duelist.rs:276 a_friendly_unit_reaching_five_might_queues_her_once_and_she_channels_a_rune",
+"games/riftbound-turns/src/cards/renekton_brute.rs:272 six_activations_take_him_to_ten_and_the_trigger_empowers_him"
+]
+},
+{
+"key": "delayed-when-arms",
+"title": "When::MainPhaseOf(seat) and When::HeldBy(seat) delayed triggers",
+"lane": "triggers",
+"order": 13,
+"depends_on": [],
+"primitive": "state.rs When: add MainPhaseOf(u8) and HeldBy(u8) with CBOR codes. engine/phases.rs continue_beginning: as the Action phase opens (316.4, after the rune pool empties 316.3) call triggers::queue_delayed(When::MainPhaseOf(seat)); engine/cleanup.rs score_holds: after a seat's hold scores call queue_delayed(When::HeldBy(seat)). queue_delayed must not require the source to be on the board (ashe_focused's source may be gone). Ctx::delay(when, source, seat, ability, args) already stores Delayed. Iascylla / Blue Sentinel delay their hold effects to that turn's Main Phase with the held battlefield as args; bottled_constellation's wish is queued as the main phase opens (its kills stay a Resume pick here).",
+"tests": [
+"games/riftbound-turns/src/cards/blue_sentinel.rs:251 its_hold_adds_a_rainbow_at_the_start_of_that_turns_main_phase",
+"games/riftbound-turns/src/cards/iascylla.rs:302 her_hold_lures_an_enemy_unit_at_the_start_of_that_turns_main_phase",
+"games/riftbound-turns/src/cards/bottled_constellation.rs:321 the_wish_is_queued_as_your_main_phase_opens_and_the_kills_are_paid_before_it_resolves",
+"games/riftbound-turns/src/cards/ashe_focused.rs:406 when_they_hold_the_banished_card_returns_to_their_hand_even_with_ashe_gone"
+]
+},
+{
+"key": "played-spell-payload",
+"title": "Event::PlayedSpell carries card, origin and paid cost",
+"lane": "triggers",
+"order": 14,
+"depends_on": [],
+"primitive": "engine/ctx.rs Event::PlayedSpell gains `card: u32, origin: Origin, paid: Cost (energy and power actually spent), from_hidden: bool`, filled by chain.rs from the ChainItem BEFORE chain::leave drops the item and card state (raise it at resolution start, or snapshot the item when it finalizes). triggers::matches keeps the same subjects; conditions read origin (Facedown => black_market_broker / ember_monk, Trash => Kennen's Flow spell), paid.energy (forgotten_library, revna, jhin_virtuoso) and paid.power (yordle_explorer).",
+"tests": [
+"games/riftbound-turns/src/cards/black_market_broker.rs:179 a_spell_played_from_face_down_pays_a_gold_once_it_resolves",
+"games/riftbound-turns/src/cards/ember_monk.rs:157 a_spell_played_from_hidden_gives_the_monk_two_might_once_it_resolves",
+"games/riftbound-turns/src/cards/forgotten_library.rs:363 a_four_energy_spell_under_the_held_library_predicts_and_a_cheaper_one_does_not",
+"games/riftbound-turns/src/cards/revna_the_lorekeeper.rs:169 a_spell_played_for_four_readies_her_as_it_resolves",
+"games/riftbound-turns/src/cards/yordle_explorer.rs:273 a_two_power_spell_draws_one_once_it_resolves",
+"games/riftbound-turns/src/cards/yordle_kennen_heart_of_the_tempest.rs:315 a_flow_spell_from_the_trash_queues_his_trigger"
+]
+},
+{
+"key": "discarded-event",
+"title": "Event::Discarded and Trigger::Discarded",
+"lane": "triggers",
+"order": 15,
+"depends_on": [],
+"primitive": "engine/discard.rs (and Ctx::discard): raise Event::Discarded { by: u8 (the discarding seat), cards: Vec<u32>, owner: u8 } once per discard instruction, after the cards reach the trash. cards/mod.rs: Trigger::Discarded(Who) \u2014 Who::You matches by == source controller and queues once for the batch (jinx_rebel readies through the chain); Who::Me matches a card in the batch (used by triggers-off-the-board).",
+"tests": [
+"games/riftbound-turns/src/cards/jinx_rebel.rs:156 a_discard_by_her_controller_readies_her_through_the_chain"
+]
+},
+{
+"key": "triggers-off-the-board",
+"title": "Triggers sourced from hand, trash and deck top",
+"lane": "triggers",
+"order": 16,
+"depends_on": [
+"discarded-event",
+"died-killer"
+],
+"primitive": "cards/mod.rs: Card gains `listens_from: &'static [ListenZone]` (Hand, Trash, DeckTop) or the Ability gains a `from: ListenZone`. engine/triggers.rs sources: beside in-play cards, walk each seat's hand, trash and top-of-deck cards whose script declares the zone and match their abilities with that card as the source (Discarded(Who::Me) heard as the card lands in the trash; Conquer heard from the trash by Super Mega Death Rocket; Trigger::UnitKilledBy(YourSpell) from the trash for Immortal Phoenix). Ctx::peek_top / look effects raise Event::Looked { seat, cards } so Nocturne's DeckTop trigger fires when his controller looks at him. The runs play the source from its zone with the existing limited play (play::begin with Origin::Trash { leave } / Origin::Hand-from-deck) for the printed or stated cost. Depends on discarded-event and died-killer.",
+"tests": [
+"games/riftbound-turns/src/cards/scrapheap.rs:134 a_heap_discarded_from_the_hand_draws_one_beside_the_discarder_s_own_draw",
+"games/riftbound-turns/src/cards/mask_mother.rs:165 discarding_her_offers_one_energy_to_give_a_friendly_unit_two_might",
+"games/riftbound-turns/src/cards/super_mega_death_rocket.rs:320 a_conquer_with_the_rocket_in_the_trash_queues_its_reload",
+"games/riftbound-turns/src/cards/flame_chompers.rs:194 discarding_the_chompers_offers_a_fury_to_play_them_from_the_trash",
+"games/riftbound-turns/src/cards/immortal_phoenix.rs:252 a_spell_of_yours_that_kills_a_unit_offers_the_phoenix_a_paid_return_from_the_trash",
+"games/riftbound-turns/src/cards/nocturne_horrifying.rs:125 when_you_look_at_him_on_top_of_your_deck_you_may_play_him_for_a_rainbow"
+]
+},
+{
+"key": "floating-turn-triggers",
+"title": "Turn-scoped watchers registered by a resolved item",
+"lane": "triggers",
+"order": 17,
+"depends_on": [
+"triggers-off-the-board"
+],
+"primitive": "state.rs: a blob row Floating { source: u32, seat: u8, ability: u8, args: Vec<u32>, until: Expiry } registered by Ctx::watch_this_turn(source, ability, args) from a resolving script and cleared at Expiration. engine/triggers.rs sources: include floating rows as sources whose script is the source card's (even when the card is in the trash), with args as the subject (Deadly Flourish / Siphoning Strike hear their target's Died later this turn; Noxian Guillotine hears the next Damaged on its target and kills it; Imperial Decree hears Trigger::Damaged(Who::Any) over every unit; Rally the Troops hears Trigger::YouPlayCard for the turn). Builds on the beyond-in-play sources refactor of triggers-off-the-board.",
+"tests": [
+"games/riftbound-turns/src/cards/deadly_flourish.rs:311 a_watched_unit_that_dies_later_this_turn_still_pays_the_gold",
+"games/riftbound-turns/src/cards/siphoning_strike.rs:381 a_watched_unit_that_dies_later_this_turn_still_channels_the_rune",
+"games/riftbound-turns/src/cards/imperial_decree.rs:126 any_unit_that_takes_damage_this_turn_dies_and_the_decree_lapses_with_the_turn",
+"games/riftbound-turns/src/cards/noxian_guillotine.rs:199 without_legion_the_marked_unit_dies_the_next_time_it_takes_damage_this_turn",
+"games/riftbound-turns/src/cards/rally_the_troops.rs:138 a_friendly_unit_played_later_this_turn_is_buffed_and_one_played_next_turn_is_not"
+]
+},
+{
+"key": "turn-scoped-granted-abilities",
+"title": "Abilities granted to a unit for the turn",
+"lane": "triggers",
+"order": 18,
+"depends_on": [
+"wearer-abilities",
+"lent-activated-abilities",
+"floating-turn-triggers"
+],
+"primitive": "CardState gains granted_abilities: Vec<(source: u32, index: u8, until: Expiry)> written by Ctx::grant_ability_this_turn(unit, source, index) and cleared at Expiration. engine/activate.rs ability_at/offers list them as the unit's own (Dominus: '2 any power: Ready me.' offered this turn only); engine/triggers.rs sources/matches fire them as the unit's own triggers (Relentless Pursuit: 'When I conquer, you may move me to my base'; Grim Resolve: 'When it wins a combat this turn, gain 2 XP'). Reuses the Grant::Ability resolution of wearer-abilities and the offset lookup of lent-activated-abilities.",
+"tests": [
+"games/riftbound-turns/src/cards/dominus.rs:213 the_dominated_unit_offers_a_two_rainbow_ready_this_turn_and_not_the_next",
+"games/riftbound-turns/src/cards/relentless_pursuit.rs:323 when_the_moved_unit_conquers_this_turn_its_controller_may_move_it_home",
+"games/riftbound-turns/src/cards/grim_resolve.rs:223 when_the_unit_wins_a_combat_this_turn_its_controller_gains_two_xp"
+]
+},
+{
+"key": "recycled-event",
+"title": "Event::Recycled and Trigger::Recycled(Who)",
+"lane": "triggers",
+"order": 19,
+"depends_on": [],
+"primitive": "engine/ctx.rs: Ctx::recycle (cards and runes) and pay.rs's rune recycle raise Event::Recycled { by: u8, cards: Vec<u32>, runes: bool } once per recycle instruction. cards/mod.rs: Trigger::Recycled(Who::You) with a condition reading runes (sivir_battle_mistress asks to exhaust her for a Gold) or a Vision recycle (karma_channeler \u2014 cross-lane: also needs the statics lane's implicit Vision trigger; un-ignore after the merge).",
+"tests": [
+"games/riftbound-turns/src/cards/sivir_battle_mistress.rs:325 recycling_a_rune_to_pay_asks_to_exhaust_her_for_a_gold",
+"games/riftbound-turns/src/cards/karma_channeler.rs:133 a_vision_recycle_on_play_triggers_her_own_buff"
+]
+},
+{
+"key": "each-players-beginning-phase",
+"title": "Battlefield BeginningPhase triggers for the turn player",
+"lane": "triggers",
+"order": 20,
+"depends_on": [],
+"primitive": "engine/triggers.rs matches: a battlefield card's Trigger::BeginningPhase currently matches owner_of(source) == event seat; add Who to the trigger (BeginningPhase(Who::You) keeps the holder, BeginningPhase(Who::Any) matches every seat's Beginning Phase with the turn player as the trigger's controller) so 'each player's Beginning Phase' fires for the second player while the first holds the battlefield (Obelisk, Frozen Fortress, The Arena's Greatest).",
+"tests": [
+"games/riftbound-turns/src/cards/obelisk_of_power.rs:210 the_second_player_still_channels_when_the_first_player_holds_the_obelisk",
+"games/riftbound-turns/src/cards/frozen_fortress.rs:238 the_opponents_beginning_phase_freezes_the_units_here_while_i_hold_the_fortress",
+"games/riftbound-turns/src/cards/the_arenas_greatest.rs:164 the_second_player_still_gains_a_point_when_the_first_player_holds_the_arena"
+]
+},
+{
+"key": "scored-event",
+"title": "Event::Scored and Who::Enemy on Hold/Conquer",
+"lane": "triggers",
+"order": 21,
+"depends_on": [],
+"primitive": "engine/cleanup.rs score paths (conquer, hold, score effects via Ctx::score): raise Event::Scored { seat, zone: Option<u16>, points, how: Conquer|Hold|Effect }. cards/mod.rs: Trigger::Scored(Who) and Who::Enemy admitted on Hold/Conquer; sumpworks_map draws on an opponent's score.",
+"tests": [
+"games/riftbound-turns/src/cards/sumpworks_map.rs:182 an_opponents_hold_draws_one_when_the_trigger_resolves"
+]
+},
+{
+"key": "writer-events",
+"title": "Events the Ctx writers do not raise yet (bounce, leave alive, hide, conquer holder)",
+"lane": "triggers",
+"order": 22,
+"depends_on": [],
+"primitive": "engine/ctx.rs: Ctx::bounce raises Event::ReturnedToHand { card, from: Location, owner }; a card leaving the board alive (bounce, banish, recycle of a permanent) raises Event::LeftBoard { card, controller, how } matched by a new Trigger::LeavesBoard (treasure_trove draws and channels when bounced); hide::hide raises Event::Hidden { card, seat, zone } matched by Trigger::YouHide (katarina readies); Event::Conquered gains `was_open: bool` / `previous_holder: Option<u8>` captured before cleanup::establish flips control (yone_blademaster, 170.11.c). Trigger arms hand the owner (ReturnedToHand) as the controller for rippers_bay's pay-one-to-channel.",
+"tests": [
+"games/riftbound-turns/src/cards/rippers_bay.rs:238 a_unit_returned_to_hand_from_here_lets_its_owner_pay_one_to_channel_a_rune_exhausted",
+"games/riftbound-turns/src/cards/treasure_trove.rs:211 a_bounced_trove_still_draws_one_and_channels_one_exhausted",
+"games/riftbound-turns/src/cards/katarina_reckless.rs:337 hiding_a_card_readies_her_once_the_trigger_resolves",
+"games/riftbound-turns/src/cards/yone_blademaster.rs:189 conquering_an_open_battlefield_deals_his_might_to_an_enemy_unit_in_a_base"
+]
+},
+{
+"key": "extra-trigger-queues",
+"title": "Statics that queue a trigger match again",
+"lane": "triggers",
+"order": 23,
+"depends_on": [],
+"primitive": "cards/mod.rs: Static::ExtraTriggers { kind: Hold|Conquer|Deathknell, applies: fn(&Ctx, source, zone_or_card) -> u8 }. engine/triggers.rs collect and deathknells: after queueing a Hold/Conquer match at a zone (Blue Sentinel / Red Brambleback standing there, their controller's triggers) or a Death match (Karthus on the board, his controller's Deathknells), consult in-play statics and push the same item that many additional times.",
+"tests": [
+"games/riftbound-turns/src/cards/blue_sentinel.rs:239 its_own_hold_trigger_queues_twice",
+"games/riftbound-turns/src/cards/red_brambleback.rs:225 his_own_conquer_trigger_queues_twice_and_buffs_two_units",
+"games/riftbound-turns/src/cards/karthus_eternal.rs:127 with_karthus_out_a_friendly_deathknell_is_queued_twice_and_the_sentry_draws_two"
+]
+},
+{
+"key": "implicit-temporary-veto",
+"title": "Temporary consults a veto before killing",
+"lane": "triggers",
+"order": 24,
+"depends_on": [],
+"primitive": "engine/triggers.rs find_among IMPLICIT_TEMPORARY Beginning-phase arm: before queueing a Temporary kill for a unit, consult in-play cards for a Static::TemporaryVeto(AuraWhen)-style hook (leblanc_everywhere_at_once::temporary_is_vetoed(ctx, source, unit)) and skip the source when it reads true; a Sprite at her battlefield survives its controller's Beginning Phase while one in the base dies.",
+"tests": [
+"games/riftbound-turns/src/cards/leblanc_everywhere_at_once.rs:139 your_sprite_at_her_battlefield_survives_your_beginning_phase"
+]
+},
+{
+"key": "banish-self-and-banished-with",
+"title": "SelfCost::BanishSelf and the banished-with link",
+"lane": "triggers",
+"order": 25,
+"depends_on": [
+"unit-dies-friendly",
+"wearer-abilities",
+"played-spell-payload"
+],
+"primitive": "CardState gains banished_by: Option<u32> set by Ctx::banish when run for an item whose source is a card (the Sarcophagus's play trigger, Jhin's banish, The Zero Drive's wearer deathknell) and read by units_banished_with / spells_banished_with; cleared when the card leaves Banishment. cards/mod.rs: SelfCost::BanishSelf paid by activate::pay_self / trigger finalization (ravenbloom_prefect; add Trigger::OpponentPlaysGear beside OpponentPlaysUnit). cost::origin_cost: an Origin::Banishment play charges the printed cost unless the item says free (Sarcophagus pays two energy, Zero Drive's reclaim ignores costs). the_zero_drive also needs UnitDies(Friendly) granted through wearer-abilities; jhin_virtuoso needs the paid cost from played-spell-payload.",
+"tests": [
+"games/riftbound-turns/src/cards/the_zero_drive.rs:301 the_wearers_death_banishes_it_and_the_reclaim_replays_it_free_through_the_engine",
+"games/riftbound-turns/src/cards/cursed_sarcophagus.rs:319 the_activation_offers_the_units_it_banished_and_plays_one_for_its_printed_cost",
+"games/riftbound-turns/src/cards/jhin_virtuoso.rs:334 a_fourth_spell_played_for_four_and_banished_puts_all_four_in_the_trash_channels_and_draws",
+"games/riftbound-turns/src/cards/ravenbloom_prefect.rs:203 an_opponents_gear_play_offers_to_banish_him_and_the_gear_through_the_engine"
+]
+},
+{
+"key": "legend-empower",
+"title": "Legends can be Empowered",
+"lane": "costs",
+"order": 1,
+"depends_on": [],
+"primitive": "engine/ctx.rs Ctx::set_counter / empower / disempower / is_empowered: read face_in_play (board or the legend zone) instead of on_board so COUNTER_EMPOWERED lands on a legend and Event::Empowered is raised; cards/mod.rs Filter::Legend joins the EMPOWER_TARGET candidates (profiteer::legend_can_be_empowered). Akali / Jayce / Kennen Empower resolutions then leave the legend Empowered.",
+"tests": [
+"games/riftbound-turns/src/cards/akali_rogue_assassin.rs:300 resolving_empower_makes_her_empowered",
+"games/riftbound-turns/src/cards/jayce_defender_of_tomorrow.rs:314 resolving_empower_makes_him_empowered_and_opens_the_pair",
+"games/riftbound-turns/src/cards/yordle_kennen_heart_of_the_tempest.rs:295 a_play_from_the_champion_zone_empowers_him_once_the_trigger_resolves",
+"games/riftbound-turns/src/cards/profiteer.rs:330 your_legend_is_offered_to_empower_and_becomes_empowered"
+]
+},
+{
+"key": "self-cost-disempower",
+"title": "SelfCost::Disempower",
+"lane": "costs",
+"order": 2,
+"depends_on": [
+"legend-empower"
+],
+"primitive": "cards/mod.rs: SelfCost::Disempower beside KillSelf and BanishTarget. engine/activate.rs pay_self: pay it through Ctx::disempower at finalization, before the ability is on the chain, and refuse the activation (offers greyed) while the source is not Empowered; the scripts drop their usable_if gate and the run's disempower. Legends (Ambessa, Mel, Kennen, Zed) need the face_in_play read from legend-empower.",
+"tests": [
+"games/riftbound-turns/src/cards/ambessa_matriarch_of_war.rs:289 the_activation_disempowers_her_as_its_cost_before_the_chain",
+"games/riftbound-turns/src/cards/mel_souls_reflection.rs:243 the_activation_disempowers_her_as_its_cost_before_the_chain",
+"games/riftbound-turns/src/cards/yordle_kennen_heart_of_the_tempest.rs:329 the_activation_disempowers_him_as_its_cost_before_the_chain",
+"games/riftbound-turns/src/cards/zed_master_of_shadows.rs:255 the_activation_disempowers_him_as_its_cost_before_the_chain",
+"games/riftbound-turns/src/cards/hextech_disc.rs:166 the_disempower_is_paid_at_activation_before_the_ability_is_on_the_chain",
+"games/riftbound-turns/src/cards/glowstone.rs:340 the_disempower_is_paid_at_activation_before_the_ability_is_on_the_chain",
+"games/riftbound-turns/src/cards/questionable_tome.rs:190 the_disempower_is_paid_at_activation_before_the_ability_is_on_the_chain"
+]
+},
+{
+"key": "empower-actor-and-banished-triggers",
+"title": "Event::Empowered carries the actor; Trigger::Banished(Who::You)",
+"lane": "costs",
+"order": 3,
+"depends_on": [
+"legend-empower"
+],
+"primitive": "engine/ctx.rs Event::Empowered gains `by: u8` (the controller of the empowering item, or the card's controller for a rule empower); cards/mod.rs Trigger::YouEmpower (matches by == source controller and card != source; your Profiteer on an enemy unit counts, an opponent's Sanction on your unit does not) so Ambessa - Matriarch of War / Mel - Soul's Reflection empower themselves; Trigger::Banished(Who::You) matched on Event::Banished { owner } == source controller (Zed empowers on banishing a card you own). Both legends need legend-empower.",
+"tests": [
+"games/riftbound-turns/src/cards/ambessa_matriarch_of_war.rs:268 another_friendly_card_becoming_empowered_empowers_her",
+"games/riftbound-turns/src/cards/mel_souls_reflection.rs:223 another_friendly_card_becoming_empowered_empowers_her",
+"games/riftbound-turns/src/cards/zed_master_of_shadows.rs:233 banishing_a_card_you_own_empowers_him"
+]
+},
+{
+"key": "activation-pay-stage-picks",
+"title": "Non-resource activation costs picked at the pay stage",
+"lane": "costs",
+"order": 7,
+"depends_on": [],
+"primitive": "cards/mod.rs: SelfCost gains target-bearing arms KillTarget(&'static Filter), RecycleTargets(u8, &'static Filter) (from the trash), ExhaustTarget(&'static Filter) and SelfCost::And(&'static [SelfCost]) so an ability can combine Exhaust with a pick. engine/activate.rs: before the item is created, prompt the pick (PromptWhy::Cost { .. } with the filter's candidates), refuse the activation when no candidate exists, and pay it (kill / recycle / exhaust) together with the rune cost in pay_self, so nothing can be undone by a response (818.1.c.3, 204.1.b). malzahar_fanatic's [Add] activation is also uncounterable: an ability whose run only adds resources resolves at once without a chain item (429.3).",
+"tests": [
+"games/riftbound-turns/src/cards/blade_of_the_ruined_king.rs:303 the_friendly_unit_is_killed_before_the_equip_reaches_the_chain",
+"games/riftbound-turns/src/cards/assembly_rig.rs:361 the_recycle_is_paid_before_the_ability_reaches_the_chain",
+"games/riftbound-turns/src/cards/garbage_grabber.rs:262 the_three_recycles_are_paid_before_the_ability_reaches_the_chain",
+"games/riftbound-turns/src/cards/last_rites.rs:329 the_two_recycles_are_paid_before_the_equip_reaches_the_chain",
+"games/riftbound-turns/src/cards/forgotten_signpost.rs:249 the_unit_is_exhausted_as_the_ability_is_paid_for",
+"games/riftbound-turns/src/cards/vi_destructive.rs:212 the_recycle_is_paid_when_the_ability_is_activated_not_when_it_resolves",
+"games/riftbound-turns/src/cards/malzahar_fanatic.rs:167 killing_a_friendly_unit_and_exhausting_him_adds_two_any_power_that_pay_the_next_spell"
+]
+},
+{
+"key": "trigger-finalization-picks",
+"title": "Costs and targets picked as a trigger is finalized",
+"lane": "costs",
+"order": 8,
+"depends_on": [
+"activation-pay-stage-picks",
+"self-cost-disempower"
+],
+"primitive": "engine/triggers.rs finalize (383.3): a triggered ability's SelfCost (RecycleSelf for Ekko, RecycleTarget for Rumble, DisempowerTarget over profiteer::empowered_things_you_control) is picked and paid when the trigger is finalized, before opponents react, using the pay-stage pick machinery of activation-pay-stage-picks; a target listed in Ability.targets is chosen at finalization too, with its Deflect paid then (akali_deadly_weapon, 355.5.b / 383.3.a), raising Chosen at that point instead of a Resume at resolution.",
+"tests": [
+"games/riftbound-turns/src/cards/ekko_recurrent.rs:193 the_recycle_is_paid_when_the_trigger_is_finalized_not_when_it_resolves",
+"games/riftbound-turns/src/cards/rumble_hotheaded.rs:582 the_unit_is_recycled_at_finalization_before_anyone_may_respond",
+"games/riftbound-turns/src/cards/profiteer.rs:344 the_disempower_is_picked_and_paid_as_the_trigger_is_finalized",
+"games/riftbound-turns/src/cards/akali_deadly_weapon.rs:487 the_unit_is_chosen_and_the_deflect_paid_as_the_trigger_is_finalized"
+]
+},
+{
+"key": "empower-cost-variants",
+"title": "Empower costs that discard or kill",
+"lane": "costs",
+"order": 9,
+"depends_on": [
+"activation-pay-stage-picks"
+],
+"primitive": "cards/mod.rs Keyword::Empower(Cost) gains a companion EmpowerCost { runes: Cost, extra: Option<SelfCost> } (or Card.empower_extra: SelfCost) so an Empower's discard (Punching Poro; Mel - Defiant Soul restricted to spells in hand, refused otherwise) or kill (Escaped Grayback) is a pick at the pay stage (355.10.c, 357) that raises no Chosen and cannot be undone. Reuses the pick prompt from activation-pay-stage-picks; the Empower activation path in activate.rs pays it with the runes.",
+"tests": [
+"games/riftbound-turns/src/cards/punching_poro.rs:202 the_discard_is_paid_before_the_empower_reaches_the_chain",
+"games/riftbound-turns/src/cards/escaped_grayback.rs:252 the_kill_is_paid_before_the_empower_reaches_the_chain_and_raises_no_chosen",
+"games/riftbound-turns/src/cards/mel_defiant_soul.rs:360 the_discard_is_paid_at_activation_and_offers_only_spells"
+]
+},
+{
+"key": "repeat-cost-variants",
+"title": "Repeat costs that discard and escalating Repeat steps",
+"lane": "costs",
+"order": 10,
+"depends_on": [
+"additional-cost-kinds"
+],
+"primitive": "engine/play.rs begin/advance STAGE_REPEAT: a Keyword::Repeat may carry a non-resource cost (RepeatCost::Discard(n)) picked before the item exists and withheld when the hand is empty (Square Up); Curtain Call's escalating steps (820.1.c.2, 820.3) are offered as separate Repeat asks \u2014 energy, then rainbow, then energy-plus-rainbow \u2014 each adding an execution, with the modes for each execution chosen at play time (820.2) and stored on the item (executions_paid). Shares the additional-stage prompt shape of additional-cost-kinds.",
+"tests": [
+"games/riftbound-turns/src/cards/square_up.rs:295 the_discard_is_paid_at_the_repeat_stage_and_an_empty_hand_is_not_asked_to_repeat",
+"games/riftbound-turns/src/cards/curtain_call.rs:528 all_three_steps_paid_give_four_executions_and_four_distinct_modes"
+]
+},
+{
+"key": "pay-stage-alternatives",
+"title": "Either-or costs and reductions chosen by the player",
+"lane": "costs",
+"order": 11,
+"depends_on": [
+"empower-cost-variants"
+],
+"primitive": "engine/pay.rs plan / play.rs STAGE_PAY: when an ExtraCost or a Static::SpellDiscount offers alternatives (legion_marauder: recycle a ready Body rune instead of exhausting; irelia_graceful: take the energy or the power off), the pay stage asks the player (PromptWhy::PayChoice with the labelled alternatives) instead of the script picking. Introduce ExtraCost -> CostChoice (one Cost, or a list) and Discount -> DiscountChoice; the picked alternative is recorded on the item.",
+"tests": [
+"games/riftbound-turns/src/cards/legion_marauder.rs:198 the_player_may_recycle_a_ready_body_rune_instead_of_exhausting_one",
+"games/riftbound-turns/src/cards/irelia_graceful.rs:224 the_player_may_take_the_energy_off_a_spell_that_also_has_a_power_cost"
+]
+},
+{
+"key": "additional-cost-kinds",
+"title": "Non-resource additional costs at STAGE_ADDITIONAL",
+"lane": "costs",
+"order": 4,
+"depends_on": [],
+"primitive": "cards/mod.rs: replace Card.additional: Option<Cost> with Option<Additional> where Additional { kind: Runes(Cost) | Discard(u8) | Kill { filter, count: One|AnyNumber } | Exhaust(filter) | ExhaustLegend | ReturnGear, optional: bool, offered: Option<Usable> (crescent_guardian gate), discount: Option<fn(&Ctx, &[u32]) -> Cost> }. engine/play.rs advance STAGE_ADDITIONAL: offer the confirm, prompt the pick(s) with candidates, refuse the play when a mandatory kind has no candidate (Cruel Patron, Sacrifice, Heedless Resurrection, Legion Quartermaster, Stalking Wolf), pay it before the item finalizes (discard to trash, kill, exhaust), record paid_additional and the picked cards on the item (Event::Played.paid_additional already exists) and apply the discount to the price (Brazen Buccaneer two energy off; Atakhan the victim's printed costs; Ledros one Order per kill). stalking_wolf's PlayLocation prompt then offers the victim's battlefield (play_locations_with_the_kill consulted at the location stage).",
+"tests": [
+"games/riftbound-turns/src/cards/brazen_buccaneer.rs:124 playing_it_offers_a_discard_that_takes_two_off_its_cost",
+"games/riftbound-turns/src/cards/ruthless_strike.rs:196 from_a_real_play_the_discard_is_offered_at_the_additional_stage_and_paid_it_deals_five",
+"games/riftbound-turns/src/cards/zed_from_the_shadows.rs:204 playing_him_offers_a_discard_and_the_paid_play_conjures_a_clone",
+"games/riftbound-turns/src/cards/cruel_patron.rs:116 playing_him_asks_which_friendly_unit_dies_and_is_refused_without_one",
+"games/riftbound-turns/src/cards/commander_ledros.rs:147 playing_him_offers_any_number_of_friendly_units_and_each_one_killed_takes_an_order_off",
+"games/riftbound-turns/src/cards/atakhan.rs:382 playing_him_may_kill_a_friendly_unit_and_its_costs_come_off_his",
+"games/riftbound-turns/src/cards/sacrifice.rs:294 the_kill_is_paid_before_the_spell_is_on_the_chain_and_no_response_can_undo_it",
+"games/riftbound-turns/src/cards/heedless_resurrection.rs:580 the_kill_is_paid_before_the_spell_is_on_the_chain_and_no_response_can_undo_it",
+"games/riftbound-turns/src/cards/zaun_punk.rs:219 playing_him_asks_which_friendly_gear_dies_and_a_paid_play_fires_the_kill",
+"games/riftbound-turns/src/cards/stalking_wolf.rs:265 playing_him_asks_which_pack_unit_dies_and_offers_its_battlefield",
+"games/riftbound-turns/src/cards/bard_mercurial.rs:442 playing_him_offers_exhausting_the_legend_and_a_paid_play_fires_the_move",
+"games/riftbound-turns/src/cards/meditation.rs:179 the_exhaust_is_paid_before_the_spell_is_on_the_chain_and_is_not_a_target",
+"games/riftbound-turns/src/cards/legion_quartermaster.rs:130 playing_him_asks_which_friendly_gear_returns_and_is_refused_without_one",
+"games/riftbound-turns/src/cards/crescent_guardian.rs:192 without_a_spell_played_this_turn_the_additional_cost_is_not_offered"
+]
+},
+{
+"key": "xp-and-buff-additional-costs",
+"title": "XP spends and spend-a-buff as costs",
+"lane": "costs",
+"order": 5,
+"depends_on": [
+"additional-cost-kinds"
+],
+"primitive": "cards::Cost gains `xp: u8` (or Additional::Xp(n)) so Card.additional can ask 3 XP (Safety Inspector, Poppy) or 5 XP (Conscription), offered at STAGE_ADDITIONAL only when the seat holds it and spent from SeatState.xp when paid. Additional::SpendBuff { count: One|AnyNumber, replaces_cost: bool, discount } spends a friendly unit's buff at the pay stage (Ctx::spend_buff): Wallop / Call to Glory playable for the buff alone with no ready rune, Kraken Hunter one Body power off per buff. SelfCost::SpendBuff pays the buff at activation for Sett - Brawler (204.1.b).",
+"tests": [
+"games/riftbound-turns/src/cards/conscription.rs:320 with_five_xp_the_play_offers_the_additional_cost_and_a_paid_play_may_take_the_colossus",
+"games/riftbound-turns/src/cards/safety_inspector.rs:428 with_three_xp_the_play_offers_the_additional_cost_and_paying_it_spares_the_controller",
+"games/riftbound-turns/src/cards/poppy_defender_of_the_meek.rs:207 with_three_xp_the_play_offers_the_additional_cost_and_paying_it_makes_her_cost_three",
+"games/riftbound-turns/src/cards/call_to_glory.rs:155 with_no_rune_ready_a_buffed_unit_pays_for_the_call_instead",
+"games/riftbound-turns/src/cards/wallop.rs:187 with_no_rune_ready_a_buffed_unit_pays_for_the_wallop_instead",
+"games/riftbound-turns/src/cards/kraken_hunter.rs:118 spending_one_buff_as_he_is_played_strikes_one_body_power_off_his_cost",
+"games/riftbound-turns/src/cards/sett_brawler.rs:367 the_buff_leaves_at_activation_before_anyone_can_respond"
+]
+},
+{
+"key": "additional-cost-from-another-card",
+"title": "Additional costs and locations offered by another card",
+"lane": "costs",
+"order": 6,
+"depends_on": [
+"additional-cost-kinds"
+],
+"primitive": "engine/play.rs advance STAGE_ADDITIONAL: beside the played card's own Additional, consult in-play cards for a Static::OffersAdditional(fn(&Ctx, &ChainItem) -> Option<Additional>) (dragon_roost::roost_additional_cost: two rainbows for any Dragon of any player); when paid, the location stage consults dragon_roost::roost_play_location in place of the location prompt so the Dragon lands at the roost.",
+"tests": [
+"games/riftbound-turns/src/cards/dragon_roost.rs:191 a_dragon_may_pay_two_rainbows_to_land_at_the_roost"
+]
+},
+{
+"key": "base-cost-discard",
+"title": "Discard as a base activation cost",
+"lane": "costs",
+"order": 12,
+"depends_on": [
+"activation-pay-stage-picks"
+],
+"primitive": "engine/activate.rs: an ability whose Cost carries Discard(n, filter) (a kind-filtered hand pick, gear for Sky Cruiser, any card for Unlicensed Armory / Gutter Palace) prompts PromptWhy::Discard before the item exists and pays it with the energy and the exhaust (204.1.b). Uses the pick machinery of activation-pay-stage-picks. Cross-lane notes: unlicensed_armory:370 also asserts the Fury 'may' on the kill path (damage lane kill-path-prompt) and gutter_palace:410 asserts the Bird has its own script (economy lane token-faces); un-ignore those two after the merge.",
+"tests": [
+"games/riftbound-turns/src/cards/unlicensed_armory.rs:370 the_discard_is_paid_before_the_ability_reaches_the_chain_and_the_fury_is_asked_for",
+"games/riftbound-turns/src/cards/sky_cruiser.rs:292 the_gear_is_discarded_with_the_energy_before_the_ability_reaches_the_chain",
+"games/riftbound-turns/src/cards/gutter_palace.rs:410 the_discard_is_paid_before_the_chain_and_the_bird_is_a_real_token"
+]
+},
+{
+"key": "target-dependent-costs",
+"title": "ExtraCost evaluated on the item after targets",
+"lane": "costs",
+"order": 13,
+"depends_on": [],
+"primitive": "cards/mod.rs: ExtraCost becomes fn(&Ctx, &ChainItem, Source) -> Cost (or a second ItemExtraCost slot) evaluated at choose_targets and STAGE_PAY, with legal::classify's any_affordable path deciding legality against the cheapest possible target; hextech_gauntlets::discounted(ctx, wearer) prices the Equip off the chosen unit's Might so one ready rune equips a 3-Might unit for the rainbow alone.",
+"tests": [
+"games/riftbound-turns/src/cards/hextech_gauntlets.rs:320 one_ready_rune_equips_a_three_might_unit_for_the_rainbow_alone"
+]
+},
+{
+"key": "enters-ready",
+"title": "Static::EntersReady and the per-seat enter-ready flags",
+"lane": "statics",
+"order": 1,
+"depends_on": [],
+"primitive": "cards/mod.rs: Static::EntersReady(Applies). engine/play.rs finalize (369.3) and Ctx::spawn: after placing the unit, consult its own EntersReady statics and in-play auras/grants (Magma Wurm for other friendly units here, Renata - Industrialist for tokens) plus two SeatState flags reset at Expiration \u2014 units_enter_ready_this_turn (Confront, Bushwhack) and next_unit_enters_ready (Sun Disc, spent on the first unit) \u2014 and leave the unit ready instead of exhausting every non-Accelerate unit; token makers pass a ready hint instead of a constant. Every card's enters_ready seam is the Applies.",
+"tests": [
+"games/riftbound-turns/src/cards/arena_kingpin.rs:221 played_from_hand_he_enters_ready_and_can_hype_at_once",
+"games/riftbound-turns/src/cards/confront.rs:133 a_unit_played_after_confront_enters_ready",
+"games/riftbound-turns/src/cards/bushwhack.rs:152 a_friendly_unit_played_after_bushwhack_enters_ready",
+"games/riftbound-turns/src/cards/bandle_soldier.rs:98 played_at_three_xp_it_enters_ready",
+"games/riftbound-turns/src/cards/daisy.rs:375 played_from_hand_she_enters_ready",
+"games/riftbound-turns/src/cards/dunebreaker.rs:169 played_with_two_cards_left_in_hand_it_enters_ready",
+"games/riftbound-turns/src/cards/corrupted_dragon.rs:282 played_from_hand_he_enters_ready_only_while_far_from_the_victory_score",
+"games/riftbound-turns/src/cards/direwing.rs:141 played_beside_a_friendly_dragon_it_enters_ready",
+"games/riftbound-turns/src/cards/breakneck_mech.rs:162 played_while_you_control_another_mech_it_enters_ready",
+"games/riftbound-turns/src/cards/eager_drakehound.rs:89 played_from_hand_it_enters_ready",
+"games/riftbound-turns/src/cards/magma_wurm.rs:64 a_friendly_unit_played_beside_the_wurm_enters_ready",
+"games/riftbound-turns/src/cards/crescent_guardian.rs:206 paid_after_a_spell_this_turn_it_enters_ready",
+"games/riftbound-turns/src/cards/leona_zealot.rs:164 played_while_an_opponent_sits_at_five_points_she_enters_ready",
+"games/riftbound-turns/src/cards/renata_glasc_industrialist.rs:104 a_token_played_beside_her_enters_ready",
+"games/riftbound-turns/src/cards/shadow_assassin.rs:137 played_with_a_namesake_in_the_trash_he_enters_ready",
+"games/riftbound-turns/src/cards/shadow.rs:237 played_to_a_battlefield_it_enters_ready",
+"games/riftbound-turns/src/cards/monch.rs:166 played_beside_a_stunned_enemy_it_enters_ready",
+"games/riftbound-turns/src/cards/master_yi_wuju_master.rs:205 at_level_eleven_a_unit_played_from_hand_enters_ready",
+"games/riftbound-turns/src/cards/xin_zhao_vigilant.rs:171 played_with_two_other_units_in_his_base_he_enters_ready",
+"games/riftbound-turns/src/cards/warwick_hunter.rs:197 played_from_hand_warwick_enters_ready",
+"games/riftbound-turns/src/cards/vayne_hunter.rs:226 played_while_an_opponent_controls_a_battlefield_she_enters_ready",
+"games/riftbound-turns/src/cards/scorchclaw.rs:139 played_at_three_xp_it_enters_ready",
+"games/riftbound-turns/src/cards/sun_disc.rs:120 with_legion_the_next_unit_played_this_turn_enters_ready_and_the_one_after_does_not"
+]
+},
+{
+"key": "deaths-this-turn",
+"title": "Per-turn death record",
+"lane": "statics",
+"order": 2,
+"depends_on": [
+"enters-ready"
+],
+"primitive": "blob/SeatState gains deaths_this_turn: Vec<Death { card, controller, unit: bool, phase: Phase }> appended by kill.rs and cleared at Expiration, exposed as Ctx::deaths_this_turn(); shadow_watcher (friendly death in the Beginning Phase) and towering_pairofant (any unit death) read it from their EntersReady Applies, spoils_of_war's discount counts enemy unit deaths across requests.",
+"tests": [
+"games/riftbound-turns/src/cards/shadow_watcher.rs:142 played_in_the_action_phase_after_a_friendly_death_in_the_beginning_phase_it_enters_ready",
+"games/riftbound-turns/src/cards/towering_pairofant.rs:131 played_after_a_unit_died_this_turn_it_enters_ready",
+"games/riftbound-turns/src/cards/spoils_of_war.rs:175 an_enemy_unit_killed_earlier_this_turn_still_discounts_the_spell_by_two"
+]
+},
+{
+"key": "implicit-keyword-play-triggers",
+"title": "IMPLICIT_VISION and IMPLICIT_WEAPONMASTER",
+"lane": "statics",
+"order": 3,
+"depends_on": [],
+"primitive": "cards/mod.rs: IMPLICIT_VISION and IMPLICIT_WEAPONMASTER beside IMPLICIT_TEMPORARY. engine/triggers.rs find_among: on Event::Entered for a unit carrying Keyword::Vision at entry (printed or granted through an aura \u2014 Gemcraft Seer, Forecaster) queue a play trigger that peeks the top card of the controller's main deck to the controller and asks [recycle it, keep] (817, once per instance); for Keyword::Weaponmaster (printed or from Azir's aura) queue the attach-a-loose-equipment offer that only a script's weaponmaster() runs today. Vision raises the recycle through Ctx::recycle.",
+"tests": [
+"games/riftbound-turns/src/cards/gemcraft_seer.rs:113 a_unit_played_under_the_aura_looks_at_the_top_card_of_its_owners_deck",
+"games/riftbound-turns/src/cards/forecaster.rs:123 a_mech_played_under_the_aura_looks_at_the_top_card_of_its_owners_deck",
+"games/riftbound-turns/src/cards/jeweled_colossus.rs:254 vision_looks_at_the_top_card_of_the_deck_as_it_is_played_and_may_recycle_it",
+"games/riftbound-turns/src/cards/mystic_poro.rs:110 vision_looks_at_the_top_card_of_the_deck_as_it_is_played_and_may_recycle_it",
+"games/riftbound-turns/src/cards/divining_shells.rs:216 vision_looks_at_the_top_card_as_the_shells_are_played_and_may_recycle_it",
+"games/riftbound-turns/src/cards/swain_visionary.rs:289 playing_him_looks_at_the_top_card_and_may_recycle_it",
+"games/riftbound-turns/src/cards/sai_scout.rs:92 vision_looks_at_the_top_card_when_he_is_played_and_may_recycle_it",
+"games/riftbound-turns/src/cards/azir_emperor_of_the_sands.rs:331 a_sand_soldier_played_under_his_aura_may_attach_a_loose_equipment_as_it_enters"
+]
+},
+{
+"key": "granted-statics-from-attachments",
+"title": "Grant::Static(Level / Aura / NoMoveByEnemy) read off attachments",
+"lane": "statics",
+"order": 4,
+"depends_on": [],
+"primitive": "engine/statics.rs own_grants / aura_grants / grants_on: walk Grant::Static(..) entries from attach::granted_statics on the wearer's gear, so a Level(3, ..) line on Soul Sword gives the wearer +1 at 3 XP, an Aura in Shurelya's Requiem's effect text projects Ganking onto friendly units at the wearer's battlefield, and a new Static::NoMoveByEnemy granted by Jagged Cutlass is read through item_cannot_move(ctx, item, unit) in march::effect_move, targets::candidates (Filter::Movable) and the group-move prompt whenever an enemy spell or ability would move the wearer.",
+"tests": [
+"games/riftbound-turns/src/cards/soul_sword.rs:186 at_three_xp_the_wearer_has_an_additional_plus_one",
+"games/riftbound-turns/src/cards/shurelyas_requiem.rs:226 while_attached_your_units_at_the_wearers_battlefield_have_ganking",
+"games/riftbound-turns/src/cards/jagged_cutlass.rs:231 an_enemy_spell_cannot_move_the_wearer_while_a_friendly_one_still_can"
+]
+},
+{
+"key": "no-move-to-base-off-units",
+"title": "NoMoveToBase read off units",
+"lane": "statics",
+"order": 5,
+"depends_on": [],
+"primitive": "engine/march.rs route/effect_move and Ctx::movable_to_base / moves_to_base_from: beside the battlefield card's Static::NoMoveToBase, consult a per-unit cannot_move_to_base(ctx, unit) (Determined Sentry: itself only) and a table-wide units_cannot_move_to_base(ctx) (Minotaur Reckoner: every unit of both sides, effect moves included), refusing the march and the effect move.",
+"tests": [
+"games/riftbound-turns/src/cards/determined_sentry.rs:98 the_sentry_cannot_march_home_nor_be_moved_home_while_vi_beside_it_can",
+"games/riftbound-turns/src/cards/minotaur_reckoner.rs:99 with_a_reckoner_in_play_no_unit_of_either_side_can_move_to_base"
+]
+},
+{
+"key": "ready-suppression",
+"title": "Ready suppression statics",
+"lane": "statics",
+"order": 6,
+"depends_on": [],
+"primitive": "cards/mod.rs: Static::ReadySuppressed { by_effects: Applies, by_awaken: Applies }. engine/ctx.rs Ctx::ready (spells and abilities) and Ctx::awaken consult in-play cards: Mageseeker Warden at a battlefield forbids spells and abilities readying enemy units and gear while Awaken still readies them; Maduli the Gatekeeper is never readied by Awaken or any effect.",
+"tests": [
+"games/riftbound-turns/src/cards/mageseeker_warden.rs:158 while_he_is_at_a_battlefield_spells_and_abilities_cannot_ready_enemy_units_and_gear",
+"games/riftbound-turns/src/cards/maduli_the_gatekeeper.rs:404 he_is_never_readied_by_awaken_or_by_an_effect"
+]
+},
+{
+"key": "granted-keywords",
+"title": "Granted Flow, Repeat and Accelerate",
+"lane": "statics",
+"order": 7,
+"depends_on": [],
+"primitive": "CardState gains a granted_costed: Vec<(Keyword, Expiry)> row (Keyword::from_codes drops costed keywords, so store Flow(Cost)/Repeat(Cost) with their cost) written by Ctx::grant_keyword_this_turn; legal::flow_cost and activate::flow_playable read it (Kennen lends Flow for the turn); play::advance STAGE_REPEAT and chain::run's repeat pass consult a Static::GrantsRepeat(fn(&Ctx, &ChainItem) -> Option<Cost>) on in-play cards (Syndra in a showdown); cost::can_accelerate consults in-play grants with the pending item's origin (rek_sai_breacher::grants_accelerate for a champion-zone play).",
+"tests": [
+"games/riftbound-turns/src/cards/kennen_storm_of_shuriken.rs:276 the_lent_spell_can_be_played_from_the_trash_for_its_cost_this_turn",
+"games/riftbound-turns/src/cards/syndra_transcendent.rs:178 a_spell_played_while_she_is_in_a_showdown_is_offered_the_repeat_and_resolves_twice",
+"games/riftbound-turns/src/cards/rek_sai_breacher.rs:157 a_unit_played_from_the_champion_zone_beside_her_is_offered_the_accelerate"
+]
+},
+{
+"key": "quick-draw",
+"title": "Quick-Draw timing and hand-zone grants",
+"lane": "statics",
+"order": 8,
+"depends_on": [],
+"primitive": "engine/hide.rs reacts and engine/legal.rs timing: read Keyword::QuickDraw as Reaction timing for an Equipment play (Long Sword drops its explicit Reaction). engine/statics.rs grants_on: consult a hand-zone grant (Jax - Unmatched: friendly Equipment in hand have Quick-Draw) so a hand card's keywords include it; play::finalize attaches the gear to a chosen unit as it resolves when played with Quick-Draw.",
+"tests": [
+"games/riftbound-turns/src/cards/long_sword.rs:280 quick_draw_alone_gives_the_sword_reaction_timing",
+"games/riftbound-turns/src/cards/jax_unmatched.rs:145 with_him_on_the_board_an_equipment_in_hand_plays_as_a_reaction_and_attaches"
+]
+},
+{
+"key": "filter-equipped",
+"title": "Filter::Equipped",
+"lane": "statics",
+"order": 9,
+"depends_on": [],
+"primitive": "cards/mod.rs Filter::Equipped (and Unequipped) read by targets::matches through attach::attachments_of; strike_down's first target offers only friendly units wearing gear.",
+"tests": [
+"games/riftbound-turns/src/cards/strike_down.rs:344 an_unequipped_friendly_unit_is_not_offered_as_the_striker"
+]
+},
+{
+"key": "no-combat-damage-from-self",
+"title": "A unit's own NoCombatDamageFrom",
+"lane": "statics",
+"order": 10,
+"depends_on": [],
+"primitive": "engine/ctx.rs Ctx::deals_combat_damage: also consult the unit's own Static::NoCombatDamageFrom(Suppresses) with itself as the subject (Ezreal - Dashing, Galio - Indefatigable always; Sacred Protector unless exactly one other friendly unit shares its battlefield), so combat.rs assigns it no damage.",
+"tests": [
+"games/riftbound-turns/src/cards/ezreal_dashing.rs:259 ezreal_contributes_nothing_to_combat_damage",
+"games/riftbound-turns/src/cards/galio_indefatigable.rs:135 galio_contributes_nothing_to_combat_damage_and_the_squire_alone_hits_the_raider",
+"games/riftbound-turns/src/cards/sacred_protector.rs:169 alone_or_with_two_friends_it_contributes_nothing_to_combat_damage"
+]
+},
+{
+"key": "floating-aura-for-the-turn",
+"title": "An aura registered for the turn by a resolved spell",
+"lane": "statics",
+"order": 11,
+"depends_on": [],
+"primitive": "blob gains floating_auras: Vec<{ source, seat, grants: &'static [Grant], scope, when, until: Expiry }> registered by Ctx::aura_this_turn from a resolving script and cleared at Expiration; engine/statics.rs aura_grants folds them like an in-play Static::Aura so Stand United's extra Might reaches a unit buffed later this turn.",
+"tests": [
+"games/riftbound-turns/src/cards/stand_united.rs:244 a_unit_buffed_later_this_turn_also_gets_the_extra_might_while_the_aura_floats"
+]
+},
+{
+"key": "open-battlefield-play-locations",
+"title": "Play to an open battlefield",
+"lane": "play",
+"order": 1,
+"depends_on": [],
+"primitive": "cards/mod.rs: Static::PlayLocations(fn(&Ctx, seat, card) -> Vec<Location>) (or Static::PlayToOpenBattlefields(Applies)). engine/ctx.rs play_locations and engine/legal.rs play_to / locations_for: union the card's own grant (Sneaky Deckhand, Ocean Drake, Sai Scout) and grants from other in-play cards (Miss Fortune - Buccaneer for friendly units) with the base and held battlefields; a unit landing on an open battlefield contests it (cleanup::establish).",
+"tests": [
+"games/riftbound-turns/src/cards/sneaky_deckhand.rs:144 he_may_be_played_to_an_open_battlefield_and_contests_it",
+"games/riftbound-turns/src/cards/ocean_drake.rs:272 it_may_be_played_to_an_open_battlefield_and_contests_it",
+"games/riftbound-turns/src/cards/sai_scout.rs:113 he_may_be_played_to_an_open_battlefield",
+"games/riftbound-turns/src/cards/miss_fortune_buccaneer.rs:119 with_her_on_the_board_a_friendly_unit_may_be_played_to_an_open_battlefield"
+]
+},
+{
+"key": "enemy-battlefield-play-locations",
+"title": "Sorcery-speed plays onto enemy-held battlefields",
+"lane": "play",
+"order": 2,
+"depends_on": [
+"open-battlefield-play-locations"
+],
+"primitive": "Extend the PlayLocations consult: Deadbloom Predator / Dauntless Vanguard / Arachnoid Horror (and the friendly units he grants it to) may be played at Action timing to a battlefield where an enemy unit stands alone, and combat opens as they land (showdown::open from play::finalize, as an Ambush entry does); Rengar - Pouncing may be played to the battlefield of the combat his controller is attacking and joins as an attacker (combat.rs adds him to the attackers). Static::AmbushIntoEnemies stays Ambush-timed.",
+"tests": [
+"games/riftbound-turns/src/cards/deadbloom_predator.rs:152 he_may_be_played_to_the_occupied_enemy_battlefield_at_sorcery_speed_and_combat_follows",
+"games/riftbound-turns/src/cards/dauntless_vanguard.rs:133 he_may_be_played_to_the_occupied_enemy_battlefield_at_sorcery_speed_and_combat_follows",
+"games/riftbound-turns/src/cards/arachnoid_horror.rs:237 he_and_a_friendly_unit_may_be_played_where_an_enemy_is_alone_and_combat_follows",
+"games/riftbound-turns/src/cards/rengar_pouncing.rs:159 he_pounces_onto_the_battlefield_you_are_attacking_and_joins_the_attack"
+]
+},
+{
+"key": "play-location-restrictions",
+"title": "Play-location restrictions and locks",
+"lane": "play",
+"order": 3,
+"depends_on": [
+"open-battlefield-play-locations"
+],
+"primitive": "Static::OnlyPlayLocations(fn) replaces the list (Perched Grimwyrm: refused at the base, only battlefields conquered this turn) and Static::OpponentsPlayUnitsOnlyToBase (Mageseeker Warden at a battlefield) filters opponents' unit locations; both consulted by Ctx::play_locations and legal::play_to so the PlayLocation prompt and the legal list agree.",
+"tests": [
+"games/riftbound-turns/src/cards/perched_grimwyrm.rs:170 he_is_refused_at_the_base_and_lands_only_where_you_conquered_this_turn",
+"games/riftbound-turns/src/cards/mageseeker_warden.rs:139 while_he_is_at_a_battlefield_opponents_play_units_only_to_their_base"
+]
+},
+{
+"key": "limited-play-mid-resolution",
+"title": "The engine serves a limited play inside a resolution",
+"lane": "play",
+"order": 4,
+"depends_on": [],
+"primitive": "engine/play.rs begin: accept a LimitedPlay { origin: Origin, locations: Vec<Location>, price: Printed|Free|PowerOnly, by: seat } handed by a resolving script (Ctx::play_limited), so legal::locations_for does not apply the play timing or the closed chain to it and the engine's own PlayLocation prompt serves the given list (The Harrowing, Thrill of the Hunt any battlefield, Rek'Sai - Swarm Queen with her battlefield added). Event::Played reports the real origin (Origin::Hand for Here to Help, Rift Herald, Rell - Magnetic, Bone Skewer's other-seat play) and a cancelled play returns the card to that zone. The candidate list for a hand play is face-aware (decide sees the seat's own hand faces) and offers only units whose cost the seat can pay.",
+"tests": [
+"games/riftbound-turns/src/cards/the_harrowing.rs:369 the_engines_own_location_prompt_serves_a_limited_play_mid_resolution",
+"games/riftbound-turns/src/cards/thrill_of_the_hunt.rs:380 the_engine_serves_the_any_battlefield_prompt_itself",
+"games/riftbound-turns/src/cards/rek_sai_swarm_queen.rs:633 the_engine_serves_the_location_prompt_with_here_added",
+"games/riftbound-turns/src/cards/here_to_help.rs:488 the_play_reports_its_hand_origin_and_only_affordable_units_are_offered",
+"games/riftbound-turns/src/cards/rift_herald.rs:481 the_knell_offers_only_affordable_units_and_reports_a_hand_play",
+"games/riftbound-turns/src/cards/bone_skewer.rs:497 their_play_is_reported_from_hand",
+"games/riftbound-turns/src/cards/rell_magnetic.rs:386 the_free_play_reports_the_hand_as_its_origin"
+]
+},
+{
+"key": "origin-revealed",
+"title": "Origin::Revealed for deck-revealed plays",
+"lane": "play",
+"order": 5,
+"depends_on": [
+"limited-play-mid-resolution"
+],
+"primitive": "state.rs Origin gains Revealed { from: Deck } (with a CBOR code) and a PowerOnly price; play::begin uses it for cards revealed off the deck (Dazzling Aurora, Rek'Sai - Swarm Queen, Void Rush, Promising Future) so Event::Played reports the reveal and play::cancel puts an unplayable card back on top of the deck (or to the trash where the card says) instead of Banishment.",
+"tests": [
+"games/riftbound-turns/src/cards/dazzling_aurora.rs:362 the_played_unit_reports_an_origin_that_is_not_banishment",
+"games/riftbound-turns/src/cards/rek_sai_swarm_queen.rs:607 the_played_card_reports_the_reveal_as_its_origin",
+"games/riftbound-turns/src/cards/void_rush.rs:572 the_played_card_reports_a_revealed_origin",
+"games/riftbound-turns/src/cards/promising_future.rs:588 a_kept_spell_without_a_legal_target_goes_back_on_top_of_the_deck"
+]
+},
+{
+"key": "replay-from-trash-mid-resolution",
+"title": "Replaying the resolving spell from the trash",
+"lane": "play",
+"order": 6,
+"depends_on": [
+"limited-play-mid-resolution"
+],
+"primitive": "engine/chain.rs run: after a spell's run returns Done and chain::leave files it in the trash, honour a pending Replay { card, by: seat, cost: Cost } the script registered (Ctx::offer_replay_from_trash) by offering the paid replay through the limited play of limited-play-mid-resolution with Origin::Trash { leave: Leave::Banish }; Dancing Grenade also keeps a per-spell deals-this-turn count on the blob so the replay deals two plus one.",
+"tests": [
+"games/riftbound-turns/src/cards/death_from_below.rs:203 after_a_small_kill_the_caster_pays_a_rainbow_and_plays_it_again_from_the_trash",
+"games/riftbound-turns/src/cards/dancing_grenade.rs:183 the_units_controller_pays_a_rainbow_to_replay_it_and_the_replay_deals_two_plus_one"
+]
+},
+{
+"key": "plays-from-trash",
+"title": "Units playable from the trash",
+"lane": "play",
+"order": 7,
+"depends_on": [],
+"primitive": "engine/legal.rs from_trash / locations_for and activate::flow_playable: beside Flow spells, offer a unit whose script grants a trash play (Undying Legion under Legion, for its printed cost plus a Fury, entering the base) and every card of a seat under a Static::MayPlayFromTrash (Endless Riches) priced as a hand play with Origin::Trash { leave: Leave::Banish }; the offer label says 'play from your trash' and Event::Played reports the trash origin.",
+"tests": [
+"games/riftbound-turns/src/cards/undying_legion.rs:146 under_legion_the_trash_offers_him_for_three_and_a_fury_and_he_enters_the_base",
+"games/riftbound-turns/src/cards/endless_riches.rs:325 with_the_riches_in_play_a_unit_in_your_trash_is_a_legal_play"
+]
+},
+{
+"key": "hidden-rules",
+"title": "Hidden capacity, alternative hide costs, free hides and reveal blocks",
+"lane": "play",
+"order": 8,
+"depends_on": [],
+"primitive": "engine/hide.rs: legal reads a per-battlefield capacity from a Static::HideCapacity(u8) (Bandle Tree takes two); cost() consults the card's alternative_hide_cost (Teemo: a [Hidden] card hides for 1 energy and the rune exhausts instead of recycling) and a per-seat free_hide_this_turn flag set by Guerilla Warfare and cleared at Expiration; play_legal checks opponents' units at the battlefield with a Static::BlocksReveal (Noxus Saboteur) before allowing the facedown play.",
+"tests": [
+"games/riftbound-turns/src/cards/bandle_tree.rs:142 a_second_card_may_be_hidden_at_the_tree_and_a_third_is_refused",
+"games/riftbound-turns/src/cards/teemo_swift_scout.rs:436 hiding_a_hidden_card_with_him_pays_one_energy_instead_of_the_rainbow_rune",
+"games/riftbound-turns/src/cards/guerilla_warfare.rs:265 after_it_resolves_a_hide_this_turn_costs_nothing",
+"games/riftbound-turns/src/cards/noxus_saboteur.rs:96 the_opponent_cannot_play_their_hidden_card_where_the_saboteur_stands"
+]
+},
+{
+"key": "owner-zones",
+"title": "Stolen cards leave to their owner's zones",
+"lane": "play",
+"order": 9,
+"depends_on": [],
+"primitive": "engine/chain.rs leave and engine/play.rs cancel: file a resolved or cancelled card in its OWNER's trash / Banishment instead of the item controller's (157, 359.3.d, 056.2) so a stolen spell (Mystic Reversal, Blind Fury) lands where it belongs.",
+"tests": [
+"games/riftbound-turns/src/cards/blind_fury.rs:451 a_stolen_spell_without_a_target_stays_in_its_owners_banishment",
+"games/riftbound-turns/src/cards/mystic_reversal.rs:585 a_stolen_spell_resolves_into_its_owners_trash"
+]
+},
+{
+"key": "reveal-replacements",
+"title": "Reveal hooks and peeked faces",
+"lane": "play",
+"order": 10,
+"depends_on": [],
+"primitive": "engine/ctx.rs reveal_top: before revealing, consult in-play statics for a look-first replacement (Void Hatchling: peek, ask [recycle, keep], then reveal what is left) and after revealing consult the revealed card's own on-reveal add (Undertitan adds two energy to the rune pool through the existing banked add). The plugin's fold exposes the faces of cards a seat peeked (Reinforce's five) so a candidate list can tell units from spells before they reach Banishment.",
+"tests": [
+"games/riftbound-turns/src/cards/void_hatchling.rs:178 with_a_hatchling_a_reveal_first_offers_to_recycle_the_top_card",
+"games/riftbound-turns/src/cards/undertitan.rs:184 revealing_it_from_the_deck_adds_two_energy_to_pay_with",
+"games/riftbound-turns/src/cards/reinforce.rs:535 only_the_units_among_the_five_are_offered"
+]
+},
+{
+"key": "add-payment-sources",
+"title": "[Add] abilities as payment sources at the pay stage",
+"lane": "economy",
+"order": 1,
+"depends_on": [],
+"primitive": "cards/mod.rs: Static::Adds(fn(&Ctx, source, &ChainItem) -> Option<Adds { energy, power: Domain|Rainbow, how: Exhaust|Recycle(n), when: Any|Reaction }>) generalising the Gold token. engine/pay.rs plan / choose_payment: for every ready card of the payer with an Adds that applies to the item (Seals: a power of their domain; Energy Conduit / Dragonsoul Sage / Darius under Legion / Diana in a showdown: one energy; Kai'Sa: a rainbow for spells only; Ornn: a rainbow for gear only; Renekton: two energy of a unit by recycling two runes; Platewyrm Egg one energy, two while Empowered; Honeyfruit; Ancient Henge / Hextech Anomaly converting X runes; Renata's Gold also an energy near victory) offer it as a payment source, pay by exhausting (or recycling) the card without a chain item (429.3, uncounterable), and add nothing before a card is played.",
+"tests": [
+"games/riftbound-turns/src/cards/ancient_henge.rs:162 a_ready_henge_turns_energy_into_rainbow_at_the_pay_stage_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/darius_hand_of_noxus.rs:137 with_legion_a_ready_darius_stands_in_for_one_energy_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/diana_scorn_of_the_moon.rs:181 during_a_showdown_a_ready_diana_pays_an_energy_the_rune_pool_is_short_of",
+"games/riftbound-turns/src/cards/dragonsoul_sage.rs:156 a_ready_sage_stands_in_for_one_energy_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/energy_conduit.rs:140 a_ready_conduit_stands_in_for_one_energy_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/hextech_anomaly.rs:170 a_ready_anomaly_turns_rainbow_into_energy_at_the_pay_stage_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/ornn_fire_below_the_mountain.rs:223 a_ready_ornn_pays_one_rainbow_of_a_gear_by_exhausting_and_never_for_a_spell",
+"games/riftbound-turns/src/cards/honeyfruit.rs:154 a_ready_fruit_stands_in_for_a_rainbow_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/platewyrm_egg.rs:177 a_ready_egg_stands_in_for_one_energy_and_two_while_empowered",
+"games/riftbound-turns/src/cards/kai_sa_daughter_of_the_void.rs:167 a_ready_kaisa_pays_one_rainbow_of_a_spell_by_exhausting_and_never_for_a_unit",
+"games/riftbound-turns/src/cards/renekton_butcher_of_the_sands.rs:270 a_ready_renekton_pays_two_energy_of_a_unit_by_two_rainbow_and_the_exhaust_and_never_for_a_gear",
+"games/riftbound-turns/src/cards/renata_glasc_chem_baroness.rs:297 within_reach_of_victory_a_gold_pays_an_energy_the_rune_pool_is_short_of",
+"games/riftbound-turns/src/cards/seal_of_focus.rs:157 a_ready_seal_stands_in_for_a_power_of_its_domain_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/seal_of_insight.rs:157 a_ready_seal_stands_in_for_a_power_of_its_domain_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/seal_of_unity.rs:157 a_ready_seal_stands_in_for_a_power_of_its_domain_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/seal_of_strength.rs:157 a_ready_seal_stands_in_for_a_power_of_its_domain_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/seal_of_rage.rs:157 a_ready_seal_stands_in_for_a_power_of_its_domain_and_pays_by_exhausting",
+"games/riftbound-turns/src/cards/seal_of_discord.rs:157 a_ready_seal_stands_in_for_a_power_of_its_domain_and_pays_by_exhausting"
+]
+},
+{
+"key": "banked-rune-pool",
+"title": "A per-seat banked rune pool",
+"lane": "economy",
+"order": 2,
+"depends_on": [
+"add-payment-sources"
+],
+"primitive": "SeatState gains pool: { energy: u8, power: Vec<Domain|Rainbow> } (167) written by Ctx::add_to_pool from [Add] effects (jhin_murderous_artist::add_to_rune_pool), spent first by pay::plan across any number of plays and abilities of any kind, and emptied by expiry at the end of the turn and at the start of the next Main Phase; the next-card-only next_discount stays for the discounts that are truly next-card.",
+"tests": [
+"games/riftbound-turns/src/cards/jhin_murderous_artist.rs:204 the_added_resources_pay_for_two_cards_and_are_gone_at_the_end_of_the_turn"
+]
+},
+{
+"key": "discounts-at-classify",
+"title": "legal::classify prices with discounts",
+"lane": "economy",
+"order": 3,
+"depends_on": [],
+"primitive": "engine/legal.rs classify / from_trash and engine/play.rs begin: price a play with cost::of_item over a provisional ChainItem (folding SpellDiscount, PlayDiscount, floating discounts and the Flow cost) instead of cost::total / flow_cost, so a spell affordable only through Eager Apprentice / Applied Researchers / Vex - Cheerless / Undying Loyalty / Stargazer is offered; price the Repeat ask after SLOT_REPEAT is set (Marai Spire) and the additional-cost confirm after its slot is set, with cost::discounts_of applying SpellDiscount-style discounts to a unit's optional additional cost too (Ezreal - Prodigy).",
+"tests": [
+"games/riftbound-turns/src/cards/eager_apprentice.rs:261 one_ready_rune_is_enough_for_a_two_cost_spell_when_she_is_at_a_battlefield",
+"games/riftbound-turns/src/cards/applied_researchers.rs:319 one_ready_rune_is_enough_for_the_spark_when_the_team_is_empowered",
+"games/riftbound-turns/src/cards/vex_cheerless.rs:268 a_spark_affordable_only_through_her_gloom_is_offered_on_one_ready_rune",
+"games/riftbound-turns/src/cards/undying_loyalty.rs:367 a_seat_that_can_only_afford_the_discounted_price_may_start_the_play",
+"games/riftbound-turns/src/cards/stargazer.rs:319 the_drag_from_the_trash_is_classified_at_the_discounted_price",
+"games/riftbound-turns/src/cards/marai_spire.rs:321 one_ready_rune_is_offered_the_repeat_when_the_spire_pays_its_energy",
+"games/riftbound-turns/src/cards/ezreal_prodigy.rs:288 a_units_additional_cost_is_discounted_too"
+]
+},
+{
+"key": "play-discounts-and-surcharges",
+"title": "Static::PlayDiscount and Static::Surcharge from other cards",
+"lane": "economy",
+"order": 4,
+"depends_on": [
+"discounts-at-classify"
+],
+"primitive": "cards/mod.rs: Static::PlayDiscount(ItemDiscount) for units and gear from another card with a floor (Herald of Scales: Dragons two energy less, min one; Ornn's Forge: gear while held, plus a per-seat gear_played counter reset at Expiration) and Static::Surcharge(ItemDiscount) whose Cost is ADDED in cost::base_of_item (Helm of Suppression, Mystic Vortex on Reaction cards during a showdown here, Vex - Cheerless in combat, Vaults of Helia on the holder's non-token units this turn); cost::discounts_of folds both and legal::classify prices them (depends on discounts-at-classify).",
+"tests": [
+"games/riftbound-turns/src/cards/herald_of_scales.rs:221 playing_a_dragon_with_the_herald_in_play_costs_two_energy_less",
+"games/riftbound-turns/src/cards/ornns_forge.rs:233 one_ready_rune_plays_the_two_energy_boots_while_the_forge_is_held",
+"games/riftbound-turns/src/cards/helm_of_suppression.rs:248 their_spark_costs_three_and_four_with_a_rainbow_once_the_helm_is_empowered",
+"games/riftbound-turns/src/cards/mystic_vortex.rs:198 during_a_showdown_here_a_reaction_spell_is_priced_a_rainbow_higher",
+"games/riftbound-turns/src/cards/vex_cheerless.rs:286 in_combat_an_enemy_spell_costs_one_energy_and_one_rainbow_more",
+"games/riftbound-turns/src/cards/vaults_of_helia.rs:279 after_the_hold_the_holders_non_token_units_cost_one_energy_more_this_turn"
+]
+},
+{
+"key": "ability-discounts",
+"title": "Static::AbilityDiscount",
+"lane": "economy",
+"order": 5,
+"depends_on": [
+"play-discounts-and-surcharges"
+],
+"primitive": "cards/mod.rs Static::AbilityDiscount(ItemDiscount) consulted by cost::of_item for ItemKind::Ability (Risen Altar: the Empower of a unit standing here one energy or one rainbow lower; Piltovan Forge: the holder's first gear ability of the turn one energy lower, with a per-seat gear_abilities_activated counter reset at Expiration). risen_altar's energy-or-rainbow pick is the costs lane's pay-stage-alternatives (cross-lane; the test can pass with the script choosing until the merge).",
+"tests": [
+"games/riftbound-turns/src/cards/piltovan_forge.rs:214 the_holders_first_gear_ability_of_the_turn_is_priced_one_energy_lower",
+"games/riftbound-turns/src/cards/risen_altar.rs:202 the_empower_of_a_unit_here_is_priced_a_rainbow_lower"
+]
+},
+{
+"key": "next-spell-promises",
+"title": "Kind-aware, turn-scoped per-seat promises",
+"lane": "economy",
+"order": 6,
+"depends_on": [
+"discounts-at-classify"
+],
+"primitive": "Replace SeatState.next_discount with promises: Vec<Promise { kind: Spell|Gear|Unit|Any, effect: Discount(Cost)|RepeatForCost|FreeForPower { max_energy }, until: Expiry }> cleared at Expiration; cost::discounts_of applies the first matching promise to the next card of that kind only (Raging Firebrand: spells only, expires with the turn), play::advance STAGE_REPEAT offers a Repeat equal to the spell's printed cost from a RepeatForCost promise (Temporal Portal, The Academy), and a FreeForPower promise lets one gear costing 7 or less play for its Power alone (Jayce - Man of Progress).",
+"tests": [
+"games/riftbound-turns/src/cards/raging_firebrand.rs:177 the_discount_skips_a_unit_played_before_the_spell",
+"games/riftbound-turns/src/cards/raging_firebrand.rs:201 the_discount_expires_with_the_turn",
+"games/riftbound-turns/src/cards/temporal_portal.rs:194 the_next_spell_this_turn_offers_a_repeat_equal_to_its_cost",
+"games/riftbound-turns/src/cards/the_academy.rs:153 the_next_spell_this_turn_after_a_hold_offers_a_repeat_equal_to_its_cost",
+"games/riftbound-turns/src/cards/jayce_man_of_progress.rs:219 after_the_kill_a_seven_energy_gear_is_playable_for_its_power_alone_and_an_eight_is_not"
+]
+},
+{
+"key": "seat-per-turn-counters",
+"title": "Per-seat per-turn counters on SeatState",
+"lane": "economy",
+"order": 7,
+"depends_on": [],
+"primitive": "SeatState gains counters reset at Expiration and fed by the engine writers: kinds_played (unit/gear/spell/token, fed by play::finalize even when the card later leaves \u2014 Azir's equipment gate, Swain - Visionary), enemy_choices (fed by Ctx::choose / the Chosen event \u2014 Hungry Wolf, Ezreal - Prodigal Explorer), holds_this_turn (cleanup::score_holds \u2014 Needlessly Large Yordle), xp_gained (Ctx::score_xp \u2014 Wily Newtfish), power_spent and energy_spent (pay::pay for runes and Golds \u2014 Sivir - Mercenary, Prepared Neophyte), discards (discard.rs \u2014 Raging Soul grants Assault 1 and Ganking for the turn). Expose Ctx readers the seams use instead of ctx.events.",
+"tests": [
+"games/riftbound-turns/src/cards/azir_emperor_of_the_sands.rs:312 an_equipment_played_in_an_earlier_request_still_opens_the_gate",
+"games/riftbound-turns/src/cards/swain_visionary.rs:270 a_unit_played_and_killed_earlier_this_turn_still_counts",
+"games/riftbound-turns/src/cards/hungry_wolf.rs:278 a_choice_made_in_an_earlier_request_still_opens_the_gate",
+"games/riftbound-turns/src/cards/ezreal_prodigal_explorer.rs:326 choices_made_in_an_earlier_request_still_open_the_gate",
+"games/riftbound-turns/src/cards/needlessly_large_yordle.rs:226 a_hold_scored_in_an_earlier_request_still_discounts_the_yordle",
+"games/riftbound-turns/src/cards/wily_newtfish.rs:178 xp_gained_in_an_earlier_request_still_counts_for_the_rest_of_the_turn",
+"games/riftbound-turns/src/cards/sivir_mercenary.rs:153 power_spent_in_an_earlier_request_still_counts_for_the_rest_of_the_turn",
+"games/riftbound-turns/src/cards/prepared_neophyte.rs:164 the_four_might_lasts_the_turn_after_the_spell_resolves",
+"games/riftbound-turns/src/cards/raging_soul.rs:107 after_a_discard_this_turn_it_has_assault_one_and_ganking"
+]
+},
+{
+"key": "card-per-turn-counters",
+"title": "Per-card per-turn counters on CardState",
+"lane": "economy",
+"order": 8,
+"depends_on": [],
+"primitive": "CardState gains moves_this_turn (fed by march.rs and Ctx::move_unit \u2014 Yasuo scores on the third), modes_used bitmask (Udyr refuses a mode chosen this turn even after another buff) and conquered_this_turn (set by cleanup::conquer per unit that conquered, distinct from Control.scored so a battlefield held since the Beginning Phase does not read as conquered \u2014 Blighted Battleaxe, Perched Grimwyrm), all reset at Expiration and readable across requests.",
+"tests": [
+"games/riftbound-turns/src/cards/yasuo_windrider.rs:129 the_third_move_in_a_turn_scores_a_point_and_the_fourth_does_not",
+"games/riftbound-turns/src/cards/udyr_wildman.rs:298 a_mode_chosen_this_turn_is_refused_when_he_is_buffed_again",
+"games/riftbound-turns/src/cards/blighted_battleaxe.rs:351 a_wearer_that_conquered_earlier_in_the_turn_keeps_the_axe_at_the_ending_step",
+"games/riftbound-turns/src/cards/perched_grimwyrm.rs:220 a_battlefield_held_since_the_beginning_phase_was_not_conquered_this_turn"
+]
+},
+{
+"key": "seat-turn-number",
+"title": "A seat's own turn count and first Beginning Phase",
+"lane": "economy",
+"order": 9,
+"depends_on": [],
+"primitive": "SeatState gains turns_taken (incremented as the seat's Beginning Phase opens) and a first_beginning_phase_done flag, so an extra turn inside the opening round does not shift is_first_beginning_phase off the table turn number (Obelisk of Power) and turn_number_of reads the seat's fourth turn (Ol' Poro); add Static::PlayVeto(Applies) consulted by legal::classify with its own Reason so Ol' Poro is refused on a seat's first three turns.",
+"tests": [
+"games/riftbound-turns/src/cards/obelisk_of_power.rs:228 an_extra_turn_in_the_opening_round_does_not_steal_the_second_players_first_phase",
+"games/riftbound-turns/src/cards/ol_poro.rs:143 on_your_first_three_turns_the_play_is_refused_and_on_the_fourth_it_lands"
+]
+},
+{
+"key": "alternative-cost",
+"title": "Static::AlternativeCost",
+"lane": "economy",
+"order": 10,
+"depends_on": [
+"seat-per-turn-counters",
+"discounts-at-classify"
+],
+"primitive": "cards/mod.rs Static::AlternativeCost(fn(&Ctx, &ChainItem, u32) -> Option<Cost>) folded by cost::of_item as a replacement price (not a subtraction) and priced by legal::classify, so Jhin - Meticulous Killer plays for one Mind power alone after four energy went into a spell this turn (reads energy_spent from seat-per-turn-counters).",
+"tests": [
+"games/riftbound-turns/src/cards/jhin_meticulous_killer.rs:153 after_four_went_into_a_spell_this_turn_he_plays_for_one_mind_power_alone"
+]
+},
+{
+"key": "tags-on-the-face",
+"title": "Tags on CardInfo, Filter::Tag, Grant::Tag",
+"lane": "economy",
+"order": 11,
+"depends_on": [],
+"primitive": "CardInfo (the projection's face) gains tags: Vec<String> read from the set file (games/riftbound/src/lib.rs manifest rows carry the printed tags: Bird, Cat, Dog, Poro, Dragon, Mech, Recruit, ...); Ctx::has_tag(card, tag) also consults Grant::Tag(&'static str) from attachments (Experimental Hexplate makes the wearer a Mech) and a CardState.chosen_tag set by Ivern - Friend to All's play trigger; cards/mod.rs Filter::Tag(&'static str) for target specs. The name-list seams (daisy::{BIRDS,CATS,DOGS}, poro_herder::is_poro, herald_of_scales::DRAGONS, rumble::is_mech, starhound::is_companion) read the tag instead.",
+"tests": [
+"games/riftbound-turns/src/cards/daisy.rs:389 a_tagged_unit_the_name_lists_do_not_know_still_counts",
+"games/riftbound-turns/src/cards/friendship.rs:284 a_unit_the_lists_do_not_know_still_counts_by_its_tag",
+"games/riftbound-turns/src/cards/danger_zone.rs:226 a_unit_printed_with_the_mech_tag_is_a_mech_whatever_its_name",
+"games/riftbound-turns/src/cards/gentle_gemdragon.rs:302 a_dragon_tagged_unit_under_a_name_the_lists_do_not_know_still_counts",
+"games/riftbound-turns/src/cards/ivern_nurturer.rs:585 a_tagged_unit_the_lists_do_not_know_still_counts",
+"games/riftbound-turns/src/cards/poro_herder.rs:231 a_poro_tagged_unit_whose_name_lacks_the_word_still_counts",
+"games/riftbound-turns/src/cards/production_surge.rs:200 a_unit_whose_face_carries_the_mech_tag_discounts_the_surge_whatever_its_name",
+"games/riftbound-turns/src/cards/starhound.rs:433 a_dog_tagged_unit_under_a_name_the_list_does_not_know_still_counts",
+"games/riftbound-turns/src/cards/undying_loyalty.rs:351 a_companion_the_list_does_not_know_still_takes_two_energy_off",
+"games/riftbound-turns/src/cards/experimental_hexplate.rs:181 the_effect_text_grants_the_mech_tag_the_face_can_carry",
+"games/riftbound-turns/src/cards/ivern_friend_to_all.rs:267 his_chosen_tag_completes_the_menagerie"
+]
+},
+{
+"key": "token-faces",
+"title": "Token::Recruit, Token::Bird, Token::Mech",
+"lane": "economy",
+"order": 12,
+"depends_on": [],
+"primitive": "engine/ctx.rs Token gains Recruit (1 Might, no domain, the Recruit tag), Bird (1 Might, the Bird tag, printed Deflect 1 with its own script so ctx.script(bird) is Some) and Mech (the Mech tag) with faces; the manifest tokens in games/riftbound/src/lib.rs; TOKEN_RECRUIT / TOKEN_BIRD / TOKEN_MECH and is_token_name in cards/mod.rs. spawn_recruit / spawn_bird / spawn_mech become spawn(ctx, owner, Token::X, at, ready) and the hand-built faces go.",
+"tests": [
+"games/riftbound-turns/src/cards/ferrous_forerunner.rs:247 the_engine_knows_the_mech_as_a_token_name",
+"games/riftbound-turns/src/cards/assembly_rig.rs:376 the_engine_knows_the_mech_as_a_token_name",
+"games/riftbound-turns/src/cards/iterative_design.rs:224 the_engine_knows_the_mech_as_a_token_name",
+"games/riftbound-turns/src/cards/faithful_manufactor.rs:345 the_engine_knows_the_recruit_as_a_token_name",
+"games/riftbound-turns/src/cards/vanguard_armory.rs:237 the_engine_knows_the_recruit_as_a_token_name",
+"games/riftbound-turns/src/cards/flurry_of_feathers.rs:365 a_bird_token_resolves_to_a_script_that_prints_its_deflect",
+"games/riftbound-turns/src/cards/frisky_hunter.rs:345 the_engine_knows_the_bird_as_a_token_name"
+]
+},
+{
+"key": "copies",
+"title": "Token::Reflection and Ctx::become_copy",
+"lane": "economy",
+"order": 13,
+"depends_on": [
+"token-faces"
+],
+"primitive": "engine/ctx.rs Token::Reflection (0 Might blank) and Ctx::become_copy(card, of, until: Expiry|WhileAttached(gear)) (477.1.b): CardState gains copy_of: Option<u32> so the projection reads the copied unit's name, script binding, printed Might and keywords, with [Temporary] granted after for Keeper of Masks / Mirror Image, LeBlanc - Deceiver's hold, and Shady Spectacles' wearer reverting on detach; cards/mod.rs knows the Reflection name.",
+"tests": [
+"games/riftbound-turns/src/cards/leblanc_deceiver.rs:451 the_reflection_becomes_a_copy_of_the_chosen_unit_and_reads_its_might",
+"games/riftbound-turns/src/cards/mirror_image.rs:220 the_reflection_carries_the_copied_units_might_name_and_script",
+"games/riftbound-turns/src/cards/keeper_of_masks.rs:301 the_reflections_become_copies_of_the_keeper_and_the_engine_knows_the_token_name",
+"games/riftbound-turns/src/cards/shady_spectacles.rs:294 the_wearer_becomes_a_copy_of_the_chosen_unit_until_the_spectacles_come_off"
+]
+},
+{
+"key": "token-play-replacement",
+"title": "A replacement on token plays",
+"lane": "economy",
+"order": 14,
+"depends_on": [
+"token-faces"
+],
+"primitive": "engine/ctx.rs Ctx::spawn: before placing a token, consult in-play cards for a Static::DoublesTokenPlay(Applies) (zilean_time_mage::would_double_a_token_play, once each turn via spend_the_doubling) and, on a yes to the optional (371.2), spawn one more of the same face at the same location with the same ready state (375).",
+"tests": [
+"games/riftbound-turns/src/cards/zilean_time_mage.rs:162 a_token_played_for_his_controller_arrives_as_two_and_the_choice_is_once_each_turn"
+]
+},
+{
+"key": "move-surcharge",
+"title": "Group-move surcharges",
+"lane": "economy",
+"order": 15,
+"depends_on": [],
+"primitive": "state.rs PromptWhy::GroupMove gains a cost; engine/march.rs group_move prices each companion through group_move_surcharge(ctx, seat, to, picked + 1) summed from in-play cards (Mageseeker Investigator: one energy per unit beyond the first moving to him), prompts::options greys a companion the seat cannot afford beside the picks so far, and march::group_move pays the surcharge before the units move.",
+"tests": [
+"games/riftbound-turns/src/cards/mageseeker_investigator.rs:199 without_a_spare_rune_the_opponent_moves_one_unit_to_him_and_with_one_pays_it_for_a_second"
+]
+},
+{
+"key": "bonus-damage",
+"title": "Bonus damage keyed on the cause",
+"lane": "damage",
+"order": 1,
+"depends_on": [],
+"primitive": "engine/ctx.rs Ctx::damage: before prevention, sum bonus_damage(ctx, unit, cause) from a new Static::BonusDamage(fn(&Ctx, source, unit, &Cause) -> u8) over in-play cards (Void Gate: +1 to a unit here from a spell; Rabadon's Deathcrown: +3 from a spell of the wearer's controller) and from a per-seat next-spell-damage promise on SeatState written by Ravenborn Tome and spent by the first spell damage of that seat this turn (712-715, 715.4.a, 417.4).",
+"tests": [
+"games/riftbound-turns/src/cards/void_gate.rs:180 a_spell_dealing_one_to_a_unit_here_deals_two",
+"games/riftbound-turns/src/cards/rabadons_deathcrown.rs:218 a_spell_of_the_wearers_controller_deals_three_more_through_the_engine",
+"games/riftbound-turns/src/cards/ravenborn_tome.rs:114 the_next_spell_this_turn_deals_one_more_and_the_one_after_does_not"
+]
+},
+{
+"key": "no-damage-static",
+"title": "Static::NoDamage and static prevention",
+"lane": "damage",
+"order": 2,
+"depends_on": [
+"bonus-damage"
+],
+"primitive": "cards/mod.rs Static::NoDamage(fn(&Ctx, unit, &Cause) -> bool). engine/ctx.rs Ctx::damage returns false and marks nothing when it applies (Ambessa - The Wolf while Empowered out of combat; Kayn - Unleashed after two moves; Esteemed Hierophant with seven runes against an enemy item, 437.1.b.1.b), and combat.rs / cleanup::dying exempt the unit from lethal assignment (465.2.c.10). kayn_unleashed:104 also reads moves_this_turn from the economy lane's card-per-turn-counters (cross-lane; un-ignore after the merge).",
+"tests": [
+"games/riftbound-turns/src/cards/ambessa_the_wolf.rs:198 while_empowered_she_is_dealt_no_damage_unless_she_is_in_combat",
+"games/riftbound-turns/src/cards/kayn_unleashed.rs:104 after_two_moves_in_a_turn_he_takes_no_damage",
+"games/riftbound-turns/src/cards/esteemed_hierophant.rs:226 with_seven_runes_an_enemy_spell_deals_it_nothing_while_your_own_and_combat_still_land"
+]
+},
+{
+"key": "per-unit-prevention",
+"title": "Prevention on a unit with Amount::Next / Amount::N",
+"lane": "damage",
+"order": 3,
+"depends_on": [],
+"primitive": "state.rs Prevention gains unit: Option<u32> and Amount::Next; engine/prevent.rs reduce(card, n, cause) matches the unit it is asked about, spends a Next shield on the first Ctx::damage to that unit (Counter Strike) and decrements an N shield across instances (Ki Barrier's seven), clearing at Expiration; registered by prevent_the_next_damage_to.",
+"tests": [
+"games/riftbound-turns/src/cards/counter_strike.rs:157 the_next_damage_to_the_unit_this_turn_is_prevented_once_and_other_units_still_take_theirs",
+"games/riftbound-turns/src/cards/ki_barrier.rs:152 the_next_seven_damage_to_the_unit_this_turn_is_prevented_across_instances_and_others_take_theirs"
+]
+},
+{
+"key": "turn-scoped-damage-multiplier",
+"title": "A per-unit damage multiplier for the turn",
+"lane": "damage",
+"order": 4,
+"depends_on": [
+"bonus-damage",
+"per-unit-prevention"
+],
+"primitive": "CardState gains damage_multiplier_this_turn: u8 (reset at Expiration) written by Lotus Trap's resolution; Ctx::damage multiplies after prevention (465.2.c.4, 712-715) so every damage to the trapped unit this turn is doubled.",
+"tests": [
+"games/riftbound-turns/src/cards/lotus_trap.rs:204 every_damage_dealt_to_the_trapped_unit_this_turn_is_doubled_until_the_turn_ends"
+]
+},
+{
+"key": "per-player-damage-marks",
+"title": "Damage marked per player and lethal consults",
+"lane": "damage",
+"order": 5,
+"depends_on": [],
+"primitive": "CardState damage becomes per-marker (a map controller -> u8 beside the total) written by Ctx::damage from the cause's controller; cleanup::dying consults a Static::LethalDamage(fn(&Ctx, source, unit) -> bool) (elder_dragon::any_of_your_damage_is_lethal_to) before comparing the total to current_might, so one damage from the Dragon's controller kills an enemy unit at cleanup (142.3).",
+"tests": [
+"games/riftbound-turns/src/cards/elder_dragon.rs:373 with_the_dragon_in_play_one_damage_from_you_kills_an_enemy_unit_at_the_cleanup"
+]
+},
+{
+"key": "kill-path-prompt-and-legend-replacements",
+"title": "A 'may' on the kill path and legend replacements",
+"lane": "damage",
+"order": 6,
+"depends_on": [],
+"primitive": "engine/kill.rs applicable / run: a Replacement gains optional: bool and a cost; when it applies, the kill path asks the controller PromptWhy::OptionalCost (pay a rune and exhaust Sett - The Boss; pay the Altar of Blood's price) and a 'no' lets the unit die; applicable also walks faces in the legend zone (Sett - The Boss) beside the board.",
+"tests": [
+"games/riftbound-turns/src/cards/altar_of_blood.rs:312 the_units_controller_is_asked_before_paying_and_no_lets_it_die",
+"games/riftbound-turns/src/cards/sett_the_boss.rs:243 a_buffed_friendly_unit_dying_is_offered_the_recall_for_a_rune_and_his_exhaust"
+]
+},
+{
+"key": "floating-kill-replacements",
+"title": "Kill replacements registered for the turn",
+"lane": "damage",
+"order": 7,
+"depends_on": [
+"kill-path-prompt-and-legend-replacements"
+],
+"primitive": "blob gains floating_replacements: Vec<{ unit: Option<u32>, seat, replacement, spend: Once|Every, until: Expiry }> registered by a resolving spell (Tactical Retreat: the next friendly death this turn becomes a retreat; Smite: the smitten unit is banished instead of dying, by its own damage or a later kill) and consulted by kill::applicable beside in-play faces, spent on first use and cleared at Expiration.",
+"tests": [
+"games/riftbound-turns/src/cards/tactical_retreat.rs:189 the_next_death_this_turn_becomes_a_retreat_and_the_one_after_sticks",
+"games/riftbound-turns/src/cards/smite.rs:281 a_smitten_unit_that_would_die_this_turn_is_banished_instead_by_its_own_damage_or_a_later_kill"
+]
+},
+{
+"key": "might-layers",
+"title": "Might layers: re-entrant reads, aura floors, base overrides, amplified deltas",
+"lane": "damage",
+"order": 8,
+"depends_on": [],
+"primitive": "engine/statics.rs current_might / own_grants: a re-entrant Might reading that excludes the querying static (476) so a While(applies) may read might_before_my_keywords including aura Might (Fiora - Victorious); a per-aura minimum on projected Might (Leona - Zealot: a stunned enemy here reads at least 1); CardState.base_might_override: Option<u8> for the turn read first by current_might so a second Dragon Form sets the base again instead of stacking (dragon_form::base_might_becomes); Ctx::might on a negative delta run for a chain item passes the amount through Static::AmplifiesMinus(fn) (Mel - Newly Awakened while Empowered: -1 reads -2).",
+"tests": [
+"games/riftbound-turns/src/cards/fiora_victorious.rs:225 a_plus_one_aura_from_a_legend_makes_her_mighty",
+"games/riftbound-turns/src/cards/leona_zealot.rs:134 a_two_might_stunned_enemy_here_reads_one_not_zero",
+"games/riftbound-turns/src/cards/dragon_form.rs:238 a_second_dragon_form_this_turn_still_reads_five",
+"games/riftbound-turns/src/cards/mel_newly_awakened.rs:376 while_she_is_empowered_a_chosen_minus_might_from_her_controller_is_one_more"
+]
+},
+{
+"key": "stun-might-bounce-replacement",
+"title": "Replacements on the stun, -Might and bounce paths",
+"lane": "damage",
+"order": 9,
+"depends_on": [
+"might-layers"
+],
+"primitive": "engine/ctx.rs Ctx::stun, Ctx::might (negative) and Ctx::bounce, when run for a chain item of another controller, consult a Static::ShrugsOff(fn(&Ctx, unit, &ChainItem) -> bool) and run the card's replacement instead (gangplank_naval::plus_three_instead), so the opponent's Stupefy leaves him unstunned, unshrunk and at +3 Might.",
+"tests": [
+"games/riftbound-turns/src/cards/gangplank_naval.rs:266 while_empowered_the_opponents_stupefy_gives_him_three_might_instead_of_the_minus_one"
+]
+},
+{
+"key": "named-modes",
+"title": "Modal prompts with named modes",
+"lane": "prompts",
+"order": 1,
+"depends_on": [],
+"primitive": "cards/mod.rs Ability / Card gain modes: &'static [Mode { label, targets: &'static [TargetSpec], run }]; state.rs PromptWhy::Mode { options: Vec<String> } asked at play time before any target pick (Disposal Order, Rocket Barrage, Sanction, Mesmerize, Party Favors, Minah - Swiftfoot) or from a Resume (Jayce - Hammer in Hand's choose_one over MODES), stored on the ChainItem as mode: u8 and read by the run through mode_of; the presenter phrases the labels rather than TargetRefs.",
+"tests": [
+"games/riftbound-turns/src/cards/disposal_order.rs:309 the_play_asks_which_mode_by_name_before_any_pick",
+"games/riftbound-turns/src/cards/minah_swiftfoot.rs:377 the_modes_are_offered_by_name",
+"games/riftbound-turns/src/cards/party_favors.rs:275 the_modes_are_offered_by_name",
+"games/riftbound-turns/src/cards/rocket_barrage.rs:255 the_mode_is_asked_by_name_before_its_target",
+"games/riftbound-turns/src/cards/sanction.rs:301 the_mode_is_asked_by_name_before_its_target",
+"games/riftbound-turns/src/cards/mesmerize.rs:230 the_mode_is_asked_by_name_before_its_target",
+"games/riftbound-turns/src/cards/jayce_hammer_in_hand.rs:223 readied_he_is_asked_which_of_the_three_to_take_and_the_pick_is_given_this_turn"
+]
+},
+{
+"key": "anchored-relations",
+"title": "Anchor-relative target filters",
+"lane": "prompts",
+"order": 2,
+"depends_on": [],
+"primitive": "cards/mod.rs Filter gains SameControllerAs(u8), MightLessThan(u8) and ItemTargetsOnly(u8) (an item that chooses the anchor pick and no other friendly unit); engine/targets.rs matches / candidates_with evaluate them against the pick at that index so Angle Shot, Public Execution and Repulse offer only legal second targets.",
+"tests": [
+"games/riftbound-turns/src/cards/angle_shot.rs:277 an_equipment_of_the_other_controller_is_not_offered_once_the_unit_is_chosen",
+"games/riftbound-turns/src/cards/public_execution.rs:283 only_enemies_with_less_might_than_the_chosen_unit_are_offered",
+"games/riftbound-turns/src/cards/repulse.rs:426 only_items_that_choose_the_picked_unit_alone_are_offered"
+]
+},
+{
+"key": "anchors-under-repeat",
+"title": "Anchors resolved within a Repeat group",
+"lane": "prompts",
+"order": 3,
+"depends_on": [
+"anchored-relations"
+],
+"primitive": "engine/targets.rs matches: anchor indices (NotSame(n), DifferentLocationFrom(n), SameLocationAs(n) and the new relations) are resolved relative to the current Repeat group's own picks, not the item's absolute target list, so Piercing Light's and Temptation's second group measure against their own first pick.",
+"tests": [
+"games/riftbound-turns/src/cards/piercing_light.rs:224 the_second_groups_other_unit_excludes_that_groups_own_first_pick",
+"games/riftbound-turns/src/cards/temptation.rs:276 the_second_groups_destinations_are_measured_from_that_groups_own_unit"
+]
+},
+{
+"key": "group-targeting-totals",
+"title": "355.11 group targeting over the picks so far",
+"lane": "prompts",
+"order": 4,
+"depends_on": [
+"anchored-relations"
+],
+"primitive": "cards/mod.rs Filter gains TotalMightAtMost(u8) and DifferentLocationFromPicks; engine/targets.rs candidates_with reads the picks so far and refuses a pick that would break the total (Fox-Fire 4, Decree of Discord 5, Tricksy Tentacles 8) or repeat a location (Elder Dragon) at the prompt instead of trimming at resolution.",
+"tests": [
+"games/riftbound-turns/src/cards/fox_fire.rs:316 at_play_a_second_pick_that_breaks_four_total_might_is_not_offered",
+"games/riftbound-turns/src/cards/decree_of_discord.rs:338 at_play_a_second_pick_that_breaks_five_total_might_is_not_offered",
+"games/riftbound-turns/src/cards/tricksy_tentacles.rs:527 at_play_a_pick_that_breaks_eight_total_might_is_not_offered",
+"games/riftbound-turns/src/cards/elder_dragon.rs:359 a_second_pick_at_an_already_picked_location_is_refused_at_the_prompt"
+]
+},
+{
+"key": "zone-filters",
+"title": "Zone filters over the units standing there",
+"lane": "prompts",
+"order": 5,
+"depends_on": [],
+"primitive": "cards/mod.rs Filter gains ZoneWithUnits(Rel) (a battlefield where you / the same controller have units \u2014 Moonfall, Shadow Dash, Temptation's destination) and InShowdown (units at the battlefield of the open showdown \u2014 Akali - Rogue Assassin, with no legal target when none is open); engine/targets.rs in_universe / matches read the zone's units and the open showdown.",
+"tests": [
+"games/riftbound-turns/src/cards/moonfall.rs:274 only_battlefields_where_you_have_units_are_offered",
+"games/riftbound-turns/src/cards/shadow_dash.rs:344 only_battlefields_where_you_have_units_are_offered",
+"games/riftbound-turns/src/cards/temptation.rs:293 only_locations_holding_a_unit_of_the_same_controller_are_offered",
+"games/riftbound-turns/src/cards/akali_rogue_assassin.rs:282 only_units_at_the_showdowns_battlefield_are_offered"
+]
+},
+{
+"key": "name-prompt",
+"title": "A name prompt kind and a stored name",
+"lane": "prompts",
+"order": 6,
+"depends_on": [],
+"primitive": "state.rs PromptWhy::Name { kind: SpellName|Tag, options } and CardState.named: Option<String> written by the play trigger (Fallen Feline names a spell, The List names a tag); engine/legal.rs classify consults fallen_feline::cannot_play (a lock keyed on the name while she stands at a battlefield) and The List's target spec uses Filter::Tag over the stored name (cross-lane: Filter::Tag lands with the economy lane's tags-on-the-face; The List's test is un-ignored after the merge).",
+"tests": [
+"games/riftbound-turns/src/cards/fallen_feline.rs:221 playing_her_names_a_spell_and_the_opponents_copies_are_refused_while_she_stands_afield",
+"games/riftbound-turns/src/cards/the_list.rs:231 playing_the_list_names_a_tag_and_the_activation_weakens_a_unit_bearing_it"
+]
+},
+{
+"key": "facedown-targets",
+"title": "Facedown cards in a Card target universe",
+"lane": "prompts",
+"order": 7,
+"depends_on": [],
+"primitive": "engine/targets.rs in_universe: admit friendly facedown cards to a Card spec when the filter says Filter::Facedown (or Friendly + HiddenBattlefield) so Pack of Wonders can offer a Hidden card beside gear and units and return it to hand.",
+"tests": [
+"games/riftbound-turns/src/cards/pack_of_wonders.rs:202 a_hidden_card_is_offered_beside_gear_and_units_and_returns_to_hand"
+]
+},
+{
+"key": "level-gated-targets",
+"title": "Level-gated TargetSpecs",
+"lane": "prompts",
+"order": 8,
+"depends_on": [],
+"primitive": "cards/mod.rs TargetSpec gains min_at_level: Option<(u8 xp, u8 min)> or a gate: Option<Usable>; engine/targets.rs choose_targets skips the spec entirely below the XP and requires min picks at or above it (Skyward Strike's stun target at Level 6).",
+"tests": [
+"games/riftbound-turns/src/cards/skyward_strike.rs:291 below_level_six_no_stun_target_is_asked_and_at_level_six_it_is_required"
+]
+},
+{
+"key": "score-path-statics",
+"title": "Score vetoes, score replacements, VictoryScore and a direct win",
+"lane": "rules",
+"order": 1,
+"depends_on": [],
+"primitive": "engine/cleanup.rs establish / score_holds and Ctx::score consult in-play statics before a point is scored: Static::NoScoreHere(fn(&Ctx, zone, seat) -> bool) on a battlefield (Forgotten Monument: control changes hands, nothing is marked scored, no Conquered/Held event), Static::OpponentsCannotScore(Applies) (Tianna Crownguard), Static::DrawInsteadOfScoring(fn) (Otterpus on a player's first two turns); Ctx::points_winner / Ctx::score sum Static::VictoryScore(i32) from in-play cards into options.victory_score (Aspirant's Climb); Ctx::win(seat) ends the game directly without touching the point counters (The Grand Plaza).",
+"tests": [
+"games/riftbound-turns/src/cards/forgotten_monument.rs:161 a_conquer_before_the_third_turn_takes_control_without_a_point_and_the_third_turns_hold_scores",
+"games/riftbound-turns/src/cards/tianna_crownguard.rs:127 while_she_stands_at_a_battlefield_the_opponents_conquer_scores_nothing",
+"games/riftbound-turns/src/cards/otterpus.rs:164 on_a_players_first_two_turns_a_conquer_or_hold_draws_one_instead_of_the_point",
+"games/riftbound-turns/src/cards/aspirants_climb.rs:119 reaching_the_default_score_is_not_a_win_while_the_climb_is_on_the_table",
+"games/riftbound-turns/src/cards/the_grand_plaza.rs:229 the_win_leaves_the_point_counters_alone"
+]
+},
+{
+"key": "uncounterable",
+"title": "Uncounterable items",
+"lane": "rules",
+"order": 2,
+"depends_on": [],
+"primitive": "cards/mod.rs Static::Uncounterable(Applies) on the item's card (Decree of Rage) and a table-wide Static::ProtectsFromCounter(fn(&Ctx, &ChainItem) -> bool) on in-play cards (Mel - Newly Awakened while Empowered, her controller's spells and abilities); engine/chain.rs counter / Ctx::counter_item leave such an item on the chain and the counter spells' candidate lists exclude it.",
+"tests": [
+"games/riftbound-turns/src/cards/decree_of_rage.rs:185 a_counter_played_on_the_decree_does_nothing_and_the_decree_still_resolves",
+"games/riftbound-turns/src/cards/mel_newly_awakened.rs:342 while_she_is_empowered_the_opponents_defy_cannot_counter_her_controllers_spark"
+]
+},
+{
+"key": "control-in-place",
+"title": "Control changes in place",
+"lane": "rules",
+"order": 3,
+"depends_on": [],
+"primitive": "engine/control.rs / Ctx::set_controller gains an in_place mode that leaves the stolen unit where it stands, marks the battlefield contested by its new controller and lets cleanup open the combat or conquer (Hostile Takeover); the Possession relocation stays the default.",
+"tests": [
+"games/riftbound-turns/src/cards/hostile_takeover.rs:334 the_taken_unit_stays_at_its_battlefield_and_contests_it_for_the_caster"
+]
+},
+{
+"key": "battlefield-tokens",
+"title": "Battlefield tokens on the board",
+"lane": "rules",
+"order": 4,
+"depends_on": [],
+"primitive": "engine/ctx.rs Ctx::add_battlefield_token(face) appends a shared Battlefield zone to the table mid-game (Baron Nashor's Baron Pit with 'Units can move here from anywhere', where his entry is replaced per 369.3) and Ctx::replace_battlefield(zone, face) / swap_back(zone) swap a battlefield's card for a token and back (Ivern - Green Father's Brush); Zones::of, the projection and march::route learn the new zones.",
+"tests": [
+"games/riftbound-turns/src/cards/baron_nashor.rs:248 playing_him_adds_the_baron_pit_and_he_enters_there",
+"games/riftbound-turns/src/cards/ivern_green_father.rs:442 a_hold_replaces_the_battlefield_with_brush_and_a_later_score_there_may_swap_it_back"
+]
+},
+{
+"key": "counter-caps",
+"title": "Counter caps read from the card",
+"lane": "rules",
+"order": 5,
+"depends_on": [],
+"primitive": "games/riftbound/src/lib.rs manifest and the fixture counter table: COUNTER_EMPOWERED and COUNTER_BUFFED become counts, with Ctx::empower / Ctx::buff incrementing up to a per-card cap read from a Static::CounterCap { counter, max } (Kayle - Justified: three Empowers; Lee Sin - Ascetic: any number of buffs, each +2 Might) and defaulting to one elsewhere; is_empowered / is_buffed read nonzero.",
+"tests": [
+"games/riftbound-turns/src/cards/kayle_justified.rs:356 on_the_manifest_table_she_can_be_empowered_three_times",
+"games/riftbound-turns/src/cards/lee_sin_ascetic.rs:133 he_can_hold_any_number_of_buffs"
+]
+},
+{
+"key": "game-rule-statics",
+"title": "Beginning-phase and zone game-rule statics",
+"lane": "rules",
+"order": 6,
+"depends_on": [],
+"primitive": "engine/phases.rs continue_beginning consults Static::SkipsDrawPhase(Applies) (Endless Riches) before the Draw Phase draw and Static::ChannelCount(fn(&Ctx, seat) -> u8) (Sandstone Chimera at a battlefield: one rune) in place of rules::runes_this_turn; Ctx::trash, discard.rs and the kill path consult Static::BanishesInsteadOfTrash(fn(&Ctx, card, from) -> bool) on every trash-bound move except the Burn from the main deck (Endless Riches).",
+"tests": [
+"games/riftbound-turns/src/cards/endless_riches.rs:313 with_the_riches_in_play_your_draw_phase_draws_nothing",
+"games/riftbound-turns/src/cards/sandstone_chimera.rs:147 while_she_stands_at_a_battlefield_each_channel_phase_deals_one_rune",
+"games/riftbound-turns/src/cards/endless_riches.rs:357 with_the_riches_in_play_a_discard_and_a_death_are_banished_while_a_burn_is_trashed"
+]
+},
+{
+"key": "combat-rule-statics",
+"title": "Combat and Deflect game-rule statics",
+"lane": "rules",
+"order": 7,
+"depends_on": [],
+"primitive": "engine/combat.rs candidates / ordered consult a per-assigner Static::IgnoresTank(fn(&Ctx, source, assigner, zone) -> bool) (Dune Surfer's controller assigns past opposing Tanks); cleanup::after_combat step 3d consults Static::TieRecallsAll(fn) and runs recall_all(zone) on a tied combat where the Symbol of the Solari's controller attacks; cost::deflect consults a table-wide Static::DeflectIgnoredHere(fn(&Ctx, &ChainItem, extra) -> bool) (Heisho Shell of the World) before summing the chosen cards' Deflect for any player's item.",
+"tests": [
+"games/riftbound-turns/src/cards/dune_surfer.rs:160 with_the_surfer_here_its_controller_may_assign_the_archer_first",
+"games/riftbound-turns/src/cards/symbol_of_the_solari.rs:126 a_tied_combat_where_the_symbols_controller_attacks_recalls_both_sides",
+"games/riftbound-turns/src/cards/heisho_shell_of_the_world.rs:190 a_spell_choosing_a_deflect_unit_at_the_shell_pays_no_rainbow"
+]
+},
+{
+"key": "chosen-champion",
+"title": "The Chosen Champion on SeatState",
+"lane": "rules",
+"order": 8,
+"depends_on": [],
+"primitive": "SeatState gains chosen_champion: Option<String> filled from the deck at table setup (103.2.a.3); hallowed_tomb::is_chosen_champion reads it so only the chosen champion returns from the trash when two of the legend's tag lie there.",
+"tests": [
+"games/riftbound-turns/src/cards/hallowed_tomb.rs:315 only_the_champion_chosen_at_deck_building_is_offered"
+]
+},
+{
+"key": "play-lock-cards",
+"title": "A can't-play-cards lock",
+"lane": "rules",
+"order": 9,
+"depends_on": [],
+"primitive": "SeatState.no_spells widens to a play lock kinds mask (Spells | Units | Gear) written by Brynhir Thundersong's lock_cards and read by legal::classify for every kind, so the opponent's Reaction units and gear are refused too while the lock stands.",
+"tests": [
+"games/riftbound-turns/src/cards/brynhir_thundersong.rs:152 the_lock_also_refuses_the_opponents_reaction_units"
+]
+}
+]
+}

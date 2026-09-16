@@ -1,0 +1,48 @@
+Saved trigger tip 7dfaef5f, lexical production-prefix references. Inspect semantics before migration; this is not a transitive graph.
+
+engine/triggers.rs:8 once_by_seat, ChainItem, ItemKind, Needs, Noted, Origin, Pending, PromptWhy, TargetRef, When,
+engine/triggers.rs:9 FLAG_ONCE_USED,
+engine/triggers.rs:26 Some(lender) => ItemKind::Granted {
+engine/triggers.rs:153 if ctx.has_flag(held.source, FLAG_ONCE_USED) {
+engine/triggers.rs:156 ctx.set_flag(held.source, FLAG_ONCE_USED, true);
+engine/triggers.rs:159 let flag = once_by_seat(held.controller);
+engine/triggers.rs:184 fn once_spent(ctx: &Ctx, source: u32, once: Once, controller: u8) -> bool {
+engine/triggers.rs:187 Once::PerTurn => ctx.has_flag(source, FLAG_ONCE_USED),
+engine/triggers.rs:188 Once::PerSeatPerTurn => ctx.has_flag(source, once_by_seat(controller)),
+engine/triggers.rs:251 if once_spent(ctx, source, ability.once, controller) {
+engine/triggers.rs:502 ItemKind::Granted { .. } => targets::ability_of_kind(ctx, item.kind),
+engine/triggers.rs:508 pub fn interchangeable(ctx: &Ctx, batch: &[u16]) -> bool {
+engine/triggers.rs:524 std::ptr::eq(ability, other)
+engine/triggers.rs:535 if batch.len() <= 1 || interchangeable(ctx, &batch) {
+engine/activate.rs:9 ChainItem, ItemKind, Leave, Needs, Origin, Pending, Phase, TargetRef, FLAG_ONCE_USED,
+engine/activate.rs:31 pub struct Lent {
+engine/activate.rs:81 fn locate(ctx: &Ctx, lender: u32, ability: &'static Ability) -> Option<Lent> {
+engine/activate.rs:84 .position(|held| std::ptr::eq(*held, ability))
+engine/activate.rs:85 .map(|offset| Lent {
+engine/activate.rs:95 .map(|(lender, index, ability)| Lent {
+engine/activate.rs:107 lent_text(ctx, lender, index).map(|ability| Lent {
+engine/activate.rs:139 pub fn lent_at(ctx: &Ctx, holder: u32, index: u8) -> Option<Lent> {
+engine/activate.rs:144 pub fn item_kind(ctx: &Ctx, source: u32, index: u8) -> Option<ItemKind> {
+engine/activate.rs:148 lent_at(ctx, source, index).map(|lent| ItemKind::Lent {
+engine/activate.rs:155 pub fn lent_index_of(ctx: &Ctx, holder: u32, lender: u32, index: u8) -> Option<u8> {
+engine/activate.rs:231 if ability.once == Once::PerTurn && ctx.has_flag(source, FLAG_ONCE_USED) {
+engine/activate.rs:365 ItemKind::Ability { .. } | ItemKind::Lent { .. } => Some((
+engine/activate.rs:369 ItemKind::Trigger { .. } | ItemKind::Granted { .. } => Some((
+engine/activate.rs:431 ctx.set_flag(source, FLAG_ONCE_USED, true);
+engine/targets.rs:55 ItemKind::Granted { lender, index, .. } | ItemKind::Lent { lender, index, .. } => {
+engine/expiry.rs:3 Expiry, FLAG_ENTERED_THIS_TURN, FLAG_NO_MOVE_BY_OWNER, FLAG_ONCE_BY_SEAT, FLAG_ONCE_USED,
+engine/expiry.rs:37 row.set(FLAG_ONCE_USED, false);
+state.rs:18 pub const FLAG_ONCE_USED: u16 = 1 << 6;
+state.rs:26 pub fn once_by_seat(seat: u8) -> u16 {
+state.rs:631 Granted { holder: u32, lender: u32, index: u8 },
+state.rs:632 Lent { holder: u32, lender: u32, index: u8 },
+state.rs:641 | ItemKind::Granted { .. }
+state.rs:642 | ItemKind::Lent { .. } => None,
+state.rs:650 ItemKind::Granted { holder, .. } | ItemKind::Lent { holder, .. } => holder,
+state.rs:656 ItemKind::Granted { lender, .. } | ItemKind::Lent { lender, .. } => Some(lender),
+state.rs:665 | ItemKind::Granted { index, .. }
+state.rs:666 | ItemKind::Lent { index, .. } => Some(index),
+state.rs:697 ItemKind::Granted {
+state.rs:708 ItemKind::Lent {
+state.rs:734 ItemKind::Granted {
+state.rs:740 ItemKind::Lent {

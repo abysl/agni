@@ -1,0 +1,133 @@
+games/riftbound-turns/src/cards/acceptable_losses.rs:46:                ctx.kill(gear, Cause::Item(item.id));
+games/riftbound-turns/src/cards/adaptatron.rs:12:    if kill(ctx, item, gear) != Killed::Yes {
+games/riftbound-turns/src/cards/akali_deadly_weapon.rs:84:            if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/alpha_strike.rs:43:                deal(ctx, item, target, 1);
+games/riftbound-turns/src/cards/ambessa_respected_and_feared.rs:59:            kill(ctx, item, unit);
+games/riftbound-turns/src/cards/anivia_primal.rs:28:        deal(ctx, item, *unit, DAMAGE);
+games/riftbound-turns/src/cards/arcane_shift.rs:48:        if deal(ctx, item, struck, DAMAGE) {
+games/riftbound-turns/src/cards/atakhan.rs:31:    let killed = ctx.kill(unit, Cause::Cost);
+games/riftbound-turns/src/cards/baited_hook.rs:102:        kill(ctx, item, unit);
+games/riftbound-turns/src/cards/bellows_breath.rs:24:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/blade_of_the_ruined_king.rs:57:    if ctx.kill(victim, Cause::Cost) != Killed::Yes {
+games/riftbound-turns/src/cards/blast_corps_cadet.rs:19:        deal(ctx, item, unit, DAMAGE);
+games/riftbound-turns/src/cards/blighted_battleaxe.rs:47:    if deal(ctx, item, wearer, DAMAGE) {
+games/riftbound-turns/src/cards/blood_money.rs:36:    if kill(ctx, item, unit) != Killed::Yes {
+games/riftbound-turns/src/cards/bottled_constellation.rs:49:        if ctx.kill(*card, Cause::Cost) == Killed::NotOnBoard {
+games/riftbound-turns/src/cards/brittle_steel.rs:12:        if kill(ctx, item, gear) == Killed::Yes {
+games/riftbound-turns/src/cards/bullet_time.rs:35:        ctx.kill(source, Cause::Cost);
+games/riftbound-turns/src/cards/bullet_time.rs:59:        if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/caitlyn_patrolling.rs:22:    deal(ctx, item, unit, amount);
+games/riftbound-turns/src/cards/cannon_barrage.rs:23:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/carnivorous_snapvine.rs:23:    deal(ctx, item, prey, to_prey);
+games/riftbound-turns/src/cards/carnivorous_snapvine.rs:24:    deal(ctx, item, me, to_me);
+games/riftbound-turns/src/cards/challenge.rs:20:    deal(ctx, item, theirs, to_theirs);
+games/riftbound-turns/src/cards/challenge.rs:21:    deal(ctx, item, mine, to_mine);
+games/riftbound-turns/src/cards/clash_of_giants.rs:23:    deal(ctx, item, second, to_second);
+games/riftbound-turns/src/cards/clash_of_giants.rs:24:    deal(ctx, item, first, to_first);
+games/riftbound-turns/src/cards/commander_ledros.rs:24:        if ctx.kill(*unit, Cause::Cost) == Killed::NotOnBoard {
+games/riftbound-turns/src/cards/consuming_curse.rs:29:    if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/crackshot_corsair.rs:10:        deal(ctx, item, unit, DAMAGE);
+games/riftbound-turns/src/cards/crescent_strike.rs:19:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/crescent_strike.rs:28:        if deal(ctx, item, unit, SPLASH) {
+games/riftbound-turns/src/cards/cruel_patron.rs:18:    let killed = ctx.kill(unit, Cause::Cost);
+games/riftbound-turns/src/cards/curtain_call.rs:126:            if deal(ctx, item, unit, DAMAGE_AT_A_BATTLEFIELD) {
+games/riftbound-turns/src/cards/curtain_call.rs:131:            if deal(ctx, item, unit, DAMAGE_AT_A_BASE) {
+games/riftbound-turns/src/cards/dancing_grenade.rs:33:    if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/deadly_flourish.rs:59:    if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/death_from_below.rs:18:    match kill(ctx, item, unit) {
+games/riftbound-turns/src/cards/deathgrip.rs:14:    if kill(ctx, item, victim) != Killed::Yes {
+games/riftbound-turns/src/cards/decree_of_rage.rs:15:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/decree_of_unity.rs:13:        if kill(ctx, item, card) == Killed::Yes {
+games/riftbound-turns/src/cards/detonate.rs:14:    if kill(ctx, item, gear) == Killed::Yes {
+games/riftbound-turns/src/cards/disarming_rake.rs:11:    if kill(ctx, item, gear) == Killed::Yes {
+games/riftbound-turns/src/cards/disintegrate.rs:17:    if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/drag_under.rs:44:        if kill(ctx, item, unit) == Killed::Yes {
+games/riftbound-turns/src/cards/dragons_rage.rs:67:    deal(ctx, item, other, to_other);
+games/riftbound-turns/src/cards/dragons_rage.rs:68:    deal(ctx, item, moved, to_moved);
+games/riftbound-turns/src/cards/dusk_rose_lab.rs:53:    if kill(ctx, item, unit) == Killed::Yes {
+games/riftbound-turns/src/cards/elder_dragon.rs:66:        deal(ctx, item, unit, DAMAGE);
+games/riftbound-turns/src/cards/ezreal_dashing.rs:26:    if deal(ctx, item, unit, might) {
+games/riftbound-turns/src/cards/falling_comet.rs:9:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/falling_star.rs:11:            if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/flurry_of_blades.rs:9:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/forgefire_cape.rs:36:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/fox_fire.rs:62:        kill(ctx, item, *unit);
+games/riftbound-turns/src/cards/frozen_fortress.rs:24:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/generic.rs:35:    if ctx.kill(card, Cause::Rule) == Killed::Yes {
+games/riftbound-turns/src/cards/get_excited.rs:39:    if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/glowstone.rs:57:    kill(ctx, item, me);
+games/riftbound-turns/src/cards/glowstone.rs:60:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/guardian_angel.rs:23:    ctx.kill(source.card, Cause::Replacement);
+games/riftbound-turns/src/cards/harnessed_dragon.rs:9:    if kill(ctx, item, unit) == Killed::Yes {
+games/riftbound-turns/src/cards/hextech_ray.rs:9:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/hidden_blade.rs:12:    if kill(ctx, item, unit) == Killed::Yes {
+games/riftbound-turns/src/cards/icathian_rain.rs:13:            if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/iron_ballista.rs:13:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/jayce_man_of_progress.rs:33:    if kill(ctx, item, gear) != Killed::Yes {
+games/riftbound-turns/src/cards/katarina_reckless.rs:26:            deal(ctx, item, unit, DAMAGE);
+games/riftbound-turns/src/cards/kha_zix_evolving_hunter.rs:19:    if deal(ctx, item, unit, might) {
+games/riftbound-turns/src/cards/kog_maw_caustic.rs:22:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/lacerate.rs:28:    if kill(ctx, item, unit) == Killed::Yes {
+games/riftbound-turns/src/cards/last_breath.rs:29:    deal(ctx, item, victim, amount);
+games/riftbound-turns/src/cards/lucian_gunslinger.rs:52:    if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/malzahar_fanatic.rs:32:    if ctx.kill(card, Cause::Cost) == Killed::NotOnBoard {
+games/riftbound-turns/src/cards/marching_orders.rs:27:    deal(ctx, item, theirs, to_theirs);
+games/riftbound-turns/src/cards/marching_orders.rs:28:    deal(ctx, item, mine, to_mine);
+games/riftbound-turns/src/cards/mischievous_marai.rs:17:        deal(ctx, item, unit, DAMAGE);
+games/riftbound-turns/src/cards/monster_harpoon.rs:27:    if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/morgana_vindictive.rs:20:    if deal(ctx, item, unit, marked) {
+games/riftbound-turns/src/cards/noxian_demolitionist.rs:49:            if kill(ctx, item, gear) == Killed::Yes {
+games/riftbound-turns/src/cards/noxian_guillotine.rs:21:        if kill(ctx, item, unit) == Killed::Yes {
+games/riftbound-turns/src/cards/pickpocket.rs:21:    if kill(ctx, item, gear) != Killed::Yes {
+games/riftbound-turns/src/cards/piercing_light.rs:19:            if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/prelude.rs:811:pub fn kill(ctx: &mut Ctx, item: &Item, unit: u32) -> Killed {
+games/riftbound-turns/src/cards/prelude.rs:812:    ctx.kill(unit, Cause::Item(item.id))
+games/riftbound-turns/src/cards/prelude.rs:815:pub fn deal(ctx: &mut Ctx, item: &Item, unit: u32, amount: u8) -> bool {
+games/riftbound-turns/src/cards/prelude.rs:816:    ctx.damage(unit, amount, Cause::Item(item.id))
+games/riftbound-turns/src/cards/public_execution.rs:39:    if kill(ctx, item, enemy) == Killed::Yes {
+games/riftbound-turns/src/cards/rampage.rs:28:    deal(ctx, item, theirs, to_theirs);
+games/riftbound-turns/src/cards/rampage.rs:29:    deal(ctx, item, mine, to_mine);
+games/riftbound-turns/src/cards/recurve_bow.rs:26:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/renekton_rage_fueled.rs:30:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/riptide_rex.rs:17:        deal(ctx, item, unit, DAMAGE);
+games/riftbound-turns/src/cards/riven_shattered.rs:33:    if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/rocket_barrage.rs:38:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/rocket_barrage.rs:47:        if kill(ctx, item, gear) == Killed::Yes {
+games/riftbound-turns/src/cards/ruined_rex.rs:13:            deal(ctx, item, unit, DAMAGE);
+games/riftbound-turns/src/cards/ruthless_strike.rs:29:    if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/salvage.rs:11:        if kill(ctx, item, gear) == Killed::Yes {
+games/riftbound-turns/src/cards/sandshifter.rs:20:        kill(ctx, item, unit);
+games/riftbound-turns/src/cards/shakedown.rs:35:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/shock_blast.rs:29:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/shuriken_flip.rs:28:        if deal(ctx, item, enemy, DAMAGE) {
+games/riftbound-turns/src/cards/singularity.rs:13:                deal(ctx, item, unit, DAMAGE);
+games/riftbound-turns/src/cards/siphoning_strike.rs:75:    if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/sivir_ambitious.rs:40:        if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/sky_cruiser.rs:47:    if deal(ctx, item, target, DAMAGE) {
+games/riftbound-turns/src/cards/sky_splitter.rs:27:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/smite.rs:49:    if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/solari_chief.rs:10:        if kill(ctx, item, unit) == Killed::Yes {
+games/riftbound-turns/src/cards/soul_harvest.rs:23:    if kill(ctx, item, unit) == Killed::Yes {
+games/riftbound-turns/src/cards/stalking_wolf.rs:29:    if ctx.kill(unit, Cause::Cost) == Killed::NotOnBoard {
+games/riftbound-turns/src/cards/stormbringer.rs:41:        if deal(ctx, item, enemy, amount) {
+games/riftbound-turns/src/cards/strike_down.rs:48:        if deal(ctx, item, struck, might) {
+games/riftbound-turns/src/cards/sudden_storm.rs:21:    if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/super_mega_death_rocket.rs:16:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/teemo_strategist.rs:74:                deal(ctx, item, unit, amount);
+games/riftbound-turns/src/cards/tomb_raider_barbara.rs:20:    } else if kill(ctx, item, gear) == Killed::Yes {
+games/riftbound-turns/src/cards/treasure_trove.rs:22:    kill(ctx, item, item.kind.source());
+games/riftbound-turns/src/cards/twisted_fate_gambler.rs:127:            deal(ctx, item, unit, RED_CARD);
+games/riftbound-turns/src/cards/twisted_fate_gambler.rs:133:                deal(ctx, item, *other, RED_CARD_SPLASH);
+games/riftbound-turns/src/cards/udyr_wildman.rs:20:    if spend_buff(ctx, me) && deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/unchecked_power.rs:16:            .filter(|unit| deal(ctx, item, *unit, DAMAGE))
+games/riftbound-turns/src/cards/vengeance.rs:7:        if kill(ctx, item, unit) == Killed::Yes {
+games/riftbound-turns/src/cards/void_seeker.rs:10:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/volibear_furious.rs:33:        if deal(ctx, item, *unit, amount) {
+games/riftbound-turns/src/cards/volibear_furious.rs:49:            deal(ctx, item, targets[0], DAMAGE);
+games/riftbound-turns/src/cards/wages_of_pain.rs:11:        if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/xerath_freed.rs:22:    if deal(ctx, item, unit, DAMAGE) {
+games/riftbound-turns/src/cards/yasuo_remorseful.rs:16:    if deal(ctx, item, unit, might) {
+games/riftbound-turns/src/cards/yone_blademaster.rs:37:    if deal(ctx, item, unit, amount) {
+games/riftbound-turns/src/cards/zaun_punk.rs:21:    let killed = ctx.kill(gear, Cause::Cost);
+games/riftbound-turns/src/cards/zaun_punk.rs:30:        kill(ctx, item, gear);
+games/riftbound-turns/src/cards/zhonyas_hourglass.rs:12:    ctx.kill(source.card, Cause::Replacement);

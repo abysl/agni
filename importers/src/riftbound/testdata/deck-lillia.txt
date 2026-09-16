@@ -1,0 +1,46 @@
+# Lillia, Bashful Bloom by Jonnynick
+# 13th, Secretlab Regional Rebound - RQ Singapore Sunday 11am, 2026-09-06
+# https://riftdecks.com/riftbound-metagame/deck-lillia-bashful-bloom-285276
+
+Legend
+1 Lillia - Bashful Bloom
+
+Champion
+1 Lillia - Fae Fawn
+
+Main Deck (39)
+3 Lonely Poro
+3 Ravenbloom Student
+1 Disarming Rake
+1 Janna - Savior
+2 Brutalizer
+3 Mask of Foresight
+3 Sprite Fountain
+2 Charm
+3 Defy
+3 En Garde
+3 Stupefy
+3 Discipline
+2 Smoke and Mirrors
+2 Smoke Screen
+3 Sprite Burst
+1 Singularity
+1 Unchecked Power
+
+Runes (12)
+7 Calm Rune
+5 Mind Rune
+
+Battlefields
+1 Dusk Rose Lab
+1 Ravenbloom Conservatory
+1 Seat of Power
+
+Sideboard
+2 VEN-040-166
+2 Decree of Insight
+1 Smoke and Mirrors
+2 Disarming Rake
+1 Pickpocket
+1 Thousand-Tailed Watcher
+1 Unchecked Power

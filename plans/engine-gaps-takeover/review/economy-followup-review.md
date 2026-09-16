@@ -1,0 +1,36 @@
+# Economy correction followup
+
+Read-only review of production changes in `1fd89235` in `/tmp/agni-takeover-economy` (current committed HEAD `64333338`). No builds/tests run. Additional focused gameplay regressions and the real pool/promised-Repeat parity case are being implemented separately; their absence at this inspected commit is pending work, not a new request for broad review.
+
+## Disposition of the five findings
+
+1. **Owned Repeat accessor: corrected.** `cost::repeat_of` delegates to `repeat_of_item`, so play and prompt labels again see the same printed/owned/static-lender precedence as pricing. No A9 interner or lossy conversion returns.
+2. **Modal target spans and third-execution anchors: corrected for declared target specs.** `chain::execution_view` sums the actual spec/count lengths of each preceding execution and slices the current execution's actual counts. `targets::group_start` walks a finite `1 + repeats()` range and handles zero-spec intervening modes. It no longer assumes evenly sized groups or aliases all later groups to execution 1. The separate `execution_view` while loop stops at the decoded u8 execution value, so even 255 does not create the earlier saturating-loop nontermination.
+3. **Third mode choice: corrected.** `unchosen_mode` enumerates all `1 + repeats()` supported executions. The fallback for not-yet-chosen modes does not suppress a real choice once the later execution reaches the mode step.
+4. **Additional-cost quote: corrected.** The hypothetical item's additional slot is enabled before `cost::of_item`; the full combined base/additional total passes through discounts and banked pool once, then through `affordable_for(Paying::Item(...))`. This addresses both remaining-pool and excess-discount cases rather than merely rerunning pool subtraction.
+5. **v7 discount migration: corrected.** The v7 branch now retains the same computed permanent Any-card discount promise as the other supported legacy layouts. Both independently authored v7 fixtures preserve their nonzero energy/power values in canonical v11 output.
+
+The misleading old economy-v10 seat compatibility branch is removed. Such rows fail where the statics schema requires the two-element discount array; old economy card lengths are also not accepted as statics cards. The supported promise is now the integrated statics v7/v9/v10 history, with explicit legacy mode-slot migration. Existing numeric/boolean legacy lock compatibility is retained rather than guessing the discarded economy layout. The expanded fixtures independently write canonical v11 rows and two migrated modes; several test names still say v10 despite checking v11, a naming-only followup.
+
+`git diff --check 1b517611..1fd89235` now passes: prior documentation conflict markers have been removed.
+
+## Residual source issues
+
+- **P2, small remaining affordability correction:** `engine/play.rs:304` still uses `pay::affordable` for Accelerate, which delegates with `Paying::Applied`. The item-aware quote is computed, but an Add source whose eligibility depends on `Paying::Item` cannot see that item. Preserve the hypothetical accelerated item and use `affordable_for` with it. This is the additional audit point from the first review, and can share the pending context-dependent Add-source regression.
+- **P2, repeated callback continuation memory:** `chain::execution_view` still takes exactly the declared target count and discards the trailing remembered targets. `chain::run` appends `ctx.remembered` after `Flow::Ask`, and `prelude::remembered_cards` reads that trailing region. For example, a promised-Repeat Here to Help with multiple legal battlefield destinations remembers its chosen unit before `LOCATED`; on resume, a repeated execution with zero printed target specs receives an empty target list, so `remembered_cards(...).last()` is None and that play does not happen. Arcane Shift has the analogous remember-before-location path. First-execution memory loss existed before the recovery; the new exact slicing also removes the final execution's suffix that the older `skip(...).collect()` retained. This is distinct from the corrected declared-target spans. Do not blindly append all prior memories to every execution: the continuation memory must belong to the current execution and be reset/transferred at the appropriate boundary. Coordinate this with A5/A10's continuation work and record its disposition explicitly if deferred.
+
+## Evidence and pending work
+
+The new Disposal Order test directly checks three fabricated execution views with a zero-target middle mode and the corresponding group boundary. It verifies the slicing arithmetic; it does not by itself establish the complete mode-choice/payment/resume route. The seven blob fixtures provide exact canonical compatibility/rejection coverage. Luna's pending gameplay tests should close the already-assigned owned-grant, third-mode/relative-target and additional-cost cases; the parity worker is separately adding banked Jhin plus Temporal Portal and a registered spell. Recheck those outcomes at the final committed tip without rerunning unrelated review scope.
+
+No other residual production error was identified in this bounded correction diff. Known A10 arbitrary-instance behavior, A6 index saturation, and A5/D1/A11 replacement continuation remain separately tracked.
+
+## Bounded continuation-memory repair recommendation
+
+The coordinator's suffix repair is sound for current staged callbacks and requires no new serialized field or version: executions are serial, all their declared target groups are already finalized before resolution, and only the currently resolving execution owns the trailing remembered suffix.
+
+- Compute the end of **all** declared execution target groups from actual spec counts, using the same fallback as the target-span code. Construct the view as current execution's declared target slice **plus** the original suffix beyond that global end. Keep view.spec_counts restricted to the current execution. Then `remembered_cards(view)` skips its declared targets and returns exactly the same current memory that a prompt candidate callback reads from the full original item.
+- On `Flow::Done`, before incrementing execution/restarting stage zero, truncate the original item's targets at that global declared-target end and clear execution-scoped awaiting/transient memory. Do not remove later executions' declared targets or modes. `Flow::Ask` must retain the suffix. This avoids both losing the current memory and leaking a prior execution's memory into the next one.
+- Add Here to Help with promised Repeat and two legal battlefield destinations. Save/reconstruct across each LOCATED request. Execution 0 remembers/plays unit A once; execution 1 initially has no remembered unit, then remembers/plays B once. A must not reappear as B's stored choice, and both future declared groups and source item identity must survive the intermediate save. Existing simple target-span tests remain applicable.
+
+An explicit memory field can be considered in the later A5/A10 continuation refactor; it is not necessary for this bounded representation-preserving correction. The remaining Accelerate correction was also sent directly to Luna.

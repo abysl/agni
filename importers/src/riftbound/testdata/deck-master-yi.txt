@@ -1,0 +1,46 @@
+# Master Yi, Wuju Bladesman by Akame EN ESPRIT
+# 1st, Secretlab Regional Rebound - RQ Barcelona Sunday 11am (1003 players), 2026-08-23, Vendetta metagame
+# https://riftdecks.com/riftbound-metagame/deck-master-yi-wuju-bladesman-255758
+# Onslaught, Decree of Focus and Decree of Strength are given as codes: Riftcodex's fuzzy name index does not return them yet.
+
+Legend
+1 Master Yi, Wuju Bladesman
+
+Champion
+1 Master Yi, Tempered
+
+Main Deck (39)
+1 Akali, Silent
+3 Charm
+3 Defy
+3 Discipline
+3 En Garde
+2 First Mate
+3 Lonely Poro
+1 VEN-081
+2 Pit Rookie
+3 Punch First
+2 Rampage
+3 Rengar, Trophy Hunter
+2 Ruin Runner
+2 Sabotage
+3 Scuttle Crab
+1 Twilight Shroud
+2 Zhonya's Hourglass
+
+Runes (12)
+7 Body Rune
+5 Calm Rune
+
+Battlefields (3)
+1 Emperor's Dais
+1 Seat of Power
+1 Star Spring
+
+Sideboard (10)
+1 Alpha Strike
+1 VEN-040
+1 VEN-085
+3 Disarming Rake
+2 Fiora, Peerless
+2 Not So Fast

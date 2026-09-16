@@ -1,0 +1,30 @@
+plugins/sdk/src/lib.rs:11:pub const PLUGIN_ABI_VERSION: u32 = 0;
+plugins/sdk/src/guest.rs:41:                $crate::PLUGIN_ABI_VERSION
+engine/host/tests/host.rs:284:    impl Decider for RejectAll {
+plugins/mtg/src/lib.rs:1:pub const PLUGIN_ABI_VERSION: u32 = 0;
+plugins/mtg/src/lib.rs:44:        assert_eq!(PLUGIN_ABI_VERSION, 0);
+plugins/riftbound/src/lib.rs:1:pub const PLUGIN_ABI_VERSION: u32 = 0;
+plugins/riftbound/src/lib.rs:168:        agni_sim::abi::encode(&DecideRequest {
+plugins/riftbound/src/lib.rs:511:        assert_eq!(PLUGIN_ABI_VERSION, agni_plugin_sdk::PLUGIN_ABI_VERSION);
+plugins/riftbound/tests/projection.rs:39:impl Decider for Scripted {
+sim/src/abi.rs:50:pub struct DecideRequest {
+net/tests/modules.rs:61:impl PluginModule for Accepting {
+sim/src/engine.rs:114:    Some(DecideRequest {
+sim/src/engine.rs:407:impl<M: ModuleCall> PluginModule for AbiPlugin<M> {
+sim/src/engine.rs:504:        impl Decider for RejectGames {
+sim/src/engine.rs:515:        impl PluginModule for RejectGamesModule {
+sim/src/log.rs:949:impl Decider for AcceptAll {
+sim/src/log.rs:1818:        impl Decider for RejectGames {
+sim/src/log.rs:1849:        impl Decider for Counter {
+sim/src/log.rs:2161:        impl Decider for Because {
+sim/src/log.rs:2368:        impl Decider for Choreography {
+sim/src/log.rs:2498:        impl Decider for Choreography {
+sim/src/log.rs:2550:        impl Decider for Mint {
+sim/src/log.rs:2599:        impl Decider for Choreography {
+../../agni/kai/src/net/mod.rs:2222:    impl agni_sim::engine::PluginModule for ScriptedPlugin {
+net/tests/riftbound_turns.rs:109:impl PluginModule for NativeRiftbound {
+net/tests/log_fold.rs:579:impl Decider for CountingDecider {
+net/tests/log_fold.rs:625:impl agni_sim::engine::PluginModule for Relocator {
+net/tests/session.rs:712:impl PluginModule for FakePlugin {
+net/tests/session.rs:1451:impl PluginModule for InformationPlugin {
+net/tests/gas_bench.rs:180:impl PluginModule for Metered {

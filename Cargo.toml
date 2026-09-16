@@ -1,0 +1,20 @@
+[workspace]
+members = [
+  "core",
+  "sim",
+  "net",
+  "engine/wasm",
+  "engine/host",
+  "importers",
+  "plugins",
+  "plugins/harden",
+  "plugins/mtg",
+  "plugins/riftbound",
+  "plugins/sdk",
+  "games/deck",
+  "games/riftbound",
+  "games/riftbound-turns",
+  "games/mtg",
+  "games/abysswalker",
+]
+resolver = "2"

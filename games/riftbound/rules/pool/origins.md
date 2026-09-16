@@ -1,0 +1,308 @@
+# Origins (OGN)
+
+Provenance: the Origins set, every base print ogn-001 to ogn-298 in collector order, from the Riftcodex catalog dump of 2026-09-10; alternate art, overnumbered and signature prints resolve to the base name through base_name; text from Riftcodex by riftbound id
+
+Scripted: partial
+
+A set file, not a deck: it carries no deck block and no coaching. Every card line reads byte for byte as it does in the deck files that share it. The three Recruit prints and the Sprite print are the token faces of the set; the engine spawns tokens by name, so they carry no script of their own. Partial because 37 cards are stubs whose whole text waits on an engine primitive, each named by its card file's ignored test and listed under "M10 — what Origins still needs" in the rules-engine design doc; every other card is scripted.
+
+## Cards
+
+- **Blazing Scorcher** (ogn-001-298; Unit; Fury; 5E 5M): [Accelerate] (You may pay :rb_energy_1::rb_rune_fury: as an additional cost to have me enter ready.)
+- **Brazen Buccaneer** (ogn-002-298; Unit; Fury; 6E 5M): As you play me, you may discard 1 as an additional cost. If you do, reduce my cost by :rb_energy_2:.
+- **Chemtech Enforcer** (ogn-003-298; Unit; Fury; 2E 2M): [Assault 2] (+2 :rb_might: while I'm an attacker.)When you play me, discard 1.
+- **Cleave** (ogn-004-298; Spell; Fury; 1E): [Action] (Play on your turn or in showdowns.)Give a unit [Assault 3] this turn. (+3 :rb_might: while it's an attacker.)
+- **Disintegrate** (ogn-005-298; Spell; Fury; 4E): [Action] (Play on your turn or in showdowns.)Deal 3 to a unit at a battlefield. If this kills it, draw 1.
+- **Flame Chompers** (ogn-006-298; Unit; Fury; 3E 3M): When you discard me, you may pay :rb_rune_fury: to play me.
+- **Fury Rune** (ogn-007-298; Rune/Basic; Fury; ): 
+- **Get Excited!** (ogn-008-298; Spell; Fury; 2E 1P): [Action] (Play on your turn or in showdowns.)Discard 1. Deal its Energy cost as damage to a unit at a battlefield. (Ignore its Power cost.)
+- **Hextech Ray** (ogn-009-298; Spell; Fury; 1E 1P): [Action] (Play on your turn or in showdowns.)Deal 3 to a unit at a battlefield.
+- **Legion Rearguard** (ogn-010-298; Unit; Fury; 2E 2M): [Accelerate] (You may pay :rb_energy_1::rb_rune_fury: as an additional cost to have me enter ready.)
+- **Magma Wurm** (ogn-011-298; Unit; Fury; 8E 1P 8M): Other friendly units enter ready.
+- **Noxus Hopeful** (ogn-012-298; Unit; Fury; 4E 4M): [Legion] — I cost :rb_energy_2: less. (Get the effect if you've played another card this turn.)
+- **Pouty Poro** (ogn-013-298; Unit; Fury; 2E 2M): [Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)
+- **Sky Splitter** (ogn-014-298; Spell; Fury; 8E 1P): [Action] (Play on your turn or in showdowns.)This spell's Energy cost is reduced by the highest Might among units you control.Deal 5 to a unit at a battlefield.
+- **Captain Farron** (ogn-015-298; Unit; Fury; 4E 1P 5M): Other friendly units here have [Assault]. (+1 :rb_might: while they're attackers.)
+- **Dangerous Duo** (ogn-016-298; Unit; Fury; 3E 3M): [Legion] — When you play me, give a unit +2 :rb_might: this turn. (Get the effect if you've played another card this turn.)
+- **Iron Ballista** (ogn-017-298; Gear; Fury; 3E): This enters exhausted.:rb_exhaust:: Deal 2 to a unit at a battlefield.
+- **Noxus Saboteur** (ogn-018-298; Unit; Fury; 3E 3M): Your opponents' [Hidden] cards can't be revealed here.
+- **Raging Soul** (ogn-019-298; Unit; Fury; 4E 4M): If you've discarded a card this turn, I have [Assault] and [Ganking]. (+1 :rb_might: while I'm an attacker. I can move from battlefield to battlefield.)
+- **Scrapyard Champion** (ogn-020-298; Unit; Fury; 5E 1P 5M): [Legion] — When you play me, discard 2, then draw 2. (Get the effect if you've played another card this turn.)
+- **Sun Disc** (ogn-021-298; Gear; Fury; 2E 1P): :rb_exhaust:: [Legion] — The next unit you play this turn enters ready. (Get the effect if you've played another card this turn.)
+- **Thermo Beam** (ogn-022-298; Spell; Fury; 5E 2P): [Action] (Play on your turn or in showdowns.)Kill all gear.
+- **Unlicensed Armory** (ogn-023-298; Gear; Fury; 2E): Discard 1, :rb_exhaust:: Choose a friendly unit. The next time it dies this turn, you may pay :rb_rune_fury: to recall it exhausted instead. (Send it to base. This isn't a move.)
+- **Void Seeker** (ogn-024-298; Spell; Fury; 3E 1P): [Action] (Play on your turn or in showdowns.)Deal 4 to a unit at a battlefield. Draw 1.
+- **Blind Fury** (ogn-025-298; Spell; Fury; 4E 2P): [Action] (Play on your turn or in showdowns.)Each opponent reveals the top card of their Main Deck. Choose one and banish it, then play it, ignoring its cost. Then recycle the rest.
+- **Brynhir Thundersong** (ogn-026-298; Unit; Fury; 6E 5M): When you play me, opponents can't play cards this turn.
+- **Darius - Trifarian** (ogn-027-298; Unit/Champion; Fury; 5E 1P 5M): When you play your second card in a turn, give me +2 :rb_might: this turn and ready me.
+- **Draven - Showboat** (ogn-028-298; Unit/Champion; Fury; 5E 1P 3M): My Might is increased by your points.
+- **Falling Star** (ogn-029-298; Spell; Fury; 2E 2P): Deal 3 to a unit.Deal 3 to a unit.
+- **Jinx - Demolitionist** (ogn-030-298; Unit/Champion; Fury; 3E 1P 4M): [Accelerate] (You may pay :rb_energy_1::rb_rune_fury: as an additional cost to have me enter ready.)[Assault 2] (+2 :rb_might: while I'm an attacker.)When you play me, discard 2.
+- **Raging Firebrand** (ogn-031-298; Unit; Fury; 6E 1P 4M): When you play me, the next spell you play this turn costs :rb_energy_5: less.
+- **Ravenborn Tome** (ogn-032-298; Gear; Fury; 3E): :rb_exhaust:: The next spell you play this turn deals 1 Bonus Damage. (Each instance of damage the spell deals is increased by 1.)
+- **Shakedown** (ogn-033-298; Spell; Fury; 2E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Choose an enemy unit. Deal 6 to it unless its controller has you draw 2.
+- **Tryndamere - Barbarian** (ogn-034-298; Unit/Champion; Fury; 7E 2P 8M): When I conquer after an attack, if you assigned 5 or more excess damage to enemy units, you score 1 point.
+- **Vayne - Hunter** (ogn-035-298; Unit/Champion; Fury; 4E 1P 2M): [Assault 3] (+3 :rb_might: while I'm an attacker.)If an opponent controls a battlefield, I enter ready.When I conquer, you may pay :rb_energy_1: to return me to my owner's hand.
+- **Vi - Destructive** (ogn-036-298; Unit/Champion; Fury; 2E 1P 3M): [Ganking] (I can move from battlefield to battlefield.)Recycle 1 from your trash: Give me +1 :rb_might: this turn.
+- **Immortal Phoenix** (ogn-037-298; Unit; Fury; 3E 1P 3M): [Assault 2] (+2 :rb_might: while I'm an attacker.)When you kill a unit with a spell, you may pay :rb_energy_1::rb_rune_fury: to play me from your trash.
+- **Kadregrin the Infernal** (ogn-038-298; Unit; Fury; 9E 2P 9M): When you play me, draw 1 for each of your [Mighty] units. (A unit is Mighty while it has 5+ :rb_might:.)
+- **Kai'Sa - Survivor** (ogn-039-298; Unit/Champion; Fury; 4E 4M): [Accelerate] (You may pay :rb_energy_1::rb_rune_fury: as an additional cost to have me enter ready.)When I conquer, draw 1.
+- **Seal of Rage** (ogn-040-298; Gear; Fury; 0E 1P): :rb_exhaust:: [Reaction] — [Add] :rb_rune_fury:. (Abilities that add resources can't be reacted to.)
+- **Volibear - Furious** (ogn-041-298; Unit/Champion; Fury; 10E 2P 9M): [Deflect 2] (Opponents must pay :rb_rune_rainbow::rb_rune_rainbow: to choose me with a spell or ability.)When I attack, deal 5 damage split among any number of enemy units here.
+- **Calm Rune** (ogn-042-298; Rune/Basic; Calm; ): 
+- **Charm** (ogn-043-298; Spell; Calm; 1E 1P): Move an enemy unit.
+- **Clockwork Keeper** (ogn-044-298; Unit; Calm; 2E 2M): As you play me, you may pay :rb_rune_calm: as an additional cost. If you do, draw 1.
+- **Defy** (ogn-045-298; Spell; Calm; 1E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Counter a spell that costs no more than :rb_energy_4: and no more than :rb_rune_rainbow:.
+- **En Garde** (ogn-046-298; Spell; Calm; 1E): [Reaction] (Play any time, even before spells and abilities resolve.)Give a friendly unit +1 :rb_might: this turn, then an additional +1 :rb_might: this turn if it is the only unit you control there.
+- **Find Your Center** (ogn-047-298; Spell; Calm; 3E): [Action] (Play on your turn or in showdowns.)If an opponent's score is within 3 points of the Victory Score, this costs :rb_energy_2: less.Draw 1 and channel 1 rune exhausted.
+- **Meditation** (ogn-048-298; Spell; Calm; 2E): [Reaction] (Play any time, even before spells and abilities resolve.)As an additional cost to play this, you may exhaust a friendly unit. If you do, draw 2. Otherwise, draw 1.
+- **Playful Phantom** (ogn-049-298; Unit; Calm; 5E 5M): 
+- **Rune Prison** (ogn-050-298; Spell; Calm; 2E 1P): [Action] (Play on your turn or in showdowns.)Stun a unit. (It doesn't deal combat damage this turn.)
+- **Solari Shieldbearer** (ogn-051-298; Unit; Calm; 3E 2M): When you play me, stun a unit. (It doesn't deal combat damage this turn.)
+- **Stalwart Poro** (ogn-052-298; Unit; Calm; 2E 2M): [Shield] (+1 :rb_might: while I'm a defender.)
+- **Stand United** (ogn-053-298; Spell; Calm; 3E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Buff a friendly unit. Buffs give an additional +1 :rb_might: to friendly units this turn. (To buff a unit, give it a +1 :rb_might: buff if it doesn't already have one.)
+- **Sunlit Guardian** (ogn-054-298; Unit; Calm; 3E 3M): [Shield] (+1 :rb_might: while I'm a defender.)[Tank] (I must be assigned combat damage first.)
+- **Wielder of Water** (ogn-055-298; Unit; Calm; 3E 2M): While I'm attacking or defending alone, I have +2 :rb_might:.
+- **Adaptatron** (ogn-056-298; Unit; Calm; 4E 3M): When I conquer, you may kill a gear. If you do, buff me. (If I don't have a buff, I get a +1 :rb_might: buff.)
+- **Block** (ogn-057-298; Spell; Calm; 2E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Give a unit [Shield 3] and [Tank] this turn. (+3 :rb_might: while it's a defender. It must be assigned combat damage first.)
+- **Discipline** (ogn-058-298; Spell; Calm; 2E): [Reaction] (Play any time, even before spells and abilities resolve.)Give a unit +2 :rb_might: this turn. Draw 1.
+- **Eclipse Herald** (ogn-059-298; Unit; Calm; 7E 1P 7M): When you stun an enemy unit, ready me and give me +1 :rb_might: this turn.
+- **Mask of Foresight** (ogn-060-298; Gear; Calm; 2E): When a friendly unit attacks or defends alone, give it +1 :rb_might: this turn.
+- **Poro Herder** (ogn-061-298; Unit; Calm; 3E 1P 3M): When you play me, if you control a Poro, buff me and draw 1. (If I don't have a buff, I get a +1 :rb_might: buff.)
+- **Reinforce** (ogn-062-298; Spell; Calm; 5E): Look at the top 5 cards of your Main Deck. You may banish a unit from among them, then play it, reducing its cost by :rb_energy_5:. Recycle the remaining cards.
+- **Spirit's Refuge** (ogn-063-298; Gear; Calm; 2E 1P): When you play this, buff a friendly unit. (If it doesn't have a buff, it gets a +1 :rb_might: buff.)Friendly buffed units have [Deflect] if they didn't already. (Opponents must pay :rb_rune_rainbow: to choose those units with a spell or ability.)
+- **Wind Wall** (ogn-064-298; Spell; Calm; 3E 2P): [Reaction] (Play any time, even before spells and abilities resolve.)Counter a spell.
+- **Wizened Elder** (ogn-065-298; Unit; Calm; 4E 4M): While I'm buffed, I have an additional +1 :rb_might:.
+- **Ahri - Alluring** (ogn-066-298; Unit/Champion; Calm; 5E 1P 4M): When I hold, you score 1 point.
+- **Blitzcrank - Impassive** (ogn-067-298; Unit/Champion; Calm; 5E 1P 5M): [Tank] (I must be assigned combat damage first.)When you play me to a battlefield, you may move an enemy unit to here.When I hold, return me to my owner's hand.
+- **Caitlyn - Patrolling** (ogn-068-298; Unit/Champion; Calm; 3E 1P 3M): I must be assigned combat damage last.:rb_exhaust:: Deal damage equal to my Might to a unit at a battlefield. Use this ability only while I'm at a battlefield.
+- **Last Stand** (ogn-069-298; Spell; Calm; 3E 1P): [Action] (Play on your turn or in showdowns.)Double a friendly unit's Might this turn. Give it [Temporary]. (Kill it at the start of its controller's Beginning Phase, before scoring.)
+- **Mageseeker Warden** (ogn-070-298; Unit; Calm; 6E 1P 5M): While I'm at a battlefield, opponents can only play units to their base.While I'm at a battlefield, spells and abilities can't ready enemy units and gear.
+- **Party Favors** (ogn-071-298; Spell; Calm; 3E): Each other player chooses Cards or Runes. For each player that chooses Cards, you and that player each draw 1. For each player that chooses Runes, you and that player each channel 1 rune exhausted.
+- **Solari Shrine** (ogn-072-298; Gear; Calm; 3E): When you kill a stunned enemy unit, you may exhaust this to draw 1.
+- **Sona - Harmonious** (ogn-073-298; Unit/Champion; Calm; 4E 1P 4M): While I'm at a battlefield, ready 4 friendly runes at the end of your turn.
+- **Taric - Protector** (ogn-074-298; Unit/Champion; Calm; 4E 1P 4M): [Shield] (+1 :rb_might: while I'm a defender.)[Tank] (I must be assigned combat damage first.)Other friendly units here have [Shield].
+- **Tasty Faefolk** (ogn-075-298; Unit; Calm; 7E 6M): [Accelerate] (You may pay :rb_energy_1::rb_rune_calm: as an additional cost to have me enter ready.)[Deathknell] — Channel 2 runes exhausted and draw 1. (When I die, get the effect.)
+- **Yasuo - Remorseful** (ogn-076-298; Unit/Champion; Calm; 6E 2P 6M): When I attack, deal damage equal to my Might to an enemy unit here.
+- **Zhonya's Hourglass** (ogn-077-298; Gear; Calm; 2E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)The next time a friendly unit would die, kill this instead. Recall that unit exhausted. (Send it to base. This isn't a move.)
+- **Lee Sin - Ascetic** (ogn-078-298; Unit/Champion; Calm; 5E 1P 5M): [Shield] (+1 :rb_might: while I'm a defender.):rb_exhaust:: Buff me. (I get a +1 :rb_might: buff.)I can have any number of buffs.
+- **Leona - Zealot** (ogn-079-298; Unit/Champion; Calm; 6E 1P 6M): If an opponent's score is within 3 points of the Victory Score, I enter ready.Stunned enemy units here have -8 :rb_might:, to a minimum of 1 :rb_might:.
+- **Mystic Reversal** (ogn-080-298; Spell; Calm; 4E 3P): [Reaction] (Play any time, even before spells and abilities resolve.)Gain control of a spell. You may make new choices for it.
+- **Seal of Focus** (ogn-081-298; Gear; Calm; 0E 1P): :rb_exhaust:: [Reaction] — [Add] :rb_rune_calm:. (Abilities that add resources can't be reacted to.)
+- **Whiteflame Protector** (ogn-082-298; Unit; Calm; 8E 2P 8M): When you play me, give a unit +8 :rb_might: this turn.
+- **Consult the Past** (ogn-083-298; Spell; Mind; 4E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Reaction] (Play any time, even before spells and abilities resolve.)Draw 2.
+- **Eager Apprentice** (ogn-084-298; Unit; Mind; 3E 3M): While I'm at a battlefield, the Energy costs for spells you play is reduced by :rb_energy_1:, to a minimum of :rb_energy_1:.
+- **Falling Comet** (ogn-085-298; Spell; Mind; 5E): [Action] (Play on your turn or in showdowns.)Deal 6 to a unit at a battlefield.
+- **Jeweled Colossus** (ogn-086-298; Unit; Mind; 5E 5M): [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)[Shield] (+1 :rb_might: while I'm a defender.)
+- **Lecturing Yordle** (ogn-087-298; Unit; Mind; 3E 2M): [Tank] (I must be assigned combat damage first.)When you play me, draw 1.
+- **Mega-Mech** (ogn-088-298; Unit; Mind; 7E 8M): 
+- **Mind Rune** (ogn-089-298; Rune/Basic; Mind; ): 
+- **Orb of Regret** (ogn-090-298; Gear; Mind; 1E): :rb_exhaust:: Give a unit -1 :rb_might: this turn, to a minimum of 1 :rb_might:.
+- **Pit Crew** (ogn-091-298; Unit; Mind; 3E 3M): When you play a gear, ready me.
+- **Riptide Rex** (ogn-092-298; Unit; Mind; 6E 2P 6M): When you play me, deal 6 to an enemy unit at a battlefield.
+- **Smoke Screen** (ogn-093-298; Spell; Mind; 2E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Give a unit -4 :rb_might: this turn, to a minimum of 1 :rb_might:.
+- **Sprite Call** (ogn-094-298; Spell; Mind; 3E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Play a ready 3 :rb_might: Sprite unit token with [Temporary]. (Kill it at the start of its controller's Beginning Phase, before scoring.)
+- **Stupefy** (ogn-095-298; Spell; Mind; 1E): [Reaction] (Play any time, even before spells and abilities resolve.)Give a unit -1 :rb_might: this turn, to a minimum of 1 :rb_might:. Draw 1.
+- **Watchful Sentry** (ogn-096-298; Unit; Mind; 2E 1M): [Deathknell] — Draw 1. (When I die, get the effect.)
+- **Blastcone Fae** (ogn-097-298; Unit; Mind; 2E 1P 2M): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)When you play me, give a unit -2 :rb_might: this turn, to a minimum of 1 :rb_might:.
+- **Energy Conduit** (ogn-098-298; Gear; Mind; 3E): :rb_exhaust:: [Reaction] — [Add] :rb_energy_1:. (Abilities that add resources can't be reacted to.)
+- **Garbage Grabber** (ogn-099-298; Gear; Mind; 2E): Recycle 3 from your trash, :rb_energy_1:, :rb_exhaust:: Draw 1.
+- **Gemcraft Seer** (ogn-100-298; Unit; Mind; 3E 1P 3M): [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)Other friendly units have [Vision].
+- **Mushroom Pouch** (ogn-101-298; Gear; Mind; 2E): At the start of your Beginning Phase, if you control a facedown card at a battlefield, draw 1.
+- **Portal Rescue** (ogn-102-298; Spell; Mind; 3E 1P): [Action] (Play on your turn or in showdowns.)Banish a friendly unit, then play it to base, ignoring its cost.
+- **Ravenbloom Student** (ogn-103-298; Unit; Mind; 2E 2M): When you play a spell, give me +1 :rb_might: this turn.
+- **Retreat** (ogn-104-298; Spell; Mind; 1E): [Reaction] (Play any time, even before spells and abilities resolve.)Return a friendly unit to its owner's hand. Its owner channels 1 rune exhausted.
+- **Singularity** (ogn-105-298; Spell; Mind; 6E 2P): Deal 6 to each of up to two units.
+- **Sprite Mother** (ogn-106-298; Unit; Mind; 4E 1P 3M): When you play me, play a ready 3 :rb_might: Sprite unit token with [Temporary] here. (Kill it at the start of its controller's Beginning Phase, before scoring.)
+- **Ava Achiever** (ogn-107-298; Unit; Mind; 5E 4M): When I attack, you may pay :rb_rune_mind: to play a card with [Hidden] from your hand here, ignoring its cost.
+- **Convergent Mutation** (ogn-108-298; Spell; Mind; 2E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Choose a friendly unit. This turn, increase its Might to the Might of another friendly unit.
+- **Dr. Mundo - Expert** (ogn-109-298; Unit/Champion; Mind; 8E 2P 6M): My Might is increased by the number of cards in your trash.At the start of your Beginning Phase, recycle 3 from your trash.
+- **Ekko - Recurrent** (ogn-110-298; Unit/Champion; Mind; 5E 1P 5M): [Accelerate] (You may pay :rb_energy_1::rb_rune_mind: as an additional cost to have me enter ready.)[Deathknell] — Recycle me to ready your runes. (When I die, get the effect.)
+- **Heimerdinger - Inventor** (ogn-111-298; Unit/Champion; Mind; 3E 1P 3M): I have all :rb_exhaust: abilities of all friendly legends, units, and gear.
+- **Kai'Sa - Evolutionary** (ogn-112-298; Unit/Champion; Mind; 6E 1P 6M): [Ganking] (I can move from battlefield to battlefield.)When I conquer, you may play a spell from your trash with Energy cost less than your points without paying its Energy cost. Then recycle it. (You must still pay its Power cost.)
+- **Malzahar - Fanatic** (ogn-113-298; Unit/Champion; Mind; 4E 3M): Kill a friendly unit or gear, :rb_exhaust:: [Action] — [Add] :rb_rune_rainbow::rb_rune_rainbow:. (Use on your turn or in showdowns. Abilities that add resources can't be reacted to.)
+- **Progress Day** (ogn-114-298; Spell; Mind; 6E 1P): Draw 4.
+- **Promising Future** (ogn-115-298; Spell; Mind; 5E 1P): Each player looks at the top 5 cards of their Main Deck, chooses one, then recycles the rest. Starting with the next player, each player plays those cards, ignoring Energy costs. (They must still pay Power costs.)
+- **Thousand-Tailed Watcher** (ogn-116-298; Unit; Mind; 7E 1P 7M): [Accelerate] (You may pay :rb_energy_1::rb_rune_mind: as an additional cost to have me enter ready.)When you play me, give enemy units -3 :rb_might: this turn, to a minimum of 1 :rb_might:.
+- **Viktor - Innovator** (ogn-117-298; Unit/Champion; Mind; 4E 1P 3M): When you play a card on an opponent's turn, play a 1 :rb_might: Recruit unit token in your base.
+- **Wraith of Echoes** (ogn-118-298; Unit; Mind; 6E 1P 5M): The first time a friendly unit dies each turn, draw 1.
+- **Ahri - Inquisitive** (ogn-119-298; Unit/Champion; Mind; 3E 1P 3M): When I attack or defend, give an enemy unit here -2 :rb_might: this turn, to a minimum of 1 :rb_might:.
+- **Seal of Insight** (ogn-120-298; Gear; Mind; 0E 1P): :rb_exhaust:: [Reaction] — [Add] :rb_rune_mind:. (Abilities that add resources can't be reacted to.)
+- **Teemo - Strategist** (ogn-121-298; Unit/Champion; Mind; 2E 1P 2M): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)When I defend or I'm played from [Hidden], reveal the top 5 cards of your Main Deck. Deal 1 to an enemy unit here for each card with [Hidden], then recycle them.
+- **Time Warp** (ogn-122-298; Spell; Mind; 10E 4P): Take a turn after this one. Banish this.
+- **Unchecked Power** (ogn-123-298; Spell; Mind; 7E 2P): Exhaust all friendly units, then deal 12 to ALL units at battlefields.
+- **Arena Bar** (ogn-124-298; Gear; Body; 3E): :rb_exhaust:: Buff an exhausted friendly unit. (If it doesn't have a buff, it gets a +1 :rb_might: buff.)
+- **Bilgewater Bully** (ogn-125-298; Unit; Body; 6E 6M): While I'm buffed, I have [Ganking]. (I can move from battlefield to battlefield.)
+- **Body Rune** (ogn-126-298; Rune/Basic; Body; ): 
+- **Cannon Barrage** (ogn-127-298; Spell; Body; 2E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Deal 2 to all enemy units in combat.
+- **Challenge** (ogn-128-298; Spell; Body; 2E 1P): [Action] (Play on your turn or in showdowns.)Choose a friendly unit and an enemy unit. They deal damage equal to their Mights to each other.
+- **Confront** (ogn-129-298; Spell; Body; 2E): [Action] (Play on your turn or in showdowns.)Units you play this turn enter ready. Draw 1.
+- **Crackshot Corsair** (ogn-130-298; Unit; Body; 3E 3M): When I attack, deal 1 to an enemy unit here.
+- **Dune Drake** (ogn-131-298; Unit; Body; 5E 5M): When I attack, give me +2 :rb_might: this turn if there is a ready enemy unit here.
+- **First Mate** (ogn-132-298; Unit; Body; 3E 3M): When you play me, ready another unit.
+- **Flurry of Blades** (ogn-133-298; Spell; Body; 1E): [Reaction] (Play any time, even before spells and abilities resolve.)Deal 1 to all units at battlefields.
+- **Mobilize** (ogn-134-298; Spell; Body; 2E): Channel 1 rune exhausted. If you can't, draw 1.
+- **Pakaa Cub** (ogn-135-298; Unit; Body; 3E 3M): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)
+- **Pit Rookie** (ogn-136-298; Unit; Body; 2E 2M): When you play me, buff another friendly unit. (If it doesn't have a buff, it gets a +1 :rb_might: buff.)
+- **Stormclaw Ursine** (ogn-137-298; Unit; Body; 7E 6M): [Tank] (I must be assigned combat damage first.)When you play me, channel 1 rune exhausted.
+- **Catalyst of Aeons** (ogn-138-298; Spell; Body; 4E): Channel 2 runes exhausted. If you couldn't channel 2 runes this way, draw 1.
+- **Cithria of Cloudfield** (ogn-139-298; Unit; Body; 2E 1M): When you play another unit, buff me. (If I don't have a buff, I get a +1 :rb_might: buff.)
+- **Herald of Scales** (ogn-140-298; Unit; Body; 4E 3M): Your Dragons' Energy costs are reduced by :rb_energy_2:, to a minimum of :rb_energy_1:.
+- **Kinkou Monk** (ogn-141-298; Unit; Body; 4E 1P 4M): When you play me, buff up to two other friendly units. (Each one that doesn't have a buff gets a +1 :rb_might: buff.)
+- **Mountain Drake** (ogn-142-298; Unit; Body; 9E 10M): 
+- **Pirate's Haven** (ogn-143-298; Gear; Body; 3E): When you ready a friendly unit, give it +1 :rb_might: this turn.
+- **Spoils of War** (ogn-144-298; Spell; Body; 4E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)If an enemy unit has died this turn, this costs :rb_energy_2: less.Draw 2.
+- **Unyielding Spirit** (ogn-145-298; Spell; Body; 1E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Prevent all spell and ability damage this turn.
+- **Wallop** (ogn-146-298; Spell; Body; 2E): [Action] (Play on your turn or in showdowns.)As you play this, you may spend a buff as an additional cost. If you do, ignore this spell's cost.Ready a unit.
+- **Wildclaw Shaman** (ogn-147-298; Unit; Body; 4E 3M): When you play me, you may spend a buff to buff me and ready me. (If I don't have a buff, I get a +1 :rb_might: buff.)
+- **Anivia - Primal** (ogn-148-298; Unit/Champion; Body; 7E 2P 8M): When I attack, deal 3 to all enemy units here.
+- **Carnivorous Snapvine** (ogn-149-298; Unit; Body; 5E 2P 6M): When you play me, choose an enemy unit at a battlefield. We deal damage equal to our Mights to each other.
+- **Kraken Hunter** (ogn-150-298; Unit; Body; 3E 2P 5M): [Accelerate] (You may pay :rb_energy_1::rb_rune_body: as an additional cost to have me enter ready.)[Assault] (+1 :rb_might: while I'm an attacker.)As you play me, you may spend any number of buffs as an additional cost. Reduce my cost by :rb_rune_body: for each buff you spend.
+- **Lee Sin - Centered** (ogn-151-298; Unit/Champion; Body; 6E 6M): [Accelerate] (You may pay :rb_energy_1::rb_rune_body: as an additional cost to have me enter ready.)Other buffed friendly units at my battlefield have +2 :rb_might:.
+- **Mistfall** (ogn-152-298; Gear; Body; 3E): When you buff a friendly unit, you may pay :rb_rune_body: and exhaust this to ready it.
+- **Overt Operation** (ogn-153-298; Spell; Body; 5E 2P): [Action] (Play on your turn or in showdowns.)For each friendly unit, you may spend its buff to ready it. Then buff all friendly units. (Each one that doesn't have a buff gets a +1 :rb_might: buff.)
+- **Primal Strength** (ogn-154-298; Spell; Body; 4E 1P): [Action] (Play on your turn or in showdowns.)Give a unit +7 :rb_might: this turn.
+- **Qiyana - Victorious** (ogn-155-298; Unit/Champion; Body; 4E 1P 4M): [Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)When I conquer, draw 1 or channel 1 rune exhausted.
+- **Sabotage** (ogn-156-298; Spell; Body; 1E 1P): Choose an opponent. They reveal their hand. Choose a non-unit card from it, and recycle that card.
+- **Udyr - Wildman** (ogn-157-298; Unit/Champion; Body; 6E 1P 6M): Spend my buff: Choose one you've not chosen this turn —Deal 2 to a unit at a battlefield.Stun a unit at a battlefield.Ready me.Give me [Ganking] this turn.
+- **Volibear - Imposing** (ogn-158-298; Unit/Champion; Body; 12E 2P 10M): [Shield 3] (+3 :rb_might: while I'm a defender.)[Tank] (I must be assigned combat damage first.)When an opponent moves to a battlefield other than mine, draw 1. (Bases are not battlefield.)
+- **Warwick - Hunter** (ogn-159-298; Unit/Champion; Body; 6E 1P 5M): I enter ready.When I attack, kill all damaged enemy units here.
+- **Dazzling Aurora** (ogn-160-298; Gear; Body; 9E 2P): At the end of your turn, reveal cards from the top of your Main Deck until you reveal a unit. Play it, ignoring its cost, and recycle the rest.
+- **Deadbloom Predator** (ogn-161-298; Unit; Body; 8E 2P 8M): [Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)You may play me to an occupied enemy battlefield.
+- **Miss Fortune - Captain** (ogn-162-298; Unit/Champion; Body; 5E 1P 5M): [Accelerate] (You may pay :rb_energy_1::rb_rune_body: as an additional cost to have me enter ready.)[Ganking] (I can move from battlefield to battlefield.)The first time I move each turn, you may ready something else that's exhausted.
+- **Seal of Strength** (ogn-163-298; Gear; Body; 0E 1P): :rb_exhaust:: [Reaction] — [Add] :rb_rune_body:. (Abilities that add resources can't be reacted to.)
+- **Sett - Brawler** (ogn-164-298; Unit/Champion; Body; 5E 1P 4M): When I'm played and when I conquer, buff me. (If I don't have a buff, I get a +1 :rb_might: buff.)Spend my buff: Give me +4 :rb_might: this turn.
+- **Cemetery Attendant** (ogn-165-298; Unit; Chaos; 3E 1P 3M): When you play me, return a unit from your trash to your hand.
+- **Chaos Rune** (ogn-166-298; Rune/Basic; Chaos; ): 
+- **Ember Monk** (ogn-167-298; Unit; Chaos; 4E 4M): When you play a card from [Hidden], give me +2 :rb_might: this turn.
+- **Fight or Flight** (ogn-168-298; Spell; Chaos; 2E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Move a unit from a battlefield to its base.
+- **Gust** (ogn-169-298; Spell; Chaos; 1E): [Reaction] (Play any time, even before spells and abilities resolve.)Return a unit at a battlefield with 3 :rb_might: or less to its owner's hand.
+- **Morbid Return** (ogn-170-298; Spell; Chaos; 2E): [Action] (Play on your turn or in showdowns.)Return a unit from your trash to your hand.
+- **Mystic Poro** (ogn-171-298; Unit; Chaos; 2E 2M): [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)
+- **Rebuke** (ogn-172-298; Spell; Chaos; 2E 2P): [Action] (Play on your turn or in showdowns.)Return a unit at a battlefield to its owner's hand.
+- **Ride The Wind** (ogn-173-298; Spell; Chaos; 2E 1P): [Action] (Play on your turn or in showdowns.)Move a friendly unit and ready it.
+- **Sai Scout** (ogn-174-298; Unit; Chaos; 6E 5M): [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)You may play me to an open battlefield.
+- **Shipyard Skulker** (ogn-175-298; Unit; Chaos; 3E 3M): 
+- **Sneaky Deckhand** (ogn-176-298; Unit; Chaos; 3E 2M): You may play me to an open battlefield.
+- **Stealthy Pursuer** (ogn-177-298; Unit; Chaos; 4E 1P 4M): When a friendly unit moves from my location, I may be moved with it.
+- **Undercover Agent** (ogn-178-298; Unit; Chaos; 5E 1P 5M): [Deathknell] — Discard 2, then draw 2. (When I die, get the effect.)
+- **Acceptable Losses** (ogn-179-298; Spell; Chaos; 1E): [Action] (Play on your turn or in showdowns.)Each player kills one of their gear.
+- **Fading Memories** (ogn-180-298; Spell; Chaos; 4E 1P): Give a unit at a battlefield or a gear [Temporary]. (Kill it at the start of its controller's Beginning Phase, before scoring.)
+- **Pack of Wonders** (ogn-181-298; Gear; Chaos; 2E): :rb_exhaust:: Return another friendly gear, unit, or [Hidden] card to its owner's hand.
+- **Scrapheap** (ogn-182-298; Gear; Chaos; 2E): When this is played, discarded, or killed, draw 1.
+- **Stacked Deck** (ogn-183-298; Spell; Chaos; 1E): [Action] (Play on your turn or in showdowns.)Look at the top 3 cards of your Main Deck. Put 1 into your hand and recycle the rest.
+- **The Syren** (ogn-184-298; Gear; Chaos; 2E): :rb_energy_1:, :rb_exhaust:: Move a friendly unit at a battlefield to your base.
+- **Traveling Merchant** (ogn-185-298; Unit; Chaos; 2E 2M): When I move, discard 1, then draw 1.
+- **Treasure Trove** (ogn-186-298; Gear; Chaos; 2E): When this leaves the board, draw 1 and channel 1 rune exhausted.:rb_rune_chaos:, :rb_exhaust:: Kill this.
+- **Whirlwind** (ogn-187-298; Spell; Chaos; 3E 1P): Starting with the next player, each player may return a unit to its owner's hand.
+- **Zaunite Bouncer** (ogn-188-298; Unit; Chaos; 4E 2P 2M): When you play me, return another unit at a battlefield to its owner's hand.
+- **Kayn - Unleashed** (ogn-189-298; Unit/Champion; Chaos; 6E 1P 6M): [Ganking] (I can move from battlefield to battlefield.)If I have moved twice this turn, I don't take damage.
+- **Kog'Maw - Caustic** (ogn-190-298; Unit/Champion; Chaos; 3E 1P 1M): [Deathknell] — Deal 4 to all units at my battlefield. (When I die, get the effect.)
+- **Maddened Marauder** (ogn-191-298; Unit; Chaos; 5E 4M): [Tank] (I must be assigned combat damage first.)When you play me, move a unit from a battlefield to its base.
+- **Mindsplitter** (ogn-192-298; Unit; Chaos; 7E 2P 7M): When you play me, choose an opponent. They reveal their hand. Choose a card from it, and they discard that card.
+- **Miss Fortune - Buccaneer** (ogn-193-298; Unit/Champion; Chaos; 4E 1P 4M): You may play me to an open battlefield.Friendly units may be played to open battlefields.
+- **Nocturne - Horrifying** (ogn-194-298; Unit/Champion; Chaos; 4E 1P 4M): [Ganking] (I can move from battlefield to battlefield.)When you look at cards from the top of your deck (and don't draw them) and see me, you may play me for :rb_rune_rainbow:.
+- **Rhasa the Sunderer** (ogn-195-298; Unit; Chaos; 10E 1P 6M): I cost :rb_energy_1: less for each card in your trash.
+- **Soulgorger** (ogn-196-298; Unit; Chaos; 8E 2P 5M): When you play me, you may play a unit from your trash, ignoring its Energy cost. (You must still pay its Power cost.)
+- **Teemo - Scout** (ogn-197-298; Unit/Champion; Chaos; 2E 1M): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)When you play me, give me +3 :rb_might: this turn.
+- **The Harrowing** (ogn-198-298; Spell; Chaos; 6E 2P): Play a unit from your trash, ignoring its Energy cost. (You must still pay its Power cost.)
+- **Tideturner** (ogn-199-298; Unit; Chaos; 2E 2M): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)When you play me, you may choose a friendly unit. Move me to its location and it to my original location.
+- **Twisted Fate - Gambler** (ogn-200-298; Unit/Champion; Chaos; 4E 4M): When I attack, reveal the top rune of your rune deck, then recycle it. Do one of the following based on its domain::rb_rune_fury: — Deal 2 to an enemy unit here and 1 to all other enemy units here.:rb_rune_mind: — Draw 1.:rb_rune_order: — Stun an enemy unit.
+- **Invert Timelines** (ogn-201-298; Spell; Chaos; 3E 1P): Each player discards their hand, then draws 4.
+- **Jinx - Rebel** (ogn-202-298; Unit/Champion; Chaos; 5E 1P 5M): When you discard one or more cards, ready me and give me +1 :rb_might: this turn.
+- **Possession** (ogn-203-298; Spell; Chaos; 8E 3P): [Action] (Play on your turn or in showdowns.)Choose an enemy unit at a battlefield. Take control of it and recall it. (Send it to your base. This isn't a move.)
+- **Seal of Discord** (ogn-204-298; Gear; Chaos; 0E 1P): :rb_exhaust:: [Reaction] — [Add] :rb_rune_chaos:. (Abilities that add resources can't be reacted to.)
+- **Yasuo - Windrider** (ogn-205-298; Unit/Champion; Chaos; 5E 1P 4M): [Ganking] (I can move from battlefield to battlefield.)The third time I move in a turn, you score 1 point.
+- **Back to Back** (ogn-206-298; Spell; Order; 3E): [Reaction] (Play any time, even before spells and abilities resolve.)Give two friendly units each +2 :rb_might: this turn.
+- **Call to Glory** (ogn-207-298; Spell; Order; 3E): [Reaction] (Play any time, even before spells and abilities resolve.)As you play this, you may spend a buff as an additional cost. If you do, ignore this spell's cost.Give a unit +3 :rb_might: this turn.
+- **Cruel Patron** (ogn-208-298; Unit; Order; 4E 6M): As an additional cost to play me, kill a friendly unit.
+- **Cull the Weak** (ogn-209-298; Spell; Order; 2E 1P): Each player kills one of their units.
+- **Daring Poro** (ogn-210-298; Unit; Order; 2E 2M): [Assault] (+1 :rb_might: while I'm an attacker.)
+- **Faithful Manufactor** (ogn-211-298; Unit; Order; 3E 2M): When you play me, play a 1 :rb_might: Recruit unit token here.
+- **Forge of the Future** (ogn-212-298; Gear; Order; 2E): When you play this, play a 1 :rb_might: Recruit unit token at your base.Kill this: Recycle up to 4 cards from trashes.
+- **Hidden Blade** (ogn-213-298; Spell; Order; 2E 1P): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Kill a unit at a battlefield. Its controller draws 2.
+- **Order Rune** (ogn-214-298; Rune/Basic; Order; ): 
+- **Petty Officer** (ogn-215-298; Unit; Order; 5E 5M): [Assault] (+1 :rb_might: while I'm an attacker.)
+- **Soaring Scout** (ogn-216-298; Unit; Order; 2E 1M): [Deathknell] — Channel 1 rune exhausted. (When I die, get the effect.)
+- **Trifarian Gloryseeker** (ogn-217-298; Unit; Order; 2E 2M): [Legion] — When you play me, buff me. (If I don't have a buff, I get a +1 :rb_might: buff. Get the effect if you've played another card this turn.)
+- **Vanguard Captain** (ogn-218-298; Unit; Order; 3E 1P 3M): [Legion] — When you play me, play two 1 :rb_might: Recruit unit tokens here. (Get the effect if you've played another card this turn.)
+- **Vanguard Sergeant** (ogn-219-298; Unit; Order; 4E 4M): 
+- **Facebreaker** (ogn-220-298; Spell; Order; 2E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Stun a friendly unit and an enemy unit at the same battlefield. (They don't deal combat damage this turn.)
+- **Imperial Decree** (ogn-221-298; Spell; Order; 5E 2P): [Action] (Play on your turn or in showdowns.)When any unit takes damage this turn, kill it.
+- **Noxian Drummer** (ogn-222-298; Unit; Order; 3E 3M): When I move to a battlefield, play a 1 :rb_might: Recruit unit token here. (It is also at the battlefield.)
+- **Peak Guardian** (ogn-223-298; Unit; Order; 6E 1P 5M): When you play me, buff me. Then, if I am at a battlefield, buff all other friendly units there. (To buff a unit, give it a +1 :rb_might: buff if it doesn't already have one.)
+- **Salvage** (ogn-224-298; Spell; Order; 2E 1P): [Action] (Play on your turn or in showdowns.)You may kill a gear. Draw 1.
+- **Solari Chief** (ogn-225-298; Unit; Order; 5E 1P 4M): When you play me, choose an enemy unit. If it is stunned, kill it. Otherwise, stun it. (It doesn't deal combat damage this turn.)
+- **Spectral Matron** (ogn-226-298; Unit; Order; 4E 2P 4M): When you play me, you may play a unit costing no more than :rb_energy_3: and no more than :rb_rune_rainbow: from your trash, ignoring its cost.
+- **Symbol of the Solari** (ogn-227-298; Gear; Order; 1E): If a combat where you are the attacker ends in a tie, recall ALL units instead. (Send them to base. This isn't a move. Ties are calculated after combat damage is dealt.)
+- **Vanguard Helm** (ogn-228-298; Gear; Order; 2E): When a buffed friendly unit dies, buff another friendly unit. (If it doesn't have a buff, it gets a +1 :rb_might: buff.)
+- **Vengeance** (ogn-229-298; Spell; Order; 4E 2P): Kill a unit.
+- **Albus Ferros** (ogn-230-298; Unit; Order; 4E 3M): When you play me, spend any number of buffs. For each buff spent, channel 1 rune exhausted.
+- **Commander Ledros** (ogn-231-298; Unit; Order; 6E 4P 8M): As you play me, you may kill any number of friendly units as an additional cost. Reduce my cost by :rb_rune_order: for each killed this way.[Deflect] (Opponents must pay :rb_rune_rainbow: to choose me with a spell or ability.)[Ganking] (I can move from battlefield to battlefield.)
+- **Fiora - Victorious** (ogn-232-298; Unit/Champion; Order; 4E 4M): While I'm [Mighty], I have [Deflect], [Ganking], and [Shield]. (I'm Mighty while I have 5+ :rb_might:.)
+- **Grand Strategem** (ogn-233-298; Spell; Order; 6E 3P): [Action] (Play on your turn or in showdowns.)Give friendly units +5 :rb_might: this turn.
+- **Harnessed Dragon** (ogn-234-298; Unit; Order; 8E 2P 6M): When you play me, kill an enemy unit.
+- **Karma - Channeler** (ogn-235-298; Unit/Champion; Order; 6E 1P 6M): [Vision] (When you play me, look at the top card of your Main Deck. You may recycle it.)When you recycle one or more cards, buff a friendly unit. (If it doesn't have a buff, it gets a +1 :rb_might: buff. Runes aren't cards.)
+- **Karthus - Eternal** (ogn-236-298; Unit/Champion; Order; 3E 1P 3M): Your [Deathknell] effects trigger an additional time.
+- **King's Edict** (ogn-237-298; Spell; Order; 6E 2P): Starting with the next player, each other player chooses a unit you don't control that hasn't been chosen for this spell. Kill those units.
+- **Leona - Determined** (ogn-238-298; Unit/Champion; Order; 4E 1P 4M): [Shield] (+1 :rb_might: while I'm a defender.)When I attack, stun an enemy unit here. (It doesn't deal combat damage this turn.)
+- **Machine Evangel** (ogn-239-298; Unit; Order; 5E 1P 4M): [Deathknell] — Play three 1 :rb_might: Recruit unit tokens into your base. (When I die, get the effect.)
+- **Sett - Kingpin** (ogn-240-298; Unit/Champion; Order; 4E 1P 5M): [Tank] (I must be assigned combat damage first.)I get +1 :rb_might: for each buffed friendly unit at my battlefield.
+- **Shen - Kinkou** (ogn-241-298; Unit/Champion; Order; 3E 1P 3M): [Reaction] (Play any time, even before spells and abilities resolve, including to a battlefield you control.)[Shield 2] (+2 :rb_might: while I'm a defender.)[Tank] (I must be assigned combat damage first.)
+- **Baited Hook** (ogn-242-298; Gear; Order; 3E): :rb_energy_1::rb_rune_order:, :rb_exhaust:: Kill a friendly unit. Look at the top 5 cards of your Main Deck. You may banish a unit from among them that has Might up to 1 more than the killed unit and play it, ignoring its cost. Then recycle the rest.
+- **Darius - Executioner** (ogn-243-298; Unit/Champion; Order; 6E 1P 6M): [Legion] — When you play me, ready me. (Get the effect if you've played another card this turn)Other friendly units have +1 :rb_might: here.
+- **Divine Judgment** (ogn-244-298; Spell; Order; 7E 2P): Each player chooses 2 units, 2 gear, 2 runes, and 2 cards in their hands. Recycle the rest.
+- **Seal of Unity** (ogn-245-298; Gear; Order; 0E 1P): :rb_exhaust:: [Reaction] — [Add] :rb_rune_order:. (Abilities that add resources can't be reacted to.)
+- **Viktor - Leader** (ogn-246-298; Unit/Champion; Order; 4E 1P 4M): When another non-Recruit unit you control dies, play a 1 :rb_might: Recruit unit token into your base.
+- **Kai'Sa - Daughter of the Void** (ogn-247-298; Legend/Champion; Fury/Mind; ): :rb_exhaust:: [Reaction] — [Add] :rb_rune_rainbow:. Use only to play spells. (Abilities that add resources can't be reacted to.)
+- **Icathian Rain** (ogn-248-298; Spell/Signature; Fury/Mind; 7E 3P): Deal 2 to a unit.Deal 2 to a unit.Deal 2 to a unit.Deal 2 to a unit.Deal 2 to a unit.Deal 2 to a unit.
+- **Volibear - Relentless Storm** (ogn-249-298; Legend/Champion; Fury/Body; ): When you play a [Mighty] unit, you may exhaust me to channel 1 rune exhausted. (A unit is Mighty while it has 5+ :rb_might:.)
+- **Stormbringer** (ogn-250-298; Spell/Signature; Fury/Body; 6E 2P): Choose a friendly unit in your base. Deal damage equal to its Might to all enemy units at a battlefield, then move your unit there.
+- **Jinx - Loose Cannon** (ogn-251-298; Legend; Fury/Chaos; ): At start of your Beginning Phase, draw 1 if you have one or fewer cards in your hand.
+- **Super Mega Death Rocket!** (ogn-252-298; Spell/Signature; Fury/Chaos; 4E 1P): Deal 5 to a unit.When you conquer, you may discard 1 to return this from your trash to your hand.
+- **Darius - Hand of Noxus** (ogn-253-298; Legend; Fury/Order; ): :rb_exhaust:: [Reaction], [Legion] — [Add] :rb_energy_1:. (Abilities that add resources can't be reacted to. Get the effect if you've played a card this turn.)
+- **Noxian Guillotine** (ogn-254-298; Spell/Signature; Fury/Order; 4E 1P): [Action] (Play on your turn or in showdowns.)Choose a unit. Kill it the next time it takes damage this turn.[Legion] — Kill it now instead. (Get the effect if you've played another card this turn.)
+- **Ahri - Nine-Tailed Fox** (ogn-255-298; Legend/Champion; Calm/Mind; ): When an enemy unit attacks a battlefield you control, give it -1 :rb_might: this turn, to a minimum of 1 :rb_might:.
+- **Fox-Fire** (ogn-256-298; Spell/Signature; Calm/Mind; 3E): [Hidden] (Hide now for :rb_rune_rainbow: to react with later for :rb_energy_0:.)[Action] (Play on your turn or in showdowns.)Kill any number of units at a battlefield with total Might 4 or less.
+- **Lee Sin - Blind Monk** (ogn-257-298; Legend; Calm/Body; ): :rb_energy_1:, :rb_exhaust:: Buff a friendly unit. (If it doesn't have a buff, it gets a +1 :rb_might: buff.)
+- **Dragon's Rage** (ogn-258-298; Spell/Signature; Calm/Body; 4E 1P): Move an enemy unit. Then choose another enemy unit at its destination. They deal damage equal to their Mights to each other.
+- **Yasuo - Unforgiven** (ogn-259-298; Legend/Champion; Calm/Chaos; ): :rb_energy_2:, :rb_exhaust:: Move a friendly unit to or from its base.
+- **Last Breath** (ogn-260-298; Spell/Signature; Calm/Chaos; 3E 2P): [Action] (Play on your turn or in showdowns.)Ready a friendly unit. It deals damage equal to its Might to an enemy unit at a battlefield.
+- **Leona - Radiant Dawn** (ogn-261-298; Legend; Calm/Order; ): When you stun one or more enemy units, buff a friendly unit. (If it doesn't have a buff, it gets a +1 :rb_might: buff.)
+- **Zenith Blade** (ogn-262-298; Spell/Signature; Calm/Order; 3E 2P): [Action] (Play on your turn or in showdowns.)Stun an enemy unit at a battlefield. You may move a friendly unit to that enemy unit's battlefield. (A stunned unit doesn't deal combat damage this turn.)
+- **Teemo - Swift Scout** (ogn-263-298; Legend; Mind/Chaos; ): You may pay :rb_energy_1: to hide a card with [Hidden] instead of :rb_rune_rainbow:.:rb_energy_1:, :rb_exhaust:: Put a Teemo unit you own into your hand from your Champion Zone or the board.
+- **Guerilla Warfare** (ogn-264-298; Spell/Signature; Mind/Chaos; 2E 1P): Return up to two cards with [Hidden] from your trash to your hand. You can hide cards ignoring costs this turn.
+- **Viktor - Herald of the Arcane** (ogn-265-298; Legend; Mind/Order; ): :rb_energy_1:, :rb_exhaust:: Play a 1 :rb_might: Recruit unit token.
+- **Siphon Power** (ogn-266-298; Spell/Signature; Mind/Order; 2E 1P): [Reaction] (Play any time, even before spells and abilities resolve.)Choose a battlefield. Give friendly units there +1 :rb_might: this turn and enemy units there -1 :rb_might: this turn, to a minimum of 1 :rb_might:.
+- **Miss Fortune - Bounty Hunter** (ogn-267-298; Legend/Champion; Body/Chaos; ): :rb_exhaust:: Give a unit [Ganking] this turn. (It can move from battlefield to battlefield.)
+- **Bullet Time** (ogn-268-298; Spell/Signature; Body/Chaos; 1E): [Action] (Play on your turn or in showdowns.)Pay any amount of :rb_rune_rainbow: to deal that much damage to all enemy units at a battlefield.
+- **Sett - The Boss** (ogn-269-298; Legend; Body/Order; ): When a buffed unit you control would die, you may pay :rb_rune_rainbow: and exhaust me to spend its buff and recall it exhausted instead. (Send it to base. This isn't a move.)When you conquer, ready me.
+- **Showstopper** (ogn-270-298; Spell/Signature; Body/Order; 1E 1P): Buff a friendly unit in your base, then move it to a battlefield. (If it doesn't have a buff, it gets a +1 :rb_might: buff.)
+- **Recruit (271) // Buff** (ogn-271-298; Unit/Token; Colorless; 1M): 
+- **Recruit (272) // Buff** (ogn-272-298; Unit/Token; Colorless; 1M): 
+- **Recruit (273) // Buff** (ogn-273-298; Unit/Token; Colorless; 1M): 
+- **Sprite (274) // Buff** (ogn-274-298; Unit/Token; Colorless; 3M): [Temporary] (Kill me at the start of your Beginning Phase, before scoring.)
+- **Altar to Unity** (ogn-275-298; Battlefield; Colorless; ): When you hold here, play a 1 :rb_might: Recruit unit token in your base.
+- **Aspirant's Climb** (ogn-276-298; Battlefield; Colorless; ): Increase the points needed to win the game by 1.
+- **Back-Alley Bar** (ogn-277-298; Battlefield; Colorless; ): When a unit moves from here, give it +1 :rb_might: this turn.
+- **Bandle Tree** (ogn-278-298; Battlefield; Colorless; ): You may hide an additional card here.
+- **Fortified Position** (ogn-279-298; Battlefield; Colorless; ): When you defend here, choose a unit. It gains [Shield 2] this combat. (+2 :rb_might: while it's a defender.)
+- **Grove of the God-Willow** (ogn-280-298; Battlefield; Colorless; ): When you hold here, draw 1.
+- **Hallowed Tomb** (ogn-281-298; Battlefield; Colorless; ): When you hold here, you may return your Chosen Champion from your trash to your Champion Zone if it is empty.
+- **Monastery of Hirana** (ogn-282-298; Battlefield; Colorless; ): When you conquer here, you may spend a buff to draw 1.
+- **Navori Fighting Pit** (ogn-283-298; Battlefield; Colorless; ): When you hold here, buff a unit here. (If it doesn't have a buff, it gets a +1 :rb_might: buff.)
+- **Obelisk of Power** (ogn-284-298; Battlefield; Colorless; ): At the start of each player's first Beginning Phase, that player channels 1 rune.
+- **Reaver's Row** (ogn-285-298; Battlefield; Colorless; ): When you defend here, you may move a friendly unit here to base.
+- **Reckoner's Arena** (ogn-286-298; Battlefield; Colorless; ): When you hold here, activate the conquer effects of units here.
+- **Sigil of the Storm** (ogn-287-298; Battlefield; Colorless; ): When you conquer here, recycle one of your runes.
+- **Startipped Peak** (ogn-288-298; Battlefield; Colorless; ): When you hold here, you may channel 1 rune exhausted.
+- **Targon's Peak** (ogn-289-298; Battlefield; Colorless; ): When you conquer here, ready 2 runes at the end of this turn.
+- **The Arena's Greatest** (ogn-290-298; Battlefield; Colorless; ): At the start of each player's first Beginning Phase, that player gains 1 point.
+- **The Candlelit Sanctum** (ogn-291-298; Battlefield; Colorless; ): When you conquer here, look at the top two cards of your Main Deck. You may recycle one or both of them. Put those you don't back in any order.
+- **The Dreaming Tree** (ogn-292-298; Battlefield; Colorless; ): When a player chooses a friendly unit here with a spell for the first time each turn, they draw 1.
+- **The Grand Plaza** (ogn-293-298; Battlefield; Colorless; ): When you hold here, if you have 7+ units here, you win the game.
+- **Trifarian War Camp** (ogn-294-298; Battlefield; Colorless; ): Units here have +1 :rb_might:. (This includes attackers.)
+- **Vilemaw's Lair** (ogn-295-298; Battlefield; Colorless; ): Units can't move from here to base.
+- **Void Gate** (ogn-296-298; Battlefield; Colorless; ): Spells and abilities affecting units here each deal 1 Bonus Damage. (Each instance of damage the spell deals is increased by 1.)
+- **Windswept Hillock** (ogn-297-298; Battlefield; Colorless; ): Units here have [Ganking]. (They can move from battlefield to battlefield.)
+- **Zaun Warrens** (ogn-298-298; Battlefield; Colorless; ): When you conquer here, discard 1, then draw 1.

@@ -1,0 +1,22 @@
+[package]
+name = "agni-riftbound-plugin"
+version = "0.8.0"
+edition = "2021"
+
+[dependencies]
+agni-plugin-sdk = { path = "../sdk" }
+agni-riftbound-turns = { path = "../../games/riftbound-turns" }
+
+[build-dependencies]
+agni-riftbound = { path = "../../games/riftbound" }
+agni-sim = { path = "../../sim" }
+
+[dev-dependencies]
+agni-core = { path = "../../core" }
+agni-riftbound = { path = "../../games/riftbound" }
+agni-sim = { path = "../../sim" }
+serde_bytes = "0.11"
+
+[lib]
+name = "riftbound_plugin"
+crate-type = ["cdylib", "rlib"]

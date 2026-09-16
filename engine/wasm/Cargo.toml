@@ -1,0 +1,12 @@
+[package]
+name = "agni-engine-wasm"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+agni-sim = { path = "../../sim" }
+serde_bytes = "0.11"
+
+[lib]
+name = "agni_engine_wasm"
+crate-type = ["cdylib", "rlib"]

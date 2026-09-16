@@ -1,0 +1,12 @@
+[package]
+name = "agni-riftbound"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+agni-core = { path = "../../core" }
+agni-deck = { path = "../deck" }
+agni-sim = { path = "../../sim" }
+
+[lib]
+name = "agni_riftbound"

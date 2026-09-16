@@ -1,0 +1,20 @@
+[package]
+name = "agni-engine-host"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+agni-sim = { path = "../../sim" }
+blake3 = "1"
+serde = { version = "1", features = ["derive"] }
+serde_bytes = "0.11"
+spirit-sdk = { path = "../../../../spirit/spirit/sdk" }
+wasmi = "1"
+
+[dev-dependencies]
+agni-harden = { path = "../../plugins/harden" }
+ciborium = "0.2"
+wat = "1"
+
+[lib]
+name = "agni_engine_host"

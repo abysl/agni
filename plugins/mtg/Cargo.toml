@@ -1,0 +1,19 @@
+[package]
+name = "agni-mtg-plugin"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+agni-plugin-sdk = { path = "../sdk" }
+
+[build-dependencies]
+agni-mtg = { path = "../../games/mtg" }
+agni-sim = { path = "../../sim" }
+
+[dev-dependencies]
+agni-mtg = { path = "../../games/mtg" }
+agni-sim = { path = "../../sim" }
+
+[lib]
+name = "mtg_plugin"
+crate-type = ["cdylib", "rlib"]
