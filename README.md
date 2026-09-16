@@ -1,16 +1,15 @@
-# agni
+# Agni
 
 > "Form is a duel."
 
-The core engine for **deterministic card games** — logic, networking, plugins,
-card importers and game simulation for multiple games (Riftbound, MTG,
-abyss-walker) — built on top of [spirit](../spirit/README.md), the generic
+Agni is a deterministic card-game engine: table state, replayable simulation,
+network sessions, plugin hosting, and user-run card importers. It is built on
+top of [Spirit Library](https://github.com/abysl/spirit-library), the generic
 content mesh underneath it.
 
-Clients handle everything else. [kai](../../agni/kai/README.md) (Bevy;
-desktop, wasm, Android) does UX, rendering and QR pairing; `abyss-walker`
-(Godot) and the mechanist e-ink card platform (`../firmware/paisho`) are
-planned against the same boundary. Front ends never mutate game state:
+Clients handle everything else. [Kai](https://github.com/abysl/kai) does UX,
+rendering and QR pairing; other front ends can use the same simulation boundary.
+Front ends never mutate game state:
 dropping a card emits a request that agni's session stack orders and folds.
 
 agni ships **neutral**: no game's rules are enforced by shipped code, and no
@@ -36,7 +35,7 @@ posture, on purpose.
 
 - [`wiki/design/architecture.md`](wiki/design/architecture.md) — determinism,
   replay, plugins over spirit, front-end boundaries, the crate map
-- [kai `wiki/design/deterministic-log.md`](../../agni/kai/wiki/design/deterministic-log.md)
+- [Kai deterministic log](https://github.com/abysl/kai/blob/main/wiki/design/deterministic-log.md)
   — the action log agni-sim implements
 - [`wiki/design/plugins.md`](wiki/design/plugins.md) — plugins as pure deciders
   in the fold, the SDK, verdict effects, and the Riftbound rules as built
