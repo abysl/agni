@@ -8,7 +8,7 @@ agni-sim = { path = "../../sim" }
 blake3 = "1"
 serde = { version = "1", features = ["derive"] }
 serde_bytes = "0.11"
-spirit-sdk = { path = "../../../../spirit/spirit/sdk" }
+spirit-sdk = { git = "https://git.rae.blue/abysl/spirit-library" }
 wasmi = "1"
 
 [dev-dependencies]

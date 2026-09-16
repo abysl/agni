@@ -11,9 +11,9 @@ agni-sim = { path = "../sim", optional = true }
 ciborium = { version = "0.2", optional = true }
 serde = { version = "1", features = ["derive"], optional = true }
 serde_json = { version = "1", optional = true }
-spirit-core = { path = "../../../spirit/spirit/core", optional = true }
-spirit-schema = { path = "../../../spirit/spirit/schema", optional = true }
-spirit-node = { path = "../../../spirit/spirit/node", optional = true, default-features = false, features = [
+spirit-core = { git = "https://git.rae.blue/abysl/spirit-library", optional = true }
+spirit-schema = { git = "https://git.rae.blue/abysl/spirit-library", optional = true }
+spirit-node = { git = "https://git.rae.blue/abysl/spirit-library", optional = true, default-features = false, features = [
   "native",
 ] }
 ureq = { version = "2", features = ["json"], optional = true }
