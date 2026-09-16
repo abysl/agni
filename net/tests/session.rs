@@ -1037,7 +1037,7 @@ fn a_seated_deck_deal_replicates_with_faces_only_where_visibility_allows() {
 }
 
 #[test]
-fn the_dealers_shuffle_is_deterministic_and_seeded() {
+fn shuffled_deals_replay_without_exposing_the_private_shuffle_order() {
     let run = || {
         let mut host = riftbound_host();
         let (seat, _) = host.join("ada").unwrap();
@@ -1084,7 +1084,77 @@ fn the_dealers_shuffle_is_deterministic_and_seeded() {
             .cloned()
             .collect::<std::collections::BTreeSet<_>>()
     );
-    assert_ne!(dealt, ordered);
+    assert_eq!(host.state(), &fold(host.log()));
+}
+
+fn full_deck() -> Vec<DealGroup> {
+    vec![DealGroup {
+        target: DealTarget::Zone(agni_riftbound::ZONE_NAME_MAIN_DECK.into()),
+        faces: faces("unique card", 40),
+        shuffle: true,
+        draw: 4,
+    }]
+}
+
+fn private_deal_order(host: &HostSession) -> Vec<String> {
+    [agni_riftbound::ZONE_HAND, agni_riftbound::ZONE_MAIN_DECK]
+        .into_iter()
+        .flat_map(|zone| {
+            host.state()
+                .table
+                .in_area(PlayerId(0), Zone::Plugin(zone))
+                .map(|card| host.face_of(card.id.0).unwrap().1.name)
+        })
+        .collect()
+}
+
+#[test]
+fn independently_created_tables_get_fresh_deck_shuffles() {
+    let orders: std::collections::BTreeSet<_> = (0..4)
+        .map(|_| {
+            let mut host = riftbound_host();
+            host.deal_groups(0, full_deck()).unwrap();
+            private_deal_order(&host)
+        })
+        .collect();
+    assert_eq!(
+        orders.len(),
+        4,
+        "identical setup must not reuse a deck seed"
+    );
+}
+
+#[test]
+fn explicitly_ordered_decks_do_not_acquire_an_extra_shuffle() {
+    let mut groups = full_deck();
+    groups[0].shuffle = false;
+    let expected = groups[0].faces.clone();
+    for _ in 0..2 {
+        let mut host = riftbound_host();
+        host.deal_groups(0, groups.clone()).unwrap();
+        for (id, face) in expected.iter().enumerate() {
+            assert_eq!(host.face_of(id as u32).unwrap().1, *face);
+        }
+    }
+}
+
+#[test]
+fn new_games_and_deck_reloads_get_fresh_shuffles_without_changing_replay() {
+    let mut host = riftbound_host();
+    host.deal_groups(0, full_deck()).unwrap();
+    let original = private_deal_order(&host);
+    host.reset(Vec::new()).unwrap();
+    host.deal_groups(0, full_deck()).unwrap();
+    let next_game = private_deal_order(&host);
+    let (_, owner_faces) = host.reload_groups(0, full_deck()).unwrap();
+    let reloaded = private_deal_order(&host);
+    assert_ne!(original, next_game);
+    assert_ne!(next_game, reloaded);
+    let recorded = agni_sim::log::decode_log(&encode_log(host.log())).unwrap();
+    assert_eq!(host.state(), &fold(&recorded));
+    let mut replay = ClientSession::from_welcome(0, host.roster(), recorded);
+    replay.add_faces(owner_faces);
+    assert_eq!(host.table(), replay.table());
 }
 
 #[test]

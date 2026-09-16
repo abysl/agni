@@ -65,6 +65,23 @@ identities at creation, so an update does not silently alter a match in progress
 Wire protocol versions, plugin state versions, and application versions describe
 different boundaries. Review and test the affected boundary explicitly.
 
+## Deck shuffle randomness
+
+The host obtains fresh system randomness for each shuffled deck deal, including
+new tables, new games, and deck reloads. Native hosts use the operating system's
+random source; browser hosts use Web Crypto through `getrandom`. The seed mixes
+that private entropy with the seat, log position, and deck contents. It is not
+derived from the deck list alone, and is never sent to other players.
+
+Randomness is obtained before dealing or clearing a deck. If it is unavailable,
+the operation fails rather than falling back to a predictable seed. Groups that
+do not require shuffling retain their supplied order.
+
+This happens in the host's dealer, outside the deterministic fold. Replay uses
+the recorded card operations and the appropriate private face records, not a
+new shuffle. No wire or game-plugin state change is needed. This does not make
+a host trustworthy; the host still knows the deck order.
+
 ## Session undo
 
 Host sessions retain at most 64 pre-intent checkpoints, including deterministic

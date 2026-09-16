@@ -150,6 +150,7 @@ dependencies = [
  "agni-sim",
  "blake3",
  "ciborium",
+ "getrandom 0.4.3",
  "n0-future",
  "parking_lot",
  "serde",

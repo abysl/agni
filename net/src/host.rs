@@ -35,6 +35,7 @@ pub enum SessionError {
     UnknownSeat(u8),
     NoDealTarget,
     NoFace(u32),
+    Randomness(String),
     Partial {
         applied: Vec<LogEntry>,
         error: Box<SessionError>,
@@ -49,6 +50,7 @@ impl fmt::Display for SessionError {
             Self::UnknownSeat(seat) => write!(f, "seat {seat} is not at this table"),
             Self::NoDealTarget => f.write_str("this table has no zones that deal can land in"),
             Self::NoFace(card) => write!(f, "the dealer holds no face for card {card}"),
+            Self::Randomness(error) => write!(f, "cannot obtain fresh shuffle randomness: {error}"),
             Self::Partial { applied, error } => write!(
                 f,
                 "{} of the intent's entries folded before it stopped: {error}",
@@ -610,8 +612,19 @@ impl HostSession {
         Ok(())
     }
 
-    fn deal_seed(&self, seat: u8, groups: &[DealGroup]) -> u64 {
+    fn deal_seed(&self, seat: u8, groups: &[DealGroup]) -> Result<u64, SessionError> {
+        if !groups
+            .iter()
+            .any(|group| group.shuffle && group.faces.len() > 1)
+        {
+            return Ok(0);
+        }
+        let mut entropy = [0u8; 32];
+        getrandom::fill(&mut entropy)
+            .map_err(|error| SessionError::Randomness(error.to_string()))?;
         let mut hasher = blake3::Hasher::new();
+        hasher.update(b"agni-deal-v1");
+        hasher.update(&entropy);
         hasher.update(&[seat]);
         hasher.update(&self.state_cache.next_seq.to_le_bytes());
         for group in groups {
@@ -623,7 +636,7 @@ impl HostSession {
         let hash = hasher.finalize();
         let mut seed = [0u8; 8];
         seed.copy_from_slice(&hash.as_bytes()[..8]);
-        u64::from_le_bytes(seed)
+        Ok(u64::from_le_bytes(seed))
     }
 
     fn deal_faces(
@@ -687,16 +700,9 @@ impl HostSession {
         seat: u8,
         groups: Vec<DealGroup>,
     ) -> Result<(Vec<LogEntry>, OwnerFaces), SessionError> {
-        self.seated(seat)?;
-        let staged: Vec<DealGroup> = groups
-            .into_iter()
-            .filter(|group| !group.faces.is_empty())
-            .collect();
-        if !self.groups_land(&staged) {
-            return Err(SessionError::NoDealTarget);
-        }
+        let (staged, rng) = self.prepare_deal(seat, groups)?;
         let mut entries: Vec<LogEntry> = self.clear_seat(seat)?.into_iter().collect();
-        let (dealt, owner_faces) = self.deal_groups(seat, staged)?;
+        let (dealt, owner_faces) = self.deal_prepared(seat, staged, rng)?;
         entries.extend(dealt);
         Ok((entries, owner_faces))
     }
@@ -707,6 +713,15 @@ impl HostSession {
         seat: u8,
         groups: Vec<DealGroup>,
     ) -> Result<(Vec<LogEntry>, OwnerFaces), SessionError> {
+        let (groups, rng) = self.prepare_deal(seat, groups)?;
+        self.deal_prepared(seat, groups, rng)
+    }
+
+    fn prepare_deal(
+        &self,
+        seat: u8,
+        groups: Vec<DealGroup>,
+    ) -> Result<(Vec<DealGroup>, Rng), SessionError> {
         self.seated(seat)?;
         let groups: Vec<DealGroup> = groups
             .into_iter()
@@ -715,7 +730,16 @@ impl HostSession {
         if !self.groups_land(&groups) {
             return Err(SessionError::NoDealTarget);
         }
-        let mut rng = Rng::from_seed(self.deal_seed(seat, &groups));
+        let rng = Rng::from_seed(self.deal_seed(seat, &groups)?);
+        Ok((groups, rng))
+    }
+
+    fn deal_prepared(
+        &mut self,
+        seat: u8,
+        groups: Vec<DealGroup>,
+        mut rng: Rng,
+    ) -> Result<(Vec<LogEntry>, OwnerFaces), SessionError> {
         let mut entries = Vec::new();
         let mut owner_faces = Vec::new();
         for group in groups {
