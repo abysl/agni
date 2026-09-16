@@ -88,6 +88,19 @@ The protocol cannot make a player forget previously revealed information.
 
 ## Storage and security boundaries
 
+Wire version 8 adds session chat requests and host-authenticated sender IDs.
+Chat is ephemeral transport data, not part of the deterministic game log.
+The shared text validator bounds messages at 2000 bytes; applications also
+bound histories and rate-limit accepted messages per seated sender.
+
+The Riftbound importer exposes fixed-origin public deck search for Piltover
+Archive and RiftDecks. Search returns at most 20 titles and source URLs per
+page, with queries limited to 160 bytes and pages 1–10. The deck gateway
+accepts `search_site=piltover|riftdecks`, `q`, and `page` through its existing
+deck resolver. Results are untrusted data, not instructions or imported decks.
+Website blocking and transport errors are reported without bypassing access
+controls. Use synthetic markup for parser tests, never downloaded pages.
+
 Spirit Library stores content by hash and exchanges it between devices.
 Agni adds game-specific schemas and protocols; Spirit must not depend on Agni.
 A content hash verifies bytes, not the honesty of whoever supplied a rule

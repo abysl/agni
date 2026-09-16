@@ -5,6 +5,7 @@ pub mod deck_code;
 pub mod json;
 pub mod link;
 pub mod resolve;
+pub mod search;
 pub mod snapshot;
 pub mod text_list;
 

@@ -35,6 +35,9 @@ fn check_golden(name: &str, bytes: &[u8]) {
 
 fn client_messages() -> Vec<ClientMsg> {
     vec![
+        ClientMsg::Chat {
+            text: "hello".into(),
+        },
         ClientMsg::RequestUndo {
             actions: 3,
             revision: 42,
@@ -153,6 +156,11 @@ fn host_messages() -> Vec<HostMsg> {
                 }),
             },
         },
+        HostMsg::Chat {
+            id: 1,
+            seat: 0,
+            text: "hello".into(),
+        },
         HostMsg::RolledBack {
             next_seq: 4,
             faces: vec![(7, CardFace::named("private card"))],
@@ -192,7 +200,7 @@ fn host_messages() -> Vec<HostMsg> {
 fn the_client_wire_encoding_is_pinned() {
     let messages = client_messages();
     let bytes: Vec<u8> = messages.iter().flat_map(encode_client).collect();
-    check_golden("client_v7.hex", &bytes);
+    check_golden("client_v8.hex", &bytes);
     for msg in &messages {
         assert_eq!(decode_client(&encode_client(msg)).unwrap(), *msg);
     }
@@ -202,7 +210,7 @@ fn the_client_wire_encoding_is_pinned() {
 fn the_host_wire_encoding_is_pinned() {
     let messages = host_messages();
     let bytes: Vec<u8> = messages.iter().flat_map(encode_host).collect();
-    check_golden("host_v7.hex", &bytes);
+    check_golden("host_v8.hex", &bytes);
     for msg in &messages {
         assert_eq!(decode_host(&encode_host(msg)).unwrap(), *msg);
     }

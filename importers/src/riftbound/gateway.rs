@@ -66,6 +66,14 @@ fn query_of(request: &ResolveRequest) -> Result<DeckQuery, ResolveReply> {
 pub fn deck_resolver(dir: PathBuf) -> Resolver {
     let catalog: Mutex<Option<Cached<StaticCatalog>>> = Mutex::new(None);
     Arc::new(move |request: &ResolveRequest| {
+        if let Some(site) = request.get("search_site") {
+            let query = request.get("q").unwrap_or("");
+            let page = request.get("page").unwrap_or("1").parse().unwrap_or(0);
+            return match super::search::search(site, query, page) {
+                Ok(value) => ResolveReply::json(200, value.to_string()),
+                Err(error) => ResolveReply::json(502, json!({"error": error}).to_string()),
+            };
+        }
         let query = match query_of(request) {
             Ok(query) => query,
             Err(reply) => return reply,

@@ -5,9 +5,9 @@ pub use crate::pins::{
     module_matches_pin, pin_hash, verify_engine_pin, verify_plugin_pin, PinError,
 };
 pub use crate::proto::{
-    decode_client, decode_host, default_seat_color, encode_client, encode_host, module_chunks,
-    roster_color, roster_playmat, version_mismatch, ClientMsg, HostMsg, SeatInfo, UndoProposal,
-    UndoStatus, WireIntent, MAX_MODULE_BYTES, MODULE_CHUNK_BYTES, SEAT_PICKABLE_COLORS,
-    WIRE_VERSION,
+    chat_text, decode_client, decode_host, default_seat_color, encode_client, encode_host,
+    module_chunks, roster_color, roster_playmat, version_mismatch, ClientMsg, HostMsg, SeatInfo,
+    UndoProposal, UndoStatus, WireIntent, MAX_CHAT_BYTES, MAX_MODULE_BYTES, MODULE_CHUNK_BYTES,
+    SEAT_PICKABLE_COLORS, WIRE_VERSION,
 };
 pub use agni_sim::wire::{hidden_face, DealGroup, DealTarget, WireFace, WireZone, ZoneDecl};

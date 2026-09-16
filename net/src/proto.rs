@@ -5,7 +5,23 @@ use agni_sim::wire::{CounterTarget, DealGroup};
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 
-pub const WIRE_VERSION: u32 = 7;
+pub const WIRE_VERSION: u32 = 8;
+
+pub const MAX_CHAT_BYTES: usize = 2000;
+
+pub fn chat_text(text: &str) -> Result<String, &'static str> {
+    let text = text.trim();
+    if text.is_empty() || text.len() > MAX_CHAT_BYTES {
+        return Err("Chat must contain 1–2000 bytes");
+    }
+    if text
+        .chars()
+        .any(|c| c.is_control() && c != '\n' && c != '\t')
+    {
+        return Err("Chat contains unsupported control characters");
+    }
+    Ok(text.to_string())
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UndoProposal {
@@ -193,6 +209,9 @@ impl TryFrom<LogAction> for WireIntent {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum ClientMsg {
+    Chat {
+        text: String,
+    },
     RequestUndo {
         actions: u32,
         revision: u64,
@@ -229,6 +248,11 @@ pub enum ClientMsg {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub enum HostMsg {
+    Chat {
+        id: u64,
+        seat: u8,
+        text: String,
+    },
     Undo {
         status: UndoStatus,
     },
@@ -320,6 +344,24 @@ pub fn version_mismatch(theirs: u32) -> Option<String> {
 mod tests {
     use super::*;
     use ciborium::Value;
+
+    #[test]
+    fn chat_is_bounded_and_round_trips_without_a_claimed_sender() {
+        assert_eq!(chat_text(" hello ").unwrap(), "hello");
+        assert!(chat_text("  ").is_err());
+        assert!(chat_text(&"é".repeat(1001)).is_err());
+        assert!(chat_text("bad\0text").is_err());
+        let request = ClientMsg::Chat {
+            text: "hello".into(),
+        };
+        assert_eq!(decode_client(&encode_client(&request)), Some(request));
+        let reply = HostMsg::Chat {
+            id: 1,
+            seat: 2,
+            text: "hello".into(),
+        };
+        assert_eq!(decode_host(&encode_host(&reply)), Some(reply));
+    }
 
     fn padded(variant: &str, fields: Vec<(&str, Value)>) -> Vec<u8> {
         let mut fields: Vec<(Value, Value)> = fields
