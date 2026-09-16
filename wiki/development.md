@@ -26,7 +26,7 @@ The optional `devenv shell` supplies a development toolchain and helper commands
 bash ci/check.sh
 ```
 
-This executes library tests for the core, simulation, plugin SDK, and shared
+This executes library tests for networking, the core, simulation, plugin SDK, and shared
 deck model, plus the session, undo, and wire-golden integration tests, then
 compile-checks every workspace target. It deliberately does not execute all
 networking and runtime-module tests.
@@ -42,6 +42,9 @@ Some integration tests build and execute real WebAssembly modules. The explicit
 network smoke test is ignored by default and needs a suitable network:
 `cargo test --locked -p agni-net --test net_smoke -- --ignored`.
 Never interpret an ignored test as evidence of network compatibility.
+
+The local gossip-matchmaking integration needs no public relay:
+`cargo test --locked -p agni-net --test matchmaking --test host_bridge`.
 
 Optional importer binaries have feature gates. For their complete build check:
 
