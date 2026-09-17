@@ -163,6 +163,10 @@ fn to_sim_target(target: Target) -> CounterTarget {
 
 fn to_sim_effect(effect: &SdkEffect) -> Effect {
     match effect {
+        SdkEffect::Transform { card, face } => Effect::Transform {
+            card: *card,
+            face: face_of(face),
+        },
         SdkEffect::Move {
             card,
             zone,
@@ -563,6 +567,14 @@ fn an_entry_level_spawn_takes_the_id_before_the_effect_spawn_that_follows() {
         seat: 1,
     };
     let effects = vec![
+        SdkEffect::Transform {
+            card: 10,
+            face: Face::named("Vi")
+                .with_kind("Unit")
+                .with_might(Some(3))
+                .with_cost(Some(2), Some(2))
+                .with_domain(vec!["Calm".into()]),
+        },
         SdkEffect::Spawn {
             face: Face::named("Gold")
                 .with_kind("Gear")
@@ -596,6 +608,7 @@ fn an_entry_level_spawn_takes_the_id_before_the_effect_spawn_that_follows() {
     fold_entry_with(&mut state, &entry, &mut decider).unwrap();
     assert_eq!(projected(&state), projection);
     let sprite = projection.card(10).unwrap();
+    assert_eq!(sprite.name, "Vi");
     assert_eq!(
         (sprite.owner, sprite.seat, sprite.zone),
         (1, 0, Some(battlefield))

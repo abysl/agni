@@ -232,6 +232,10 @@ pub enum Event {
         zone: u16,
         seat: u8,
     },
+    CombatEnded {
+        zone: u16,
+        units: Vec<u32>,
+    },
     Activated {
         item: u16,
         source: u32,
@@ -491,6 +495,15 @@ impl<'a> Ctx<'a> {
     }
 
     pub fn script(&self, id: u32) -> Option<&'static Card> {
+        if self.is_token(id)
+            && self
+                .origin
+                .card(id)
+                .zip(self.card(id))
+                .is_some_and(|(before, after)| before.face() != after.face())
+        {
+            return self.card(id).and_then(cards::resolve);
+        }
         self.scripts
             .of_card(id)
             .or_else(|| self.card(id).and_then(cards::resolve))

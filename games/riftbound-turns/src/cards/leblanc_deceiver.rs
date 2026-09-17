@@ -267,7 +267,7 @@ mod tests {
             Some(fixtures::TRASH)
         );
         assert_eq!(ctx.hand_of(0).len(), hand - 1);
-        let token = *reflections_of(&ctx, 0).first().expect("one Reflection");
+        let token = ctx.table.next_id - 1;
         assert!(ctx.is_token(token));
         assert!(ctx.is_unit(token));
         assert_eq!(ctx.controller(token), 0);
@@ -304,7 +304,7 @@ mod tests {
         assert!(ctx.blob.prompt.is_none());
         assert!(ctx.blob.chain.is_empty());
         assert!(ctx.blob.log.contains(&format!(
-            "{{card {token}}} would become a copy of {{card {}}} (3 Might) · the engine owes Ctx::become_copy",
+            "{{card {token}}} becomes a copy of {{card {}}}",
             fixtures::VI
         )));
         assert!(ctx.is_temporary(token), "given Temporary after the copy");
@@ -312,7 +312,7 @@ mod tests {
             .blob
             .log
             .contains(&format!("{{card {token}}} is Temporary")));
-        assert_eq!(ctx.current_might(token), 0, "no copy today");
+        assert_eq!(ctx.current_might(token), 3);
         assert!(ctx.fault.is_none(), "{:?}", ctx.fault);
     }
 
@@ -448,7 +448,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "engine gap · Token::Reflection and a copy primitive: Ctx::become_copy(token, of) must give the token the copied unit's face, script and Might (477.1.b), so a Reflection played by her hold reads as a copy of the unit it mirrors"]
     fn the_reflection_becomes_a_copy_of_the_chosen_unit_and_reads_its_might() {
         let mut fixture = rose();
         fixture

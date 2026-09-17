@@ -260,6 +260,10 @@ pub const TOP: u32 = u32::MAX;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Effect {
+    Transform {
+        card: u32,
+        face: Face,
+    },
     Move {
         card: u32,
         zone: u16,
@@ -325,6 +329,14 @@ impl Effect {
     fn write(&self, writer: &mut Writer) {
         writer.map(1);
         match self {
+            Effect::Transform { card, face } => {
+                writer.text("Transform");
+                writer.map(2);
+                writer.text("card");
+                writer.unsigned(u64::from(*card));
+                writer.text("face");
+                face.write(writer);
+            }
             Effect::Move {
                 card,
                 zone,
