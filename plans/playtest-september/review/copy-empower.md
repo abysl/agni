@@ -31,9 +31,12 @@ Combat cleanup now emits `CombatEnded` with its deterministic sorted combatants.
 - `cargo test --locked -p agni-riftbound-turns empower` — 189 passed, 6 ignored.
 - `cargo test --locked -p agni-sim a_transform_effect` — 1 passed.
 - `cargo test --locked -p agni-riftbound-plugin --test projection an_entry_level_spawn_takes_the_id_before_the_effect_spawn_that_follows` — 1 passed.
-- The new hardened regression is not run in this worktree: its cold compile was stopped to avoid competing with the shared golden build. Run it after merge with the hardened `AGNI_ENGINE_WASM` and `AGNI_RIFTBOUND_WASM` modules.
+- The hardened regression consumes raw `AGNI_ENGINE_WASM` and `AGNI_RIFTBOUND_WASM` modules and applies the hardening pipeline internally. Its fixture starts an enforced match and explicitly chooses the runes paying for Mirror Image.
+- The merged rules suite passes 4,563 tests, with 172 existing ignored tests. Copy fixtures follow token identity after transformation and answer the new rune-payment prompts.
 
 ## Remaining limitations
+
+Non-token copying, including Shady Spectacles, remains unsupported and reports that limitation explicitly. It needs restoration of the original printed face when the card changes zones; permanently replacing a real card's identity would not be a correct implementation.
 
 The Empower-filtered run leaves six ignored tests: Escaped Grayback's kill payment, Gangplank Naval's stun/minus-Might/bounce replacement, Mel Newly Awakened's amplified negative-Might effect, Punching Poro's discard payment, Profiteer's disempower payment, and Renekton Brute's Might-threshold trigger. Rune payment-choice work remains coordinated with its owner.
 

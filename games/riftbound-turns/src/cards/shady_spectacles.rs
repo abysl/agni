@@ -228,9 +228,11 @@ mod tests {
         assert!(ctx.blob.prompt.is_none());
         assert!(ctx.blob.chain.is_empty());
         assert!(ctx.blob.log.contains(&format!(
-            "{{card {}}} would become a copy of {{card {AHRI}}} (4 Might) · the engine owes Ctx::become_copy",
+            "{{card {}}} cannot become a copy yet · non-token copying is not supported",
             fixtures::VI
         )));
+        assert_eq!(ctx.card(fixtures::VI).unwrap().name, "Vi");
+        assert!(!ctx.is_token(fixtures::VI));
         assert_eq!(attached_to(&ctx, SPECTACLES), Some(fixtures::VI));
         assert_eq!(ctx.location(SPECTACLES), Some(Location::Base(0)));
         assert!(ctx.fault.is_none());

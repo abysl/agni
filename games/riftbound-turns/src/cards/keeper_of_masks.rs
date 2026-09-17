@@ -79,7 +79,13 @@ pub fn wears_a_copied_face(ctx: &Ctx, token: u32) -> bool {
 }
 
 pub fn become_copy_of(ctx: &mut Ctx, token: u32, of: u32) -> bool {
-    if !ctx.is_token(token) || !ctx.on_board(token) || !ctx.on_board(of) {
+    if !ctx.on_board(token) || !ctx.on_board(of) {
+        return false;
+    }
+    if !ctx.is_token(token) {
+        ctx.narrate(format!(
+            "{{card {token}}} cannot become a copy yet · non-token copying is not supported"
+        ));
         return false;
     }
     let Some(face) = ctx

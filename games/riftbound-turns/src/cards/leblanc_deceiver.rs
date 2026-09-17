@@ -168,7 +168,7 @@ mod tests {
         ctx.table
             .cards
             .iter()
-            .filter(|card| card.name == REFLECTION && card.owner == seat)
+            .filter(|card| ctx.is_token(card.id) && card.owner == seat)
             .map(|card| card.id)
             .collect()
     }

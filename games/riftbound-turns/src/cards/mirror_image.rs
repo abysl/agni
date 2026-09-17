@@ -302,6 +302,31 @@ mod tests {
                 .encode(),
             ),
         );
+        for _ in 0..12 {
+            if !matches!(blob.why, Some(PromptWhy::PayWith { .. })) {
+                break;
+            }
+            let option = blob
+                .offered(&table)
+                .unwrap()
+                .iter()
+                .position(|option| option.label.starts_with("recycle "))
+                .expect("a power cost offers a rune to recycle");
+            let prompt = blob.prompt.as_ref().unwrap().id;
+            apply(
+                &mut table,
+                &mut blob,
+                0,
+                Action::Game(
+                    TurnEvent::Pick(Pick {
+                        prompt,
+                        option: option as u16,
+                    })
+                    .encode(),
+                ),
+            );
+        }
+        assert!(blob.prompt.is_none());
         apply(
             &mut table,
             &mut blob,
