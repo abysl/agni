@@ -147,6 +147,11 @@ pub fn resolve_query_deck(
                     ),
                 ));
             };
+            if site == link::Site::TcgArena {
+                let imported =
+                    super::tcg_arena::parse_url(url).map_err(|error| error_reply(422, error))?;
+                return resolve_parsed(&imported.deck, cards, "url", url, imported.title);
+            }
             if let Some(code) = link::code_in_url(url) {
                 let parsed =
                     parse_deck(&DeckSource::Code(code)).map_err(|error| error_reply(422, error))?;

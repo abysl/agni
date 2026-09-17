@@ -6,6 +6,7 @@ pub mod json;
 pub mod link;
 pub mod resolve;
 pub mod snapshot;
+pub mod tcg_arena;
 pub mod text_list;
 
 #[cfg(feature = "riftbound-native")]
@@ -126,6 +127,7 @@ pub enum ParseError {
     Code(deck_code::DeckCodeError),
     Text(text_list::TextError),
     CodeList(code_list::CodeListError),
+    TcgArena(tcg_arena::Error),
 }
 
 impl fmt::Display for ParseError {
@@ -134,6 +136,7 @@ impl fmt::Display for ParseError {
             Self::Code(error) => error.fmt(f),
             Self::Text(error) => error.fmt(f),
             Self::CodeList(error) => error.fmt(f),
+            Self::TcgArena(error) => error.fmt(f),
         }
     }
 }
@@ -159,6 +162,11 @@ pub fn parse_any(text: &str) -> Result<ParsedDeck, ParseError> {
     if let (Some(single), None) = (tokens.next(), tokens.next()) {
         if let Some(code) = link::code_in_url(single) {
             return parse_deck(&DeckSource::Code(code));
+        }
+        if link::classify(single) == Some(link::Site::TcgArena) {
+            return tcg_arena::parse_url(single)
+                .map(|import| import.deck)
+                .map_err(ParseError::TcgArena);
         }
         if deck_code::decode(single).is_ok() {
             return parse_deck(&DeckSource::Code(single.to_string()));
@@ -223,6 +231,17 @@ mod site_format_tests {
             resolution.unresolved
         );
         resolution.deck
+    }
+
+    #[test]
+    fn a_pasted_tcg_arena_import_url_uses_the_url_parser() {
+        let url = "https://tcg-arena.fr/import?game=Riftbound&name=Synthetic&deck=MSBTeW50aGV0aWMgTGVnZW5kCg==";
+        let parsed = parse_any(url).unwrap();
+        assert_eq!(parsed.entries.len(), 1);
+        assert_eq!(
+            parsed.entries[0].identifier,
+            super::Identifier::Name("Synthetic Legend".into())
+        );
     }
 
     fn totals(deck: &ResolvedDeck) -> (u32, u32, u32, u32) {
