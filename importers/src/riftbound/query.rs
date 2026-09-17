@@ -1,7 +1,7 @@
 use super::json::deck_json;
 use super::resolve::{resolve, Resolution};
 use super::Riftbound;
-use super::{link, parse_any, parse_deck, DeckSource, ParsedDeck};
+use super::{link, parse_deck, DeckSource, ParsedDeck};
 use crate::art::USER_AGENT;
 use crate::deck::CardLookup;
 use crate::transport::{Retry, Transport, UreqTransport};
@@ -174,8 +174,9 @@ pub fn resolve_query_deck(
             resolve_parsed(&parsed, cards, "code", code.trim(), None)
         }
         DeckQuery::Text(text) => {
-            let parsed = parse_any(text).map_err(|error| error_reply(422, error))?;
-            resolve_parsed(&parsed, cards, "text", text, None)
+            let (parsed, title) =
+                super::parse_any_with_title(text).map_err(|error| error_reply(422, error))?;
+            resolve_parsed(&parsed, cards, "text", text, title)
         }
     }
 }
@@ -359,6 +360,33 @@ mod tests {
         );
         assert_eq!(as_list.status, 200);
         assert_eq!(as_list.body["deck"]["runes"][0]["count"], 12);
+    }
+
+    #[test]
+    fn tcg_arena_json_resolves_with_title_without_fetching() {
+        let json = r#"{"game":"Riftbound","title":"Synthetic Arena","deckList":{"categoriesOrder":["Legend","Units","Runes"],"Legend":[{"count":1,"id":"ogn-201-298"}],"Units":[{"count":3,"id":"ogn-007-298"}],"Runes":[{"count":12,"id":"ogn-042-298"}]}}"#;
+        let mut fetch = fixture("unused", "");
+        let reply = resolve_query(
+            &DeckQuery::Text(json.into()),
+            &mut fetch,
+            &mut test_catalog(),
+        );
+        assert_eq!(reply.status, 200);
+        assert_eq!(reply.body["title"], "Synthetic Arena");
+        assert_eq!(reply.body["deck"]["legend"]["name"], "Vanguard Sentinel");
+        assert_eq!(reply.body["deck"]["runes"][0]["count"], 12);
+        assert!(fetch.requests.is_empty());
+    }
+
+    #[test]
+    fn tcg_arena_url_resolves_with_title_without_fetching() {
+        let url = "https://tcg-arena.fr/import?game=Riftbound&name=Synthetic%20URL&deck=MSBWYW5ndWFyZCBTZW50aW5lbAozIEVtYmVyd2luZyBTY291dAoxMiBFbWJlciBSdW5lCg==";
+        let mut fetch = fixture("unused", "");
+        let reply = resolve_query(&DeckQuery::Url(url.into()), &mut fetch, &mut test_catalog());
+        assert_eq!(reply.status, 200);
+        assert_eq!(reply.body["title"], "Synthetic URL");
+        assert_eq!(reply.body["deck"]["legend"]["name"], "Vanguard Sentinel");
+        assert!(fetch.requests.is_empty());
     }
 
     #[test]

@@ -24,7 +24,7 @@ The importer parses synthetic TCG Arena text and starter-deck JSON, preserving l
 - `cargo check --locked -p agni-importers --features riftbound-gateway`
 - `git diff --check`
 
-The final Riftbound importer library suite passed with 106 tests, including the pasted-URL coverage. The focused TCG Arena suite passed with 5 tests. The gateway feature check passed after the final parser addition.
+The updated Riftbound importer library suite passed with 111 tests. The native-feature TCG Arena suite passed with 12 tests, including end-to-end JSON and URL resolution with title preservation and zero fetches. The gateway feature check passed after the final parser addition.
 
 ## Deployment and limitations
 

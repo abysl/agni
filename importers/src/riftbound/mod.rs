@@ -157,28 +157,36 @@ pub fn parse_deck(source: &DeckSource) -> Result<ParsedDeck, ParseError> {
 }
 
 pub fn parse_any(text: &str) -> Result<ParsedDeck, ParseError> {
+    parse_any_with_title(text).map(|(deck, _)| deck)
+}
+
+pub fn parse_any_with_title(text: &str) -> Result<(ParsedDeck, Option<String>), ParseError> {
     let trimmed = text.trim();
+    if trimmed.starts_with('{') {
+        let imported = tcg_arena::parse_json(text).map_err(ParseError::TcgArena)?;
+        return Ok((imported.deck, imported.title));
+    }
     let mut tokens = trimmed.split_whitespace();
     if let (Some(single), None) = (tokens.next(), tokens.next()) {
         if let Some(code) = link::code_in_url(single) {
-            return parse_deck(&DeckSource::Code(code));
+            return parse_deck(&DeckSource::Code(code)).map(|deck| (deck, None));
         }
         if link::classify(single) == Some(link::Site::TcgArena) {
-            return tcg_arena::parse_url(single)
-                .map(|import| import.deck)
-                .map_err(ParseError::TcgArena);
+            let imported = tcg_arena::parse_url(single).map_err(ParseError::TcgArena)?;
+            return Ok((imported.deck, imported.title));
         }
         if deck_code::decode(single).is_ok() {
-            return parse_deck(&DeckSource::Code(single.to_string()));
+            return parse_deck(&DeckSource::Code(single.to_string())).map(|deck| (deck, None));
         }
     }
     if code_list::looks_like_tts_list(trimmed) {
-        return parse_deck(&DeckSource::CodeList(code_list::from_tts(trimmed)));
+        return parse_deck(&DeckSource::CodeList(code_list::from_tts(trimmed)))
+            .map(|deck| (deck, None));
     }
     if code_list::looks_like_code_list(trimmed) {
-        return parse_deck(&DeckSource::CodeList(trimmed.to_string()));
+        return parse_deck(&DeckSource::CodeList(trimmed.to_string())).map(|deck| (deck, None));
     }
-    parse_deck(&DeckSource::Text(text.to_string()))
+    parse_deck(&DeckSource::Text(text.to_string())).map(|deck| (deck, None))
 }
 
 pub fn parsed_from_decoded(decoded: &deck_code::DecodedDeck) -> ParsedDeck {
@@ -219,7 +227,7 @@ pub fn parsed_from_decoded(decoded: &deck_code::DecodedDeck) -> ParsedDeck {
 #[cfg(test)]
 mod site_format_tests {
     use super::resolve::fixtures::folded_catalog;
-    use super::{link, parse_any, resolve};
+    use super::{link, parse_any, parse_any_with_title, resolve};
     use agni_riftbound::ResolvedDeck;
 
     fn seated(text: &str) -> ResolvedDeck {
@@ -242,6 +250,14 @@ mod site_format_tests {
             parsed.entries[0].identifier,
             super::Identifier::Name("Synthetic Legend".into())
         );
+    }
+
+    #[test]
+    fn a_pasted_tcg_arena_json_uses_the_json_parser() {
+        let json = r#"{"game":"Riftbound","title":"Synthetic","deckList":{"categoriesOrder":["Legend"],"Legend":[{"count":1,"id":"SYN-001"}]}}"#;
+        let (parsed, title) = parse_any_with_title(json).unwrap();
+        assert_eq!(parsed.entries.len(), 1);
+        assert_eq!(title.as_deref(), Some("Synthetic"));
     }
 
     fn totals(deck: &ResolvedDeck) -> (u32, u32, u32, u32) {

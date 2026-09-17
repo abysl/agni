@@ -5,6 +5,8 @@ use std::fmt;
 pub const HOST: &str = "tcg-arena.fr";
 pub const MAX_INPUT_BYTES: usize = 1_048_576;
 pub const MAX_ENTRIES: usize = 512;
+pub const MAX_CARD_COUNT: u32 = 4096;
+pub const MAX_TOTAL_CARDS: u64 = 4096;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Import {
@@ -47,18 +49,18 @@ fn size_check(input: &str) -> Result<(), Error> {
     Ok(())
 }
 
-fn section(category: &str) -> Option<Section> {
+fn section(category: &str) -> Section {
     match category
         .to_ascii_lowercase()
         .replace([' ', '-'], "")
         .as_str()
     {
-        "legend" => Some(Section::Legend),
-        "chosen_champion" | "chosenchampion" | "champion" => Some(Section::Champion),
-        "battlefields" | "battlefield" => Some(Section::Battlefields),
-        "runes" | "rune" => Some(Section::Runes),
-        "sideboard" | "side" => Some(Section::Sideboard),
-        _ => Some(Section::Main),
+        "legend" => Section::Legend,
+        "chosen_champion" | "chosenchampion" | "champion" => Section::Champion,
+        "battlefields" | "battlefield" => Section::Battlefields,
+        "runes" | "rune" => Section::Runes,
+        "sideboard" | "side" => Section::Sideboard,
+        _ => Section::Main,
     }
 }
 
@@ -68,8 +70,24 @@ fn count(value: &Value) -> Result<u32, Error> {
         .ok_or_else(|| Error::InvalidExport("card count is not an integer".into()))?;
     u32::try_from(count)
         .ok()
-        .filter(|count| *count > 0)
-        .ok_or_else(|| Error::InvalidExport("card count must be positive".into()))
+        .filter(|count| (1..=MAX_CARD_COUNT).contains(count))
+        .ok_or_else(|| Error::InvalidExport("card count must be between 1 and 4096".into()))
+}
+
+fn bounded(deck: ParsedDeck) -> Result<ParsedDeck, Error> {
+    if deck.entries.len() > MAX_ENTRIES {
+        return Err(Error::TooLarge);
+    }
+    let total = deck.entries.iter().try_fold(0u64, |total, entry| {
+        total
+            .checked_add(u64::from(entry.count))
+            .filter(|total| *total <= MAX_TOTAL_CARDS)
+            .ok_or(Error::TooLarge)
+    })?;
+    if total == 0 {
+        return Err(Error::Empty);
+    }
+    Ok(deck)
 }
 
 fn entry(value: &Value, section: Section) -> Result<ParsedEntry, Error> {
@@ -97,6 +115,13 @@ pub fn parse_json(input: &str) -> Result<Import, Error> {
     size_check(input)?;
     let root: Value =
         serde_json::from_str(input).map_err(|error| Error::InvalidJson(error.to_string()))?;
+    if root
+        .get("game")
+        .and_then(Value::as_str)
+        .is_none_or(|game| !game.eq_ignore_ascii_case("riftbound"))
+    {
+        return Err(Error::InvalidExport("game must be Riftbound".into()));
+    }
     let deck = root
         .get("deckList")
         .and_then(Value::as_object)
@@ -106,28 +131,39 @@ pub fn parse_json(input: &str) -> Result<Import, Error> {
         .and_then(Value::as_array)
         .ok_or_else(|| Error::InvalidExport("missing categoriesOrder".into()))?;
     let mut entries = Vec::new();
-    let mut categories = order.iter().filter_map(Value::as_str).collect::<Vec<_>>();
-    if deck.get("Sideboard").is_some()
-        && !categories.iter().any(|category| *category == "Sideboard")
-    {
+    let mut categories = Vec::new();
+    for category in order {
+        let category = category
+            .as_str()
+            .filter(|category| !category.trim().is_empty())
+            .ok_or_else(|| Error::InvalidExport("categoriesOrder contains a non-name".into()))?;
+        if categories.contains(&category) {
+            return Err(Error::InvalidExport(format!(
+                "categoriesOrder repeats {category}"
+            )));
+        }
+        if !deck.get(category).is_some_and(Value::is_array) {
+            return Err(Error::InvalidExport(format!(
+                "category {category} is missing or not an array"
+            )));
+        }
+        categories.push(category);
+    }
+    if deck.get("Sideboard").is_some_and(Value::is_array) && !categories.contains(&"Sideboard") {
         categories.push("Sideboard");
     }
     for category in categories {
-        let Some(cards) = deck.get(category).and_then(Value::as_array) else {
-            continue;
-        };
+        let cards = deck
+            .get(category)
+            .and_then(Value::as_array)
+            .ok_or_else(|| Error::InvalidExport(format!("category {category} is missing")))?;
         for card in cards {
-            if entries.len() >= MAX_ENTRIES {
-                return Err(Error::TooLarge);
-            }
-            entries.push(entry(card, section(category).unwrap_or(Section::Main))?);
+            entries.push(entry(card, section(category))?);
         }
     }
-    if entries.is_empty() {
-        return Err(Error::Empty);
-    }
+    let deck = bounded(ParsedDeck { entries })?;
     Ok(Import {
-        deck: ParsedDeck { entries },
+        deck,
         title: root
             .get("title")
             .and_then(Value::as_str)
@@ -139,10 +175,10 @@ pub fn parse_text(input: &str) -> Result<Import, Error> {
     size_check(input)?;
     let deck = super::text_list::parse_text(input)
         .map_err(|error| Error::InvalidExport(error.to_string()))?;
-    if deck.entries.len() > MAX_ENTRIES {
-        return Err(Error::TooLarge);
-    }
-    Ok(Import { deck, title: None })
+    Ok(Import {
+        deck: bounded(deck)?,
+        title: None,
+    })
 }
 
 pub fn parse(input: &str) -> Result<Import, Error> {
@@ -183,17 +219,32 @@ fn percent_decode(value: &str) -> Result<String, Error> {
 }
 
 fn base64_decode(input: &str) -> Result<String, Error> {
+    if input.is_empty() || input.len() % 4 != 0 {
+        return Err(Error::InvalidUrl(
+            "deck has malformed base64 padding".into(),
+        ));
+    }
+    let padding = input.bytes().rev().take_while(|byte| *byte == b'=').count();
+    if padding > 2 || input[..input.len() - padding].contains('=') {
+        return Err(Error::InvalidUrl(
+            "deck has malformed base64 padding".into(),
+        ));
+    }
     let mut output = Vec::new();
     let mut buffer = 0u32;
     let mut bits = 0u8;
-    for byte in input.bytes() {
+    for byte in input[..input.len() - padding].bytes() {
         let value = match byte {
             b'A'..=b'Z' => byte - b'A',
             b'a'..=b'z' => byte - b'a' + 26,
             b'0'..=b'9' => byte - b'0' + 52,
             b'+' => 62,
             b'/' => 63,
-            b'=' => break,
+            b'=' => {
+                return Err(Error::InvalidUrl(
+                    "deck has malformed base64 padding".into(),
+                ))
+            }
             _ => return Err(Error::InvalidUrl("deck is not base64".into())),
         } as u32;
         buffer = (buffer << 6) | value;
@@ -206,6 +257,11 @@ fn base64_decode(input: &str) -> Result<String, Error> {
                 return Err(Error::TooLarge);
             }
         }
+    }
+    if buffer != 0 {
+        return Err(Error::InvalidUrl(
+            "deck has malformed base64 padding".into(),
+        ));
     }
     String::from_utf8(output).map_err(|_| Error::InvalidUrl("deck is not UTF-8".into()))
 }
@@ -292,6 +348,30 @@ mod tests {
     }
 
     #[test]
+    fn rejects_json_for_another_game() {
+        let json = r#"{"game":"Magic: The Gathering","deckList":{"categoriesOrder":[]}}"#;
+        assert!(parse_json(json)
+            .unwrap_err()
+            .to_string()
+            .contains("Riftbound"));
+    }
+
+    #[test]
+    fn rejects_repeated_or_missing_categories() {
+        let repeated =
+            r#"{"game":"Riftbound","deckList":{"categoriesOrder":["Units","Units"],"Units":[]}}"#;
+        let missing = r#"{"game":"Riftbound","deckList":{"categoriesOrder":["Units"]}}"#;
+        assert!(parse_json(repeated).is_err());
+        assert!(parse_json(missing).is_err());
+    }
+
+    #[test]
+    fn rejects_counts_that_could_expand_without_bound() {
+        let json = r#"{"game":"Riftbound","deckList":{"categoriesOrder":["Units"],"Units":[{"count":4294967295,"id":"SYN-001"}]}}"#;
+        assert!(parse_json(json).is_err());
+    }
+
+    #[test]
     fn parses_the_public_tcg_arena_import_url_without_fetching() {
         let url = "https://tcg-arena.fr/import?game=Riftbound&name=Synthetic&deck=MSBTeW50aGV0aWMgTGVnZW5kCg==";
         let imported = parse_url(url).unwrap();
@@ -305,5 +385,13 @@ mod tests {
             parse_url("https://tcg-arena.fr.evil.test/import?game=Riftbound&deck=QQ==").is_err()
         );
         assert!(parse_url("https://tcg-arena.fr/load/QQ==").is_err());
+    }
+
+    #[test]
+    fn rejects_malformed_base64_padding() {
+        for deck in ["QQ=", "QR==", "QQ==x", "Q==="] {
+            let url = format!("https://tcg-arena.fr/import?game=Riftbound&deck={deck}");
+            assert!(parse_url(&url).is_err(), "{deck}");
+        }
     }
 }
