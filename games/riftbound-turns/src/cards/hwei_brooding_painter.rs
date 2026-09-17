@@ -132,7 +132,8 @@ mod tests {
         if let Some(answered) = prompts::answer(ctx, seat, Pick { prompt, option })? {
             resume(ctx, &answered)?;
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn card_label(card: u32) -> String {

@@ -55,7 +55,8 @@ mod tests {
     fn play_to_base(ctx: &mut Ctx, seat: u8, card: u32) -> Result<(), Refusal> {
         legal::classify(ctx, seat, &entry(ctx, seat, card))?;
         play_engine::begin(ctx, seat, card, Origin::Hand, Some(Location::Base(seat)))?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn deck_of(ctx: &Ctx, seat: u8) -> Vec<u32> {

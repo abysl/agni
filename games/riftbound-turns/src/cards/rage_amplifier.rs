@@ -83,6 +83,7 @@ mod tests {
 
     fn empower_it(ctx: &mut Ctx) {
         activate::activate(ctx, 0, AMPLIFIER, EMPOWER_INDEX).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         priority::pass(ctx, 0).unwrap();
         priority::pass(ctx, 1).unwrap();
         assert!(ctx.is_empowered(AMPLIFIER));

@@ -77,7 +77,8 @@ mod tests {
     fn play_to_base(ctx: &mut Ctx) -> Result<(), Refusal> {
         legal::classify(ctx, 0, &entry(ctx))?;
         play_engine::begin(ctx, 0, SHARKLING, Origin::Hand, Some(Location::Base(0)))?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, 0)
     }
 
     #[test]

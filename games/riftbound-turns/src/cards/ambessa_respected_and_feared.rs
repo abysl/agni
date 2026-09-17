@@ -155,6 +155,7 @@ mod tests {
         if when_empowered {
             let mut ctx = fixture.ctx();
             activate::activate(&mut ctx, 0, AMBESSA, 0).unwrap();
+            fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
             priority::pass(&mut ctx, 0).unwrap();
             priority::pass(&mut ctx, 1).unwrap();
             assert!(ctx.is_empowered(AMBESSA));
@@ -168,6 +169,7 @@ mod tests {
     fn attacks(ctx: &mut Ctx) {
         assert!(ctx.mark_attacker(AMBESSA));
         settle(ctx).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
     }
 
     #[test]

@@ -120,7 +120,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, to, seat), seat)
             .unwrap();
         play_engine::begin(ctx, seat, card, origin, location)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn play_spell(ctx: &mut Ctx, seat: u8, card: u32) -> Result<(), Refusal> {
@@ -139,7 +140,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         play_engine::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn both_pass(ctx: &mut Ctx) {

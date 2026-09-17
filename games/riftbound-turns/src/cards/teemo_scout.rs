@@ -45,7 +45,8 @@ mod tests {
 
     fn deploy(ctx: &mut Ctx) -> Result<(), Refusal> {
         play_engine::begin(ctx, 0, TEEMO, Origin::Hand, Some(Location::Base(0)))?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, 0)
     }
 
     fn resolve_chain(ctx: &mut Ctx) {

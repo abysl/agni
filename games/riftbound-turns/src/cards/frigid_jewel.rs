@@ -75,7 +75,8 @@ mod tests {
         if let PromptWhy::Target { item, spec } = answered.why {
             play::choose_targets(ctx, item, spec, &answered.prompt.picked)?;
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn resolve_chain(ctx: &mut Ctx) {

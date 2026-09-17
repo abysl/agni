@@ -2,7 +2,7 @@ use crate::cards::Resolved;
 use crate::engine::ctx::Ctx;
 use crate::engine::{legal, play, priority, prompts, resume, settle};
 use crate::rules::{COUNTER_POINTS, COUNTER_XP};
-use crate::state::{ChainItem, GameBlob, ItemKind, Mode, Origin, Phase};
+use crate::state::{ChainItem, GameBlob, ItemKind, Mode, Origin, Phase, PromptWhy};
 use crate::Refusal;
 use agni_plugin_sdk::decide::Action;
 use agni_plugin_sdk::prompt::Pick;
@@ -339,7 +339,8 @@ pub fn play_from_hand(ctx: &mut Ctx, seat: u8, card: u32) -> Result<(), Refusal>
     let chain = ctx.zones.chain.unwrap_or(0);
     ctx.enter(&move_action(card, chain, 0), seat).unwrap();
     play::begin(ctx, seat, card, Origin::Hand, None)?;
-    settle(ctx)
+    settle(ctx)?;
+    settle_rune_payments(ctx, seat)
 }
 
 pub fn labels(ctx: &Ctx) -> Vec<String> {
@@ -359,7 +360,32 @@ pub fn choose(ctx: &mut Ctx, seat: u8, label: &str) -> Result<(), Refusal> {
     if let Some(answered) = prompts::answer(ctx, seat, Pick { prompt, option })? {
         resume(ctx, &answered)?;
     }
-    settle(ctx)
+    settle(ctx)?;
+    settle_rune_payments(ctx, seat)
+}
+
+pub fn settle_rune_payments(ctx: &mut Ctx, seat: u8) -> Result<(), Refusal> {
+    while matches!(ctx.blob.why, Some(PromptWhy::PayWith { .. }))
+        && ctx
+            .blob
+            .prompt
+            .as_ref()
+            .is_some_and(|prompt| prompt.seat == seat)
+        && ctx
+            .blob
+            .why
+            .and_then(PromptWhy::item)
+            .and_then(|item| ctx.blob.pending(item))
+            .is_some_and(|pending| pending.item.stage == play::STAGE_PAY)
+    {
+        let prompt = ctx.blob.prompt.as_ref().map(|held| held.id).unwrap_or(0);
+        let pick = Pick { prompt, option: 0 };
+        if let Some(answered) = prompts::answer(ctx, seat, pick)? {
+            resume(ctx, &answered)?;
+        }
+        settle(ctx)?;
+    }
+    Ok(())
 }
 
 pub fn pass_until_open(ctx: &mut Ctx) {

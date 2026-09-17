@@ -316,7 +316,12 @@ fn offer_options(
             option: index as u16,
         })
         .encode();
-        let hotkey = (escape == Some(index)).then_some(ESCAPE_KEY);
+        let hotkey = match option.answer {
+            Answer::Yes => Some("1"),
+            Answer::No => Some("2"),
+            _ if escape == Some(index) => Some(ESCAPE_KEY),
+            _ => None,
+        };
         let confirms = option.card.is_none() && option.answer == Answer::Done;
         let enabled = viable.get(index).copied().unwrap_or(true);
         view = match option.card {
@@ -1243,6 +1248,77 @@ mod tests {
                 .iter()
                 .any(|affordance| affordance.card == Some(fixtures::LEGEND_CARD)),
             "the other seat is never offered someone else's ability"
+        );
+    }
+
+    #[test]
+    fn a_flow_spell_in_public_trash_is_published_as_a_card_affordance() {
+        use crate::engine::fixtures::{self, Fixture};
+        use crate::state::{CostedGrant, CostedKind, Expiry};
+        let spell = 90;
+        let mut fixture = Fixture::enforced();
+        fixture
+            .table
+            .cards
+            .push(fixtures::spell(spell, fixtures::TRASH, 0, "Reflow", 2, 1));
+        fixture.resolve();
+        let turn = fixture.blob.turn();
+        fixture.ctx().grant_costed_this_turn(
+            spell,
+            CostedGrant {
+                kind: CostedKind::Flow,
+                energy: 1,
+                power: vec![crate::cards::Power::Rainbow],
+                until: Expiry::EndOfTurn(turn),
+            },
+        );
+        let request = Request {
+            plugin_state: fixture.blob.encode(),
+            players: 2,
+            seat: 0,
+            zones: fixture.table.zones.clone(),
+            table: fixture.table,
+        };
+        let view = present(&request);
+        let offer = view
+            .affordances
+            .iter()
+            .find(|offer| offer.card == Some(spell))
+            .expect("the trash spell is published");
+        assert_eq!(
+            offer.label,
+            "{card 90}: play from your trash (1 energy and 1 any power)"
+        );
+        assert!(offer.enabled);
+        assert_eq!(
+            TurnEvent::decode(&offer.data),
+            Some(TurnEvent::Activate {
+                source: spell,
+                ability: crate::cards::IMPLICIT_FLOW
+            })
+        );
+    }
+
+    #[test]
+    fn yes_and_no_use_number_hotkeys_while_cancel_keeps_escape() {
+        let prompt = Prompt::new(7, 0, 1, 1);
+        let confirms = offer_options(
+            PluginView::default(),
+            &prompt,
+            vec![Opt::new("yes", Answer::Yes), Opt::new("no", Answer::No)],
+            vec![true, true],
+        );
+        assert_eq!(confirms.affordances[0].hotkey.as_deref(), Some("1"));
+        assert_eq!(confirms.affordances[1].hotkey.as_deref(), Some("2"));
+        let cancellable = offer_options(
+            PluginView::default(),
+            &prompt,
+            vec![Opt::new("cancel", Answer::Cancel)],
+            vec![true],
+        );
+        assert_eq!(
+            cancellable.affordances[0].hotkey.as_deref(),
+            Some(ESCAPE_KEY)
         );
     }
 

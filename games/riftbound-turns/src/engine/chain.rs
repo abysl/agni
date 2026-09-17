@@ -729,7 +729,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         play::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn pick(ctx: &mut Ctx, seat: u8, option: u16) -> Result<(), Refusal> {
@@ -743,7 +744,8 @@ mod tests {
         if let Some(answered) = answered {
             crate::engine::resume(ctx, &answered)?;
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn might_counter(ctx: &Ctx, card: u32) -> i32 {
@@ -926,6 +928,7 @@ mod tests {
         );
         assert_eq!(offered[0].answer, Answer::Item(1));
         assert_eq!(offered[0].card, Some(fixtures::HAND_SPELL));
+        let prompt_id = ctx.blob.prompt.as_ref().unwrap().id;
         assert_eq!(
             prompts::answer(
                 &mut ctx,
@@ -935,7 +938,10 @@ mod tests {
                     option: 0
                 }
             ),
-            Err(Refusal::Pick(PickRefusal::Stale { open: 1, sent: 9 })),
+            Err(Refusal::Pick(PickRefusal::Stale {
+                open: prompt_id,
+                sent: 9,
+            })),
             "a stale pick is refused, never misapplied"
         );
         assert_eq!(
@@ -943,7 +949,7 @@ mod tests {
                 &mut ctx,
                 0,
                 Pick {
-                    prompt: 1,
+                    prompt: prompt_id,
                     option: 0
                 }
             ),
