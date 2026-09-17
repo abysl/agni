@@ -45,6 +45,9 @@ messages. All players must update together; wire 7 clients cannot replay copy
 effects. Wire 8 separately introduced chat messages and is not interchangeable
 with the maintenance protocol.
 
+Main uses wire 10, combining chat messages with the updated effect ABI. It is
+distinct from maintenance wire 9; clients must use the same protocol line.
+
 ## Test before integration
 
 Use pure rule tests for decisions and refusals, host tests for ABI behavior,
