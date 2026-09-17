@@ -5,7 +5,7 @@ use agni_sim::wire::{CounterTarget, DealGroup};
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 
-pub const WIRE_VERSION: u32 = 7;
+pub const WIRE_VERSION: u32 = 9;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UndoProposal {

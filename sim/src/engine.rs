@@ -391,7 +391,13 @@ pub struct AbiPlugin<M> {
 
 impl<M: ModuleCall> AbiPlugin<M> {
     pub fn load(mut module: M, hash: [u8; 32]) -> Result<Self, EngineFault> {
-        module.abi_version()?;
+        let version = module.abi_version()?;
+        if version > crate::abi::PLUGIN_ABI_VERSION {
+            return Err(EngineFault(format!(
+                "plugin abi version {version}, host supports up to {}",
+                crate::abi::PLUGIN_ABI_VERSION
+            )));
+        }
         Ok(Self { module, hash })
     }
 
@@ -634,6 +640,20 @@ mod tests {
         match AbiEngine::load(loopback, [0; 32]) {
             Ok(_) => panic!("a mismatched abi version must be refused"),
             Err(refused) => assert!(refused.0.contains("abi version")),
+        }
+    }
+
+    #[test]
+    fn plugins_accept_supported_abis_and_refuse_unknown_ones_at_load() {
+        for version in 0..=crate::abi::PLUGIN_ABI_VERSION + 1 {
+            let module = Loopback {
+                engine: NativeEngine::new(),
+                version,
+            };
+            assert_eq!(
+                AbiPlugin::load(module, [0; 32]).is_ok(),
+                version <= crate::abi::PLUGIN_ABI_VERSION
+            );
         }
     }
 }
