@@ -73,9 +73,9 @@ pub fn subject_of(event: &Event) -> Option<TargetRef> {
         | Event::Disempowered { card }
         | Event::Burned { card, .. }
         | Event::Banished { card, .. } => Some(TargetRef::Card(*card)),
-        Event::CombatWon { zone, .. } | Event::CombatLost { zone, .. } => {
-            Some(TargetRef::Zone(*zone))
-        }
+        Event::CombatWon { zone, .. }
+        | Event::CombatLost { zone, .. }
+        | Event::CombatEnded { zone, .. } => Some(TargetRef::Zone(*zone)),
         Event::Activated { item, .. } => Some(TargetRef::Item(*item)),
         Event::TurnQueued { seat } => Some(TargetRef::Seat(*seat)),
     }
@@ -490,6 +490,15 @@ fn matches_as_written(ctx: &Ctx, trigger: Trigger, event: &Event, source: u32) -
                 Who::Friendly | Who::You => *seat == owner,
                 Who::Enemy => *seat != owner,
                 Who::Any => true,
+            };
+            hit.then_some(owner)
+        }
+        (Trigger::CombatEnded(who), Event::CombatEnded { units, .. }) => {
+            let hit = match who {
+                Who::Me => units.contains(&source),
+                Who::Friendly | Who::You => units.iter().any(|card| ctx.controller(*card) == owner),
+                Who::Enemy => units.iter().any(|card| ctx.controller(*card) != owner),
+                Who::Any => !units.is_empty(),
             };
             hit.then_some(owner)
         }

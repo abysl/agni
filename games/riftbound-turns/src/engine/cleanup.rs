@@ -163,6 +163,14 @@ pub fn combat_result(ctx: &mut Ctx, zone: u16, attacker: u8) -> Option<combat::C
 
 pub fn after_combat(ctx: &mut Ctx, zone: u16, attacker: u8) -> Established {
     let here = Location::Battlefield(zone);
+    let mut combatants = combat::attackers(ctx, zone);
+    combatants.extend(combat::defenders(ctx, zone));
+    combatants.sort_unstable();
+    combatants.dedup();
+    ctx.raise(Event::CombatEnded {
+        zone,
+        units: combatants,
+    });
     win_check(ctx);
     let mut fates = Vec::new();
     let batch = dying(ctx);

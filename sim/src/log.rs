@@ -758,6 +758,10 @@ pub enum Effect {
     Conceal {
         card: u32,
     },
+    Transform {
+        card: u32,
+        face: CardFace,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -812,6 +816,17 @@ impl Verdict {
 
 fn apply_effect(state: &mut LogState, actor: u8, effect: &Effect) -> Result<(), FoldError> {
     match effect {
+        Effect::Transform { card, face } => {
+            if !state.revealed.contains(card) || face.is_hidden() {
+                return Err(FoldError::NoOp);
+            }
+            let current = state
+                .table
+                .get_mut(CardId(*card))
+                .ok_or(FoldError::UnknownCard)?;
+            current.face = face.clone();
+            Ok(())
+        }
         Effect::Move {
             card,
             to,
@@ -2607,6 +2622,41 @@ mod tests {
                 owner: None,
             }
         );
+    }
+
+    #[test]
+    fn a_transform_effect_replaces_a_tokens_face_without_losing_its_identity() {
+        let mut state = play_table();
+        let token = state
+            .table
+            .cards()
+            .iter()
+            .map(|card| card.id.0)
+            .max()
+            .unwrap_or(0)
+            + 1;
+        choreographed(
+            &mut state,
+            0,
+            vec![
+                Effect::Spawn {
+                    face: CardFace::named("Reflection")
+                        .with_kind("Unit")
+                        .with_might(Some(0)),
+                    to: Zone::Plugin(3),
+                    seat: 0,
+                    owner: Some(0),
+                },
+                Effect::Transform {
+                    card: token,
+                    face: CardFace::named("Vi").with_kind("Unit").with_might(Some(3)),
+                },
+            ],
+        )
+        .unwrap();
+        assert_eq!(state.table.get(CardId(token)).unwrap().face.name, "Vi");
+        assert!(state.is_token(token));
+        assert_eq!(decode_state(&encode_state(&state)), Some(state));
     }
 
     fn choreographed(

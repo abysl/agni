@@ -1308,6 +1308,7 @@ pub enum Trigger {
     Banished(Who),
     CombatWon(Who),
     CombatLost(Who),
+    CombatEnded(Who),
     Activation { of: Who },
     YouPlayCard,
     UnitPlayedHere,
@@ -2757,7 +2758,8 @@ pub fn spell_names() -> Vec<&'static str> {
 pub fn is_token_name(name: &str) -> bool {
     matches!(
         name,
-        TOKEN_SPRITE
+        "Reflection"
+            | TOKEN_SPRITE
             | TOKEN_GOLD
             | TOKEN_SAND_SOLDIER
             | TOKEN_SHADOW_CLONE
