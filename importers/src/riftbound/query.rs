@@ -376,6 +376,17 @@ mod tests {
         assert_eq!(reply.body["deck"]["legend"]["name"], "Vanguard Sentinel");
         assert_eq!(reply.body["deck"]["runes"][0]["count"], 12);
         assert!(fetch.requests.is_empty());
+        let mut without_game: Value = serde_json::from_str(json).unwrap();
+        without_game.as_object_mut().unwrap().remove("game");
+        let reply_without_game = resolve_query(
+            &DeckQuery::Text(without_game.to_string()),
+            &mut fetch,
+            &mut test_catalog(),
+        );
+        assert_eq!(reply_without_game.status, 200);
+        assert_eq!(reply_without_game.body["deck"], reply.body["deck"]);
+        assert_eq!(reply_without_game.body["title"], reply.body["title"]);
+        assert!(fetch.requests.is_empty());
     }
 
     #[test]
@@ -386,6 +397,17 @@ mod tests {
         assert_eq!(reply.status, 200);
         assert_eq!(reply.body["title"], "Synthetic URL");
         assert_eq!(reply.body["deck"]["legend"]["name"], "Vanguard Sentinel");
+        assert!(fetch.requests.is_empty());
+        let encoded_url = url.replace("==", "%253D%253D");
+        for query in [
+            DeckQuery::Url(encoded_url.clone()),
+            DeckQuery::Text(encoded_url),
+        ] {
+            let encoded_reply = resolve_query(&query, &mut fetch, &mut test_catalog());
+            assert_eq!(encoded_reply.status, 200);
+            assert_eq!(encoded_reply.body["deck"], reply.body["deck"]);
+            assert_eq!(encoded_reply.body["title"], reply.body["title"]);
+        }
         assert!(fetch.requests.is_empty());
     }
 

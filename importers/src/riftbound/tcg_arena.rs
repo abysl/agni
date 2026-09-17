@@ -115,11 +115,11 @@ pub fn parse_json(input: &str) -> Result<Import, Error> {
     size_check(input)?;
     let root: Value =
         serde_json::from_str(input).map_err(|error| Error::InvalidJson(error.to_string()))?;
-    if root
-        .get("game")
-        .and_then(Value::as_str)
-        .is_none_or(|game| !game.eq_ignore_ascii_case("riftbound"))
-    {
+    if root.get("game").is_some_and(|value| {
+        value
+            .as_str()
+            .is_none_or(|game| !game.eq_ignore_ascii_case("riftbound"))
+    }) {
         return Err(Error::InvalidExport("game must be Riftbound".into()));
     }
     let deck = root
@@ -291,6 +291,7 @@ pub fn parse_url(url: &str) -> Result<Import, Error> {
         ));
     }
     let query = path.strip_prefix("import?").unwrap_or_default();
+    let query = query.split('#').next().unwrap_or_default();
     let mut game = None;
     let mut title = None;
     let mut deck = None;
@@ -298,7 +299,7 @@ pub fn parse_url(url: &str) -> Result<Import, Error> {
         let Some((key, value)) = pair.split_once('=') else {
             continue;
         };
-        let value = percent_decode(value)?;
+        let value = percent_decode(&value.replace('+', " "))?;
         match key {
             "game" => game = Some(value),
             "name" => title = Some(value),
@@ -310,7 +311,7 @@ pub fn parse_url(url: &str) -> Result<Import, Error> {
         return Err(Error::InvalidUrl("the URL is for a different game".into()));
     }
     let encoded = deck.ok_or_else(|| Error::InvalidUrl("missing deck parameter".into()))?;
-    let mut imported = parse_text(&base64_decode(&encoded)?)?;
+    let mut imported = parse_text(&base64_decode(&percent_decode(&encoded)?)?)?;
     imported.title = title.filter(|title| !title.trim().is_empty());
     Ok(imported)
 }
@@ -354,6 +355,34 @@ mod tests {
             .unwrap_err()
             .to_string()
             .contains("Riftbound"));
+    }
+
+    #[test]
+    fn starter_json_without_game_uses_the_riftbound_import_context() {
+        let json = r#"{"title":"Synthetic","deckList":{"categoriesOrder":["Legend"],"Legend":[{"count":1,"id":"SYN-001"}]}}"#;
+        let parsed = super::super::parse_any(json).unwrap();
+        assert_eq!(parsed.entries[0].section, Some(Section::Legend));
+        for game in [
+            serde_json::json!(null),
+            serde_json::json!(123),
+            serde_json::json!("Other"),
+        ] {
+            let mut value: Value = serde_json::from_str(json).unwrap();
+            value["game"] = game;
+            assert!(super::super::parse_any(&value.to_string()).is_err());
+        }
+    }
+
+    #[test]
+    fn import_url_reads_the_generators_two_encoding_layers() {
+        let url = "https://tcg-arena.fr/import?game=Riftbound&name=Synthetic+Deck&deck=MSBTeW50aGV0aWMgTGVnZW5kCg%253D%253D#preview";
+        let imported = parse_url(url).unwrap();
+        assert_eq!(imported.title.as_deref(), Some("Synthetic Deck"));
+        assert_eq!(
+            imported.deck,
+            parse_text("1 Synthetic Legend\n").unwrap().deck
+        );
+        assert_eq!(super::super::parse_any(url).unwrap(), imported.deck);
     }
 
     #[test]
