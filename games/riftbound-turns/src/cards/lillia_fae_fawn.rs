@@ -418,7 +418,6 @@ mod tests {
             .cards
             .push(fixtures::rune(47, 0, "Mind", false));
         fixture.resolve();
-        let mut plain = fixture.clone();
         let action = fixtures::move_action(CHAMPION_FAWN, fixtures::BASE, 0);
         let mut ctx = fixture.ctx_for(0, &action);
         let intent = legal::classify(&ctx, 0, &ctx.entry.unwrap()).unwrap();
@@ -451,6 +450,11 @@ mod tests {
         );
         assert!(sprites_of(&ctx, 0).is_empty(), "entering is not moving");
         drop(ctx);
+        let mut plain = glade(4);
+        plain.table.cards.retain(|card| card.id != FAWN);
+        plain.table.cards.push(fixtures::rune(46, 0, "Mind", false));
+        plain.table.cards.push(fixtures::rune(47, 0, "Mind", false));
+        plain.resolve();
         let mut ctx = plain.ctx_for(0, &action);
         let intent = legal::classify(&ctx, 0, &ctx.entry.unwrap()).unwrap();
         act(&mut ctx, 0, intent).unwrap();

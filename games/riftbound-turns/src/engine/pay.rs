@@ -608,6 +608,7 @@ pub fn pay(ctx: &mut Ctx, seat: u8, plan: &Plan) {
             ctx.exhaust(*rune);
         }
         for rune in &plan.recycle {
+            ctx.set_flag(*rune, FLAG_PAYING, false);
             ctx.emit(Effect::Move {
                 card: *rune,
                 zone: deck,
@@ -1020,6 +1021,22 @@ mod tests {
         assert!(!ctx.has_flag(fixtures::RUNE_A, FLAG_PAYING));
         assert!(!ctx.has_flag(41, FLAG_PAYING));
         assert!(ctx.effects.is_empty());
+    }
+
+    #[test]
+    fn paying_clears_recycled_rune_pins_before_the_next_plan() {
+        let mut fixture = Fixture::enforced();
+        let mut ctx = fixture.ctx();
+        let rainbow = Cost {
+            power: vec![Need::Rainbow],
+            ..Cost::default()
+        };
+        ctx.set_flag(42, FLAG_PAYING, true);
+        let selected = plan(&ctx, 0, &rainbow).unwrap();
+        assert_eq!(selected.recycle, [42]);
+        pay(&mut ctx, 0, &selected);
+        assert!(!ctx.has_flag(42, FLAG_PAYING));
+        assert_eq!(plan(&ctx, 0, &rainbow).unwrap().recycle, [fixtures::RUNE_A]);
     }
 
     #[test]

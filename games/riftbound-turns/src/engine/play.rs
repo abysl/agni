@@ -1374,6 +1374,7 @@ mod tests {
         let action = fixtures::move_action(fixtures::HAND_GEAR, fixtures::CHAIN, 0);
         let mut ctx = fixture.ctx_for(0, &action);
         begin(&mut ctx, 0, fixtures::HAND_GEAR, Origin::Hand, None).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(
             ctx.effects,
             [
@@ -1395,6 +1396,7 @@ mod tests {
         let spell = fixtures::move_action(fixtures::HAND_SPELL, fixtures::CHAIN, 0);
         let mut ctx = fixture.ctx_for(0, &spell);
         begin(&mut ctx, 0, fixtures::HAND_SPELL, Origin::Hand, None).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         chain::proceed(&mut ctx);
         assert_eq!(
             ctx.effects,
@@ -1520,14 +1522,17 @@ mod tests {
             "the accelerate slot is what the cost reads"
         );
         choose_cost(&mut ctx, 1, false).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.queue.is_empty());
         assert!(
             ctx.card(fixtures::HAND_UNIT).unwrap().exhausted,
             "the answer written by choose_cost overrides the slot"
         );
+        let mut fixture = Fixture::enforced();
         let spell_action = fixtures::move_action(fixtures::HAND_SPELL, fixtures::CHAIN, 0);
         let mut ctx = fixture.ctx_for(0, &spell_action);
         begin(&mut ctx, 0, fixtures::HAND_SPELL, Origin::Hand, None).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(
             ctx.blob.chain.len(),
             1,
@@ -1790,6 +1795,7 @@ mod tests {
         assert_eq!(ctx.blob.why, Some(PromptWhy::PayWith { item: 1 }));
         ctx.blob.close_prompt();
         choose_payment(&mut ctx, 1, None).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.on_board(99));
         assert!(!ctx.card(99).unwrap().exhausted);
         assert!(ctx.effects.iter().any(|effect| matches!(

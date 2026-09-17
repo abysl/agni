@@ -295,6 +295,7 @@ mod tests {
         let mut ctx = fixture.ctx_for(owner, &action);
         let arrived = chain::face_arrived(&mut ctx, card).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::settle_rune_payments(&mut ctx, owner).unwrap();
         assert!(ctx.fault.is_none(), "{:?}", ctx.fault);
         let table = ctx.table.clone();
@@ -505,6 +506,8 @@ mod tests {
         assert_eq!(prompt.seat, 1);
         assert!(!prompt.cancel);
         fixtures::choose(&mut ctx, 1, &format!("{{card {}}}", fixtures::THEIR_UNIT)).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 1).unwrap();
         assert_eq!(
             ctx.runes_of(1).len(),
             their_runes - 1,

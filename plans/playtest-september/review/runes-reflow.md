@@ -11,6 +11,7 @@ Power payment selected runes inside `runes_plan` by deterministic table order. T
   - Offers every legal rune identity instead of collapsing equivalent visible attributes.
   - Uses deterministic backtracking across pinned and unpinned runes so overlapping hybrid needs retain a globally valid assignment.
   - Tests identity choices, ready-state/domain choices, reload, invalid matching, cancellation cleanup, and hybrid matching.
+  - Clears rune payment pins before recycled cards move so later channeling and payment cannot inherit a stale selection.
 - `games/riftbound-turns/src/engine/play.rs`
   - Pauses pending standard plays, activations, and accepted trigger costs at `STAGE_PAY` when more than one rune can legally recycle.
   - Validates each selected rune before pinning it and leaves all payment effects unapplied until the final plan succeeds.
@@ -20,7 +21,9 @@ Power payment selected runes inside `runes_plan` by deterministic table order. T
   - Proves a granted Flow spell in public trash is published as a card-bound `play from your trash` affordance carrying `TurnEvent::Activate`.
   - Gives yes/no choices hotkeys `1` and `2`; true cancel remains `X`.
 - `games/riftbound-turns/src/engine/fixtures.rs`
-  - Lets test helpers explicitly answer rune-payment prompts when they are intended to continue through a completed play.
+  - Exposes a seat-checked helper that tests call explicitly to answer rune-payment prompts.
+- `games/riftbound-turns/src/cards/*.rs` and owned engine tests
+  - Updates payment-bearing play, activation, and accepted-trigger flows to explicitly answer the new rune prompt while retaining their production assertions.
 
 ## Kennen/Reflow status
 
@@ -38,15 +41,10 @@ Pending items routed through `play::advance` now ask for rune identity on standa
 
 Passed:
 
-- `cargo test --locked -p agni-riftbound-turns engine::pay::tests --lib` — 13 passed
-- `cargo test --locked -p agni-riftbound-turns a_ready_gold_offers_itself_as_a_payment_source_and_pays_instead_of_a_rune --lib` — 1 passed
-- `cargo test --locked -p agni-riftbound-turns present::tests --lib` — 16 passed
+- `cargo test --locked -p agni-riftbound-turns --lib` — 4,558 passed, 0 failed, 176 ignored
+- The full run covers standard plays, activated abilities, and accepted trigger costs through explicit rune-prompt answers.
 - `cargo fmt --all -- --check`
-
-Full engine test run:
-
-- `cargo test --locked -p agni-riftbound-turns engine:: --lib` — 297 passed, 19 failed
-- The failures are existing flow tests that assume a multi-choice power payment completes synchronously and now encounter the required open rune prompt. Production behavior and focused prompt tests are correct, but those fixtures still need explicit rune answers before the branch can claim a green full suite.
+- `git diff --check`
 
 ## Rules basis
 

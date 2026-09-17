@@ -368,6 +368,11 @@ pub fn settle_rune_payments(ctx: &mut Ctx, seat: u8) -> Result<(), Refusal> {
     while matches!(ctx.blob.why, Some(PromptWhy::PayWith { .. }))
         && ctx
             .blob
+            .prompt
+            .as_ref()
+            .is_some_and(|prompt| prompt.seat == seat)
+        && ctx
+            .blob
             .why
             .and_then(PromptWhy::item)
             .and_then(|item| ctx.blob.pending(item))
