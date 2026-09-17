@@ -2,11 +2,12 @@ use super::deck_code;
 use super::{Identifier, ParsedDeck, ParsedEntry, Section};
 use std::fmt;
 
-pub const ALLOWED_HOSTS: [&str; 4] = [
+pub const ALLOWED_HOSTS: [&str; 5] = [
     "piltoverarchive.com",
     "riftdecks.com",
     "riftmana.com",
     "play.riftatlas.com",
+    "tcg-arena.fr",
 ];
 pub const RIFT_ATLAS_HUB: &str = "https://play.riftatlas.com/?deckCode=";
 
@@ -21,7 +22,7 @@ pub fn code_in_url(url: &str) -> Option<String> {
     let wanted = match site {
         Site::PiltoverArchive => "code",
         Site::RiftAtlas => "deckCode",
-        Site::RiftDecks | Site::RiftMana => return None,
+        Site::RiftDecks | Site::RiftMana | Site::TcgArena => return None,
     };
     query
         .split('&')
@@ -37,6 +38,7 @@ pub enum Site {
     RiftDecks,
     RiftMana,
     RiftAtlas,
+    TcgArena,
 }
 
 impl Site {
@@ -46,6 +48,7 @@ impl Site {
             Self::RiftDecks => "riftdecks.com",
             Self::RiftMana => "riftmana.com",
             Self::RiftAtlas => "play.riftatlas.com",
+            Self::TcgArena => "tcg-arena.fr",
         }
     }
 }
@@ -76,6 +79,7 @@ pub fn classify(url: &str) -> Option<Site> {
         "riftdecks.com" => Some(Site::RiftDecks),
         "riftmana.com" => Some(Site::RiftMana),
         "play.riftatlas.com" | "riftatlas.com" => Some(Site::RiftAtlas),
+        "tcg-arena.fr" => Some(Site::TcgArena),
         _ => None,
     }
 }
@@ -327,6 +331,7 @@ pub fn extract(site: Site, body: &str) -> Result<Extracted, ExtractError> {
             .or_else(|| scan_for_code(body).map(Extracted::Code))
             .ok_or(error),
         Site::RiftMana | Site::RiftAtlas => scan_for_code(body).map(Extracted::Code).ok_or(error),
+        Site::TcgArena => Err(error),
     }
 }
 

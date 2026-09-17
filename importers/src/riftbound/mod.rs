@@ -6,6 +6,7 @@ pub mod json;
 pub mod link;
 pub mod resolve;
 pub mod snapshot;
+pub mod tcg_arena;
 pub mod text_list;
 
 #[cfg(feature = "riftbound-native")]
@@ -126,6 +127,7 @@ pub enum ParseError {
     Code(deck_code::DeckCodeError),
     Text(text_list::TextError),
     CodeList(code_list::CodeListError),
+    TcgArena(tcg_arena::Error),
 }
 
 impl fmt::Display for ParseError {
@@ -134,6 +136,7 @@ impl fmt::Display for ParseError {
             Self::Code(error) => error.fmt(f),
             Self::Text(error) => error.fmt(f),
             Self::CodeList(error) => error.fmt(f),
+            Self::TcgArena(error) => error.fmt(f),
         }
     }
 }
@@ -154,23 +157,36 @@ pub fn parse_deck(source: &DeckSource) -> Result<ParsedDeck, ParseError> {
 }
 
 pub fn parse_any(text: &str) -> Result<ParsedDeck, ParseError> {
+    parse_any_with_title(text).map(|(deck, _)| deck)
+}
+
+pub fn parse_any_with_title(text: &str) -> Result<(ParsedDeck, Option<String>), ParseError> {
     let trimmed = text.trim();
+    if trimmed.starts_with('{') {
+        let imported = tcg_arena::parse_json(text).map_err(ParseError::TcgArena)?;
+        return Ok((imported.deck, imported.title));
+    }
     let mut tokens = trimmed.split_whitespace();
     if let (Some(single), None) = (tokens.next(), tokens.next()) {
         if let Some(code) = link::code_in_url(single) {
-            return parse_deck(&DeckSource::Code(code));
+            return parse_deck(&DeckSource::Code(code)).map(|deck| (deck, None));
+        }
+        if link::classify(single) == Some(link::Site::TcgArena) {
+            let imported = tcg_arena::parse_url(single).map_err(ParseError::TcgArena)?;
+            return Ok((imported.deck, imported.title));
         }
         if deck_code::decode(single).is_ok() {
-            return parse_deck(&DeckSource::Code(single.to_string()));
+            return parse_deck(&DeckSource::Code(single.to_string())).map(|deck| (deck, None));
         }
     }
     if code_list::looks_like_tts_list(trimmed) {
-        return parse_deck(&DeckSource::CodeList(code_list::from_tts(trimmed)));
+        return parse_deck(&DeckSource::CodeList(code_list::from_tts(trimmed)))
+            .map(|deck| (deck, None));
     }
     if code_list::looks_like_code_list(trimmed) {
-        return parse_deck(&DeckSource::CodeList(trimmed.to_string()));
+        return parse_deck(&DeckSource::CodeList(trimmed.to_string())).map(|deck| (deck, None));
     }
-    parse_deck(&DeckSource::Text(text.to_string()))
+    parse_deck(&DeckSource::Text(text.to_string())).map(|deck| (deck, None))
 }
 
 pub fn parsed_from_decoded(decoded: &deck_code::DecodedDeck) -> ParsedDeck {
@@ -211,7 +227,7 @@ pub fn parsed_from_decoded(decoded: &deck_code::DecodedDeck) -> ParsedDeck {
 #[cfg(test)]
 mod site_format_tests {
     use super::resolve::fixtures::folded_catalog;
-    use super::{link, parse_any, resolve};
+    use super::{link, parse_any, parse_any_with_title, resolve};
     use agni_riftbound::ResolvedDeck;
 
     fn seated(text: &str) -> ResolvedDeck {
@@ -223,6 +239,25 @@ mod site_format_tests {
             resolution.unresolved
         );
         resolution.deck
+    }
+
+    #[test]
+    fn a_pasted_tcg_arena_import_url_uses_the_url_parser() {
+        let url = "https://tcg-arena.fr/import?game=Riftbound&name=Synthetic&deck=MSBTeW50aGV0aWMgTGVnZW5kCg==";
+        let parsed = parse_any(url).unwrap();
+        assert_eq!(parsed.entries.len(), 1);
+        assert_eq!(
+            parsed.entries[0].identifier,
+            super::Identifier::Name("Synthetic Legend".into())
+        );
+    }
+
+    #[test]
+    fn a_pasted_tcg_arena_json_uses_the_json_parser() {
+        let json = r#"{"game":"Riftbound","title":"Synthetic","deckList":{"categoriesOrder":["Legend"],"Legend":[{"count":1,"id":"SYN-001"}]}}"#;
+        let (parsed, title) = parse_any_with_title(json).unwrap();
+        assert_eq!(parsed.entries.len(), 1);
+        assert_eq!(title.as_deref(), Some("Synthetic"));
     }
 
     fn totals(deck: &ResolvedDeck) -> (u32, u32, u32, u32) {
