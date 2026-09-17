@@ -834,16 +834,23 @@ fn manual_recovery_reveal_conceal_and_shuffle_cross_hardened_module_abis() {
 #[test]
 fn reflection_copies_a_public_face_might_and_script_across_hardened_host_and_joiner_replay() {
     let (mut host, mut client, ada) = open_table();
-    let source = deal(
-        &mut host,
-        &mut client,
-        0,
-        vec![unit("Covert Informant", 3, 1, "Mind", 4)],
-        ZONE_BASE,
-    )[0];
+    let winner = roll_for_first(&mut host, &mut client, ada);
     let mut mirror = spell("Mirror Image", 3, 2, "Mind");
     mirror.domain = vec!["Mind".into(), "Order".into()];
-    let mirror = deal(&mut host, &mut client, 0, vec![mirror], ZONE_HAND)[0];
+    let table = open_m9_game(
+        &mut host,
+        &mut client,
+        ada,
+        winner,
+        M9Deal {
+            my_pool: vec![rune("Mind"), rune("Mind"), rune("Order"), rune("Order")],
+            my_hand: vec![mirror],
+            my_base: vec![unit("Covert Informant", 3, 1, "Mind", 4)],
+            ..M9Deal::default()
+        },
+    );
+    let source = table.base[0];
+    let mirror = table.hand[0];
     let entries = host
         .intent(
             0,
@@ -854,10 +861,29 @@ fn reflection_copies_a_public_face_might_and_script_across_hardened_host_and_joi
                 index: TOP,
             },
         )
-        .expect("Mirror Image is playable on the free table");
+        .expect("Mirror Image is playable in the action phase");
     relay(&mut client, &entries);
     let source_option = option_index(&host.plugin_view(0), &card_option(source));
     pick(&mut host, &mut client, 0, source_option);
+    let mut selected_runes = Vec::new();
+    for _ in 0..12 {
+        let view = host.plugin_view(0);
+        let Some((index, choice)) = view
+            .affordances
+            .iter()
+            .enumerate()
+            .rev()
+            .find(|(_, choice)| choice.enabled && choice.label.starts_with("recycle "))
+        else {
+            break;
+        };
+        selected_runes.push(choice.card.expect("a rune choice names its card"));
+        pick(&mut host, &mut client, 0, index as u16);
+    }
+    assert_eq!(selected_runes.len(), 2);
+    for rune in selected_runes {
+        assert!(cards_in(&host, 0, ZONE_RUNE_DECK).contains(&rune));
+    }
     from_host(&mut host, &mut client, TurnEvent::Pass);
     from_client(&mut host, &mut client, ada, TurnEvent::Pass);
 
