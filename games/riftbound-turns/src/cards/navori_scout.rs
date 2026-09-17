@@ -72,7 +72,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         play_engine::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn item_of(ctx: &Ctx) -> u16 {

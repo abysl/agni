@@ -99,6 +99,7 @@ mod tests {
         );
         assert!(offers[0].enabled);
         activate::activate(&mut ctx, 0, FIEND, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none());
         assert_eq!(ctx.blob.chain.len(), 1);
         assert!(

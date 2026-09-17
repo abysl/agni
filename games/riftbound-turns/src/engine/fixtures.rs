@@ -364,7 +364,7 @@ pub fn choose(ctx: &mut Ctx, seat: u8, label: &str) -> Result<(), Refusal> {
     settle_rune_payments(ctx, seat)
 }
 
-fn settle_rune_payments(ctx: &mut Ctx, seat: u8) -> Result<(), Refusal> {
+pub fn settle_rune_payments(ctx: &mut Ctx, seat: u8) -> Result<(), Refusal> {
     while matches!(ctx.blob.why, Some(PromptWhy::PayWith { .. }))
         && ctx
             .blob

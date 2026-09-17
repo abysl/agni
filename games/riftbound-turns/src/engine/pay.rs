@@ -465,47 +465,7 @@ fn runes_plan(runes: &[Rune], cost: &Cost) -> Result<(Vec<u32>, Vec<u32>), Refus
             .filter(|need| matches!(need, Need::Rainbow))
             .cloned(),
     );
-    let mut pool: Vec<Rune> = runes.to_vec();
-    let mut recycle = Vec::new();
-    let pinned: Vec<Rune> = pool.iter().copied().filter(|rune| rune.pinned).collect();
-    let unpinned: Vec<Rune> = pool.iter().copied().filter(|rune| !rune.pinned).collect();
-    let Some((assigned, remaining)) = assign_pinned(&pinned, &ordered, &unpinned) else {
-        return Err(Refusal::NoPowerOf);
-    };
-    ordered = remaining;
-    for rune in assigned {
-        let Some(rune_index) = pool.iter().position(|held| held.id == rune.id) else {
-            return Err(Refusal::NoPowerOf);
-        };
-        recycle.push(pool.remove(rune_index).id);
-    }
-    for need in ordered {
-        let rank = |rune: &Rune| -> Option<u8> {
-            if !need.accepts(rune.domain) {
-                return None;
-            }
-            let preferred = match need {
-                Need::Rainbow => unwanted(rune.domain),
-                _ => true,
-            };
-            Some(match (rune.spent, preferred) {
-                (true, true) => 0,
-                (true, false) => 1,
-                (false, true) => 2,
-                (false, false) => 3,
-            })
-        };
-        let index = pool
-            .iter()
-            .enumerate()
-            .filter_map(|(index, rune)| rank(rune).map(|rank| (rank, index)))
-            .min()
-            .map(|(_, index)| index);
-        match index {
-            Some(index) => recycle.push(pool.remove(index).id),
-            None => return Err(Refusal::NoPowerOf),
-        }
-    }
+    let recycle = assign_runes(&ordered, runes, &unwanted).ok_or(Refusal::NoPowerOf)?;
     let mut exhaust: Vec<u32> = ready
         .iter()
         .map(|rune| rune.id)
@@ -530,40 +490,41 @@ fn runes_plan(runes: &[Rune], cost: &Cost) -> Result<(Vec<u32>, Vec<u32>), Refus
     Ok((exhaust, recycle))
 }
 
-fn assign_pinned(
-    pinned: &[Rune],
+fn assign_runes(
     needs: &[Need],
-    unpinned: &[Rune],
-) -> Option<(Vec<Rune>, Vec<Need>)> {
-    let Some((rune, rest)) = pinned.split_first() else {
-        return can_fill(needs, unpinned).then(|| (Vec::new(), needs.to_vec()));
+    runes: &[Rune],
+    unwanted: &impl Fn(Option<Domain>) -> bool,
+) -> Option<Vec<u32>> {
+    let Some((need, rest)) = needs.split_first() else {
+        return (!runes.iter().any(|rune| rune.pinned)).then(Vec::new);
     };
-    for index in 0..needs.len() {
-        if !needs[index].accepts(rune.domain) {
-            continue;
-        }
-        let mut remaining = needs.to_vec();
+    let preferred = |rune: &Rune| match need {
+        Need::Rainbow => unwanted(rune.domain),
+        _ => true,
+    };
+    let rank = |rune: &Rune| match (rune.spent, preferred(rune)) {
+        (true, true) => 0,
+        (true, false) => 1,
+        (false, true) => 2,
+        (false, false) => 3,
+    };
+    let mut candidates: Vec<usize> = runes
+        .iter()
+        .enumerate()
+        .filter(|(_, rune)| need.accepts(rune.domain))
+        .map(|(index, _)| index)
+        .collect();
+    candidates.sort_by_key(|index| (!runes[*index].pinned, rank(&runes[*index]), *index));
+    for index in candidates {
+        let rune = runes[index];
+        let mut remaining = runes.to_vec();
         remaining.remove(index);
-        if let Some((mut assigned, remaining)) = assign_pinned(rest, &remaining, unpinned) {
-            assigned.insert(0, *rune);
-            return Some((assigned, remaining));
+        if let Some(mut assigned) = assign_runes(rest, &remaining, unwanted) {
+            assigned.insert(0, rune.id);
+            return Some(assigned);
         }
     }
     None
-}
-
-fn can_fill(needs: &[Need], runes: &[Rune]) -> bool {
-    let Some((need, rest)) = needs.split_first() else {
-        return true;
-    };
-    runes.iter().enumerate().any(|(index, rune)| {
-        if !need.accepts(rune.domain) {
-            return false;
-        }
-        let mut remaining = runes.to_vec();
-        remaining.remove(index);
-        can_fill(rest, &remaining)
-    })
 }
 
 pub fn recycle_choices(ctx: &Ctx, seat: u8, cost: &Cost, paying: Paying) -> Vec<u32> {
@@ -1016,7 +977,7 @@ mod tests {
             ],
             ..Cost::default()
         };
-        assert_eq!(runes_plan(&runes, &cost).unwrap().1, [1, 2]);
+        assert_eq!(runes_plan(&runes, &cost).unwrap().1, [2, 1]);
         let partial = [
             Rune {
                 id: 1,
@@ -1031,7 +992,22 @@ mod tests {
                 pinned: false,
             },
         ];
-        assert_eq!(runes_plan(&partial, &cost).unwrap().1, [1, 2]);
+        assert_eq!(runes_plan(&partial, &cost).unwrap().1, [2, 1]);
+        let open = [
+            Rune {
+                id: 1,
+                domain: Some(Domain::Fury),
+                spent: false,
+                pinned: false,
+            },
+            Rune {
+                id: 2,
+                domain: Some(Domain::Calm),
+                spent: false,
+                pinned: false,
+            },
+        ];
+        assert_eq!(runes_plan(&open, &cost).unwrap().1, [2, 1]);
     }
 
     #[test]

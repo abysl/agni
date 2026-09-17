@@ -144,6 +144,7 @@ mod tests {
             )]
         );
         activate::activate(&mut ctx, 0, PORTAL, OPEN).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none(), "nothing to choose");
         assert!(
             ctx.card(PORTAL).unwrap().exhausted,
@@ -223,6 +224,7 @@ mod tests {
         let mut fixture = rift(fixtures::BASE, 0, false);
         let mut ctx = fixture.ctx();
         activate::activate(&mut ctx, 0, PORTAL, OPEN).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         resolve_chain(&mut ctx);
         fixtures::play_from_hand(&mut ctx, 0, ECHO).unwrap();
         assert_eq!(
@@ -246,6 +248,7 @@ mod tests {
         let mut fixture = rift(fixtures::BASE, 0, false);
         let mut ctx = fixture.ctx();
         activate::activate(&mut ctx, 0, PORTAL, OPEN).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         resolve_chain(&mut ctx);
         fixtures::play_from_hand(&mut ctx, 0, BELLOWS).unwrap();
         assert_eq!(
@@ -296,6 +299,7 @@ mod tests {
         let mut fixture = rift(fixtures::BASE, 0, false);
         let mut ctx = fixture.ctx();
         activate::activate(&mut ctx, 0, PORTAL, OPEN).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         resolve_chain(&mut ctx);
         fixtures::play_from_hand(&mut ctx, 0, BELLOWS).unwrap();
         fixtures::choose(&mut ctx, 0, "no").unwrap();

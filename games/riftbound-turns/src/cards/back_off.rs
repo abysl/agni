@@ -78,7 +78,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         play_engine::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn pick(ctx: &mut Ctx, seat: u8, option: u16) -> Result<(), Refusal> {
@@ -98,7 +99,8 @@ mod tests {
             }
             (why, answer) => panic!("Back Off opens only target prompts: {why:?} {answer:?}"),
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn labels(ctx: &Ctx) -> Vec<String> {

@@ -82,7 +82,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         play::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn pick(ctx: &mut Ctx, seat: u8, option: u16) -> Result<(), Refusal> {
@@ -102,7 +103,8 @@ mod tests {
                 _ => panic!("Star-Crossed only opens target prompts: {answered:?}"),
             }
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn pick_card(ctx: &mut Ctx, seat: u8, card: u32) -> Result<(), Refusal> {

@@ -44,6 +44,7 @@ mod tests {
         let mut ctx = fixture.ctx_for(0, &action);
         play_engine::begin(&mut ctx, 0, RAKE, Origin::Hand, Some(Location::Base(0))).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(matches!(ctx.blob.why, Some(PromptWhy::Target { .. })));
         assert_eq!(fixtures::labels(&ctx), ["{card 91}", "skip"]);
         fixtures::choose(&mut ctx, 0, "{card 91}").unwrap();

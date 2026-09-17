@@ -66,7 +66,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         play::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn pick(ctx: &mut Ctx, seat: u8, option: u16) -> Result<(), Refusal> {
@@ -86,7 +87,8 @@ mod tests {
                 _ => {}
             }
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn labels(ctx: &Ctx) -> Vec<String> {
@@ -116,6 +118,7 @@ mod tests {
         )
         .unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.chain.len(), 1);
         priority::pass(&mut ctx, 0).unwrap();
         play_from_hand(&mut ctx, 1, DEFY).unwrap();

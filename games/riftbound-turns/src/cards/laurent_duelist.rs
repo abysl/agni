@@ -112,7 +112,8 @@ mod tests {
         };
         legal::classify(ctx, seat, &entry)?;
         play_engine::begin(ctx, seat, card, Origin::Hand, Some(Location::Base(seat)))?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     #[test]

@@ -198,6 +198,7 @@ mod tests {
         assert!(ctx.in_trash(PHOENIX));
         let ready = ctx.ready_runes_of(0).len();
         assert_eq!(rise(&mut ctx, &trigger(), Stage(0)), Flow::Done);
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(
             ctx.blob.queue.is_empty(),
             "the base is the only location · no prompt"

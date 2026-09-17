@@ -336,6 +336,7 @@ mod tests {
         )
         .unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(
             ctx.ready_runes_of(0).len(),
             ready - usize::from(FLOW.energy),

@@ -367,6 +367,7 @@ mod tests {
         let mut restored = fixture.ctx();
         let ready_before = restored.ready_runes_of(0).len();
         activate::activate(&mut restored, 0, BURIED_SPELL, IMPLICIT_FLOW).unwrap();
+        fixtures::settle_rune_payments(&mut restored, 0).unwrap();
         assert_eq!(
             restored.ready_runes_of(0).len(),
             ready_before - 2,

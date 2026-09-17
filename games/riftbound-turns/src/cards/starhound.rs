@@ -252,6 +252,7 @@ mod tests {
     fn whistle(ctx: &mut Ctx) -> u16 {
         play_engine::begin(ctx, 0, HOUND, Origin::Hand, Some(Location::Base(0))).unwrap();
         settle(ctx).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         match ctx.blob.why {
             Some(PromptWhy::Target { item, spec: 0 }) => item,
             other => panic!("the play asks for a companion in the trash, not {other:?}"),
@@ -401,6 +402,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         play_engine::begin(&mut ctx, 0, HOUND, Origin::Hand, Some(Location::Base(0))).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none(), "nothing to ask");
         assert!(ctx.blob.chain.is_empty(), "390.3 · the trigger is removed");
         assert!(ctx.blob.log.contains(&format!(

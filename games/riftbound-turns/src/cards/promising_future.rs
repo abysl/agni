@@ -291,9 +291,11 @@ mod tests {
     fn arrives(fixture: &mut Fixture, card: u32, face: Face, script: &'static Card) -> bool {
         let action = Action::Reveal { card, face };
         fixture.scripts = fixture.scripts.clone().with_script(card, script);
-        let mut ctx = fixture.ctx_for(ctx_owner(card), &action);
+        let owner = ctx_owner(card);
+        let mut ctx = fixture.ctx_for(owner, &action);
         let arrived = chain::face_arrived(&mut ctx, card).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, owner).unwrap();
         assert!(ctx.fault.is_none(), "{:?}", ctx.fault);
         let table = ctx.table.clone();
         drop(ctx);

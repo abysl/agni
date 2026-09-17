@@ -122,6 +122,7 @@ mod tests {
     fn open_showdown(ctx: &mut Ctx) {
         cleanup::run(ctx, None);
         settle(ctx).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         assert_eq!(
             ctx.blob
                 .showdown
@@ -169,6 +170,7 @@ mod tests {
             ctx.effects
         );
         activate::activate(&mut ctx, 0, AKALI, 1).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.why, Some(PromptWhy::Target { item: 1, spec: 0 }));
         fixtures::choose(&mut ctx, 0, &format!("{{card {}}}", fixtures::VI)).unwrap();
         assert!(
@@ -202,6 +204,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         open_showdown(&mut ctx);
         activate::activate(&mut ctx, 0, AKALI, 1).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::choose(&mut ctx, 0, &format!("{{card {}}}", fixtures::VI)).unwrap();
         resolve_all(&mut ctx);
         assert_eq!(ctx.location(fixtures::VI), Some(Location::Base(0)));
@@ -224,6 +227,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         open_showdown(&mut ctx);
         activate::activate(&mut ctx, 0, AKALI, 1).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::choose(&mut ctx, 0, &format!("{{card {}}}", fixtures::VI)).unwrap();
         resolve_all(&mut ctx);
         assert_eq!(
@@ -240,6 +244,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         open_showdown(&mut ctx);
         activate::activate(&mut ctx, 0, AKALI, 1).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::choose(&mut ctx, 0, &format!("{{card {}}}", fixtures::VI)).unwrap();
         ctx.move_unit(
             fixtures::VI,
@@ -273,6 +278,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         open_showdown(&mut ctx);
         activate::activate(&mut ctx, 0, AKALI, 1).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::choose(&mut ctx, 0, &format!("{{card {}}}", fixtures::VI)).unwrap();
         ctx.table.card_mut(LAIR).unwrap().zone = Some(fixtures::BF1);
         assert!(!ctx.movable_to_base(fixtures::VI));
@@ -331,6 +337,7 @@ mod tests {
         );
         open_showdown(&mut ctx);
         activate::activate(&mut ctx, 0, AKALI, 1).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(
             fixtures::labels(&ctx),
             [format!("{{card {}}}", fixtures::VI), "cancel".to_string()]
@@ -343,6 +350,7 @@ mod tests {
         fixture.blob.set_contested(fixtures::BF1, None);
         let mut ctx = fixture.ctx();
         activate::activate(&mut ctx, 0, AKALI, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         resolve_all(&mut ctx);
         assert!(ctx.is_empowered(AKALI));
         assert_eq!(

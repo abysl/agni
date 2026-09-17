@@ -95,6 +95,7 @@ mod tests {
     fn deploy(ctx: &mut Ctx, to: Location) {
         play_engine::begin(ctx, 0, BLITZ, Origin::Hand, Some(to)).unwrap();
         settle(ctx).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
     }
 
     fn resolve_chain(ctx: &mut Ctx) {
@@ -258,6 +259,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         assert_eq!(cleanup::score_holds(&mut ctx, 0), [fixtures::BF1]);
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.chain.len(), 1);
         assert!(matches!(
             ctx.blob.chain[0].kind,
@@ -299,6 +301,7 @@ mod tests {
             cleanup::Established::Conquered(0)
         );
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.chain.is_empty());
         assert_eq!(
             ctx.location(BLITZ),

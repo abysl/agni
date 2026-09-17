@@ -178,6 +178,7 @@ mod tests {
             "the Empowered ability is not his yet"
         );
         activate::activate(&mut ctx, 0, JAYCE, 1).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.why, Some(PromptWhy::Target { item: 1, spec: 0 }));
         assert_eq!(
             fixtures::labels(&ctx),
@@ -230,6 +231,7 @@ mod tests {
             Err(Refusal::Illegal(Reason::AlreadyEmpowered))
         );
         activate::activate(&mut ctx, 0, JAYCE, 2).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.why, Some(PromptWhy::Target { item: 1, spec: 0 }));
         let prompt = ctx.blob.prompt.clone().unwrap();
         assert_eq!((prompt.min, prompt.max), (2, 2));
@@ -284,6 +286,7 @@ mod tests {
         let mut fixture = lab(false);
         let mut ctx = fixture.ctx();
         activate::activate(&mut ctx, 0, JAYCE, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none(), "no target, no confirm");
         assert!(
             !ctx.card(JAYCE).unwrap().exhausted,
@@ -315,6 +318,7 @@ mod tests {
         let mut fixture = lab(false);
         let mut ctx = fixture.ctx();
         activate::activate(&mut ctx, 0, JAYCE, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         resolve_all(&mut ctx);
         assert!(ctx.is_empowered(JAYCE));
         assert!(ctx

@@ -182,6 +182,7 @@ mod tests {
         let runes = ctx.runes_of(0).len();
         let ready = ctx.ready_runes_of(0).len();
         activate::activate(&mut ctx, 0, GEAR, RECLAIM_ABILITY).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.chain.len(), 1);
         assert_eq!(
             ctx.runes_of(0).len(),
@@ -261,6 +262,7 @@ mod tests {
             .log
             .contains(&"{card 50} is banished with {card 90}".to_string()));
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::pass_until_open(&mut ctx);
         assert!(
             ctx.blob.chain.is_empty() && ctx.blob.queue.is_empty(),
@@ -277,10 +279,12 @@ mod tests {
         attach_gear(&mut ctx, GEAR, fixtures::VI);
         assert_eq!(ctx.kill(fixtures::VI, Cause::Combat), Killed::Yes);
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::pass_until_open(&mut ctx);
         assert!(ctx.in_banishment(fixtures::VI));
         assert_eq!(units_banished_with(&ctx, GEAR), [fixtures::VI]);
         activate::activate(&mut ctx, 0, GEAR, RECLAIM_ABILITY).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::pass_until_open(&mut ctx);
         assert!(ctx.in_banishment(GEAR));
         assert!(ctx.on_board(fixtures::VI));

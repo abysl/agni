@@ -73,7 +73,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         play::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn might_counter(ctx: &Ctx, card: u32) -> i32 {

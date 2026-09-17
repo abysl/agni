@@ -216,6 +216,7 @@ mod tests {
         );
         activate::activate(&mut ctx, 0, RIG, ASSEMBLE).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.card(RIG).unwrap().exhausted, "the exhaust is the cost");
         assert_eq!(
             ctx.ready_runes_of(0).len(),
@@ -326,6 +327,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         activate::activate(&mut ctx, 0, RIG, ASSEMBLE).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.banish(SCRAPPED[0]), "a response banishes the only unit");
         resolve_chain(&mut ctx);
         assert!(ctx.blob.prompt.is_none(), "nothing to pick");
@@ -364,6 +366,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         activate::activate(&mut ctx, 0, RIG, ASSEMBLE).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.chain.len(), 1);
         assert_eq!(
             recycled(&ctx),

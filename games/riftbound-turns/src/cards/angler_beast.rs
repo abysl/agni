@@ -40,6 +40,7 @@ mod tests {
         let mut ctx = fixture.ctx_for(0, &action);
         play_engine::begin(&mut ctx, 0, BEAST, Origin::Hand, Some(Location::Base(0))).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none(), "no target");
         fixtures::pass_until_open(&mut ctx);
         assert_eq!(

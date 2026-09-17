@@ -100,7 +100,8 @@ mod tests {
 
     fn steal(ctx: &mut Ctx) -> Result<(), Refusal> {
         play_engine::begin(ctx, 0, PICKPOCKET, Origin::Hand, Some(Location::Base(0)))?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, 0)
     }
 
     fn labels(ctx: &Ctx) -> Vec<String> {
@@ -115,7 +116,8 @@ mod tests {
         if let Some(answered) = prompts::answer(ctx, seat, Pick { prompt, option })? {
             resume(ctx, &answered)?;
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn golds(ctx: &Ctx, seat: u8) -> Vec<u32> {

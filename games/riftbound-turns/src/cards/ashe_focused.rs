@@ -172,6 +172,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         play_engine::begin(&mut ctx, 0, ASHE, Origin::Hand, Some(Location::Base(0))).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(
             ctx.blob.prompt.is_none(),
             "one opponent answers its own prompt"
@@ -417,6 +418,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         assert_eq!(cleanup::score_holds(&mut ctx, 1), [fixtures::BF1]);
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::pass_until_open(&mut ctx);
         assert_eq!(
             ctx.card(THEIR_SPELL_CARD).unwrap().zone,

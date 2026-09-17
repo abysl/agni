@@ -178,6 +178,7 @@ mod tests {
     fn walk(ctx: &mut Ctx, from: Location, to: Location) {
         march::standard_move(ctx, 0, AKALI, from, to);
         settle(ctx).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         if matches!(ctx.blob.why, Some(PromptWhy::GroupMove { .. })) {
             fixtures::choose(ctx, 0, "done").unwrap();
         }
@@ -188,6 +189,7 @@ mod tests {
 
     fn empower_her(ctx: &mut Ctx) {
         activate::activate(ctx, 0, AKALI, 0).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         priority::pass(ctx, 0).unwrap();
         priority::pass(ctx, 1).unwrap();
         assert!(ctx.is_empowered(AKALI));
@@ -345,6 +347,7 @@ mod tests {
             Location::Base(0),
         );
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(
             matches!(ctx.blob.why, Some(PromptWhy::GroupMove { .. })),
             "the ready bystander could walk home with her"
@@ -364,6 +367,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         ctx.recall(AKALI, true);
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.location(AKALI), Some(Location::Base(0)));
         assert!(ctx.blob.chain.is_empty(), "434.1 · a recall is not a move");
     }
@@ -429,6 +433,7 @@ mod deflect {
             Location::Battlefield(fixtures::BF1),
         );
         settle(ctx).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         if matches!(ctx.blob.why, Some(PromptWhy::GroupMove { .. })) {
             fixtures::choose(ctx, 0, "done").unwrap();
         }

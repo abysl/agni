@@ -120,6 +120,7 @@ mod tests {
     fn empower_it(ctx: &mut Ctx) {
         let runes = ctx.runes_of(0).len();
         activate::activate(ctx, 0, STONE, 0).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         assert_eq!(
             ctx.runes_of(0).len(),
             runes - 2,
@@ -165,6 +166,7 @@ mod tests {
         );
         empower_it(&mut ctx);
         activate::activate(&mut ctx, 0, STONE, HAND_OVER).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(matches!(ctx.blob.why, Some(PromptWhy::Target { .. })));
         assert_eq!(
             fixtures::labels(&ctx),
@@ -218,6 +220,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         empower_it(&mut ctx);
         activate::activate(&mut ctx, 0, STONE, HAND_OVER).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::choose(&mut ctx, 0, "{seat 0}").unwrap();
         resolve_chain(&mut ctx);
         assert_eq!(ctx.controller(STONE), 0);
@@ -262,6 +265,7 @@ mod tests {
             fixtures::VI
         )));
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(!ctx.on_board(fixtures::VI), "3 Might under 5 damage");
         assert!(
             ctx.on_board(fixtures::THEIR_UNIT),
@@ -337,6 +341,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         assert!(ctx.empower(STONE));
         activate::activate(&mut ctx, 0, STONE, HAND_OVER).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::choose(&mut ctx, 0, "{seat 1}").unwrap();
         assert!(!ctx.is_empowered(STONE));
         assert_eq!(ctx.blob.chain.len(), 1);

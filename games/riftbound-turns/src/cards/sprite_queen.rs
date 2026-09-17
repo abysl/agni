@@ -141,6 +141,7 @@ mod tests {
         )
         .unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(
             ctx.location(QUEEN),
             Some(Location::Battlefield(fixtures::BF1))
@@ -170,6 +171,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         let first = spawn(&mut ctx, 0, Token::Sprite, Location::Base(0), true).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(sprites_of(&ctx, 0), [first]);
         let next = ctx.table.next_id;
         phases::start_turn(&mut ctx);
