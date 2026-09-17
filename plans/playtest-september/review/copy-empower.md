@@ -33,6 +33,7 @@ Combat cleanup now emits `CombatEnded` with its deterministic sorted combatants.
 - `cargo test --locked -p agni-riftbound-plugin --test projection an_entry_level_spawn_takes_the_id_before_the_effect_spawn_that_follows` — 1 passed.
 - The hardened regression consumes raw `AGNI_ENGINE_WASM` and `AGNI_RIFTBOUND_WASM` modules and applies the hardening pipeline internally. Its fixture starts an enforced match and explicitly chooses the runes paying for Mirror Image.
 - The merged rules suite passes 4,563 tests, with 172 existing ignored tests. Copy fixtures follow token identity after transformation and answer the new rune-payment prompts.
+- The hardened host/joiner replay regression passes with engine ABI 4 and plugin 0.9.0: two explicit rune selections, copied face and Might, copied Empower ability, token identity, and joiner reconstruction from the log.
 
 ## Remaining limitations
 
