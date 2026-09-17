@@ -190,18 +190,23 @@ mod tests {
     }
 
     #[cfg(not(target_arch = "wasm32"))]
+    async fn loopback_endpoint() -> Endpoint {
+        Endpoint::builder(spirit_node::iroh::endpoint::presets::Minimal)
+            .clear_ip_transports()
+            .bind_addr((std::net::Ipv4Addr::LOCALHOST, 0))
+            .unwrap()
+            .bind()
+            .await
+            .unwrap()
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
     #[tokio::test]
     async fn direct_transfer_requires_the_current_capability_and_hash() {
-        use spirit_node::iroh::{endpoint::presets, protocol::Router};
-        let owner = Endpoint::bind(presets::Minimal).await.unwrap();
-        let receiver = Endpoint::bind(presets::Minimal).await.unwrap();
-        timeout(Duration::from_secs(5), async {
-            while owner.addr().addrs.is_empty() {
-                tokio::time::sleep(Duration::from_millis(10)).await;
-            }
-        })
-        .await
-        .unwrap();
+        use spirit_node::iroh::{protocol::Router, EndpointAddr};
+        let owner = loopback_endpoint().await;
+        let receiver = loopback_endpoint().await;
+        let address = EndpointAddr::new(owner.id()).with_ip_addr(owner.bound_sockets()[0]);
         let service = PersonalAsset::new();
         let router = Router::builder(owner.clone())
             .accept(ALPN, service.clone())
@@ -210,17 +215,23 @@ mod tests {
             .publish(owner.id(), b"private picture".to_vec())
             .unwrap();
         assert_eq!(
-            fetch_from(&receiver, owner.addr(), &ticket).await.unwrap(),
+            fetch_from(&receiver, address.clone(), &ticket)
+                .await
+                .unwrap(),
             b"private picture"
         );
         let mut wrong = ticket.clone();
         wrong.capability = [0; 32];
-        assert!(fetch_from(&receiver, owner.addr(), &wrong).await.is_err());
+        assert!(fetch_from(&receiver, address.clone(), &wrong)
+            .await
+            .is_err());
         wrong = ticket.clone();
         wrong.hash = [0; 32];
-        assert!(fetch_from(&receiver, owner.addr(), &wrong).await.is_err());
+        assert!(fetch_from(&receiver, address.clone(), &wrong)
+            .await
+            .is_err());
         service.clear();
-        assert!(fetch_from(&receiver, owner.addr(), &ticket).await.is_err());
+        assert!(fetch_from(&receiver, address, &ticket).await.is_err());
         router.shutdown().await.unwrap();
         receiver.close().await;
     }
