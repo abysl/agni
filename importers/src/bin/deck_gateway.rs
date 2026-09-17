@@ -113,9 +113,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut wants: Vec<String> = Vec::new();
     let mut port: Option<u16> = None;
     let mut publish: Vec<PublishedModule> = Vec::new();
+    let mut published_only = false;
     let mut args = std::env::args().skip(1);
     while let Some(arg) = args.next() {
         match arg.as_str() {
+            "--published-only" => published_only = true,
             "--seed-file" => seed_file = args.next(),
             "--publish-module" => match args.next() {
                 Some(spec) => publish.push(parse_publish(&spec)?),
@@ -147,7 +149,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
         Ok(hash) => println!("assets index: {hash}"),
         Err(error) => eprintln!("assets index not published: {error}"),
     }
-    let serving = serve_mesh(&dir, &seeds, &wants).await?;
+    let serving = if published_only {
+        spirit_node::serve_published(&dir, &seeds).await?
+    } else {
+        serve_mesh(&dir, &seeds, &wants).await?
+    };
     if let Some(port) = port {
         let bound = gateway::spawn(
             port,
@@ -159,10 +165,14 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     (RESOLVER_NAME.to_string(), deck_resolver(dir.clone())),
                     (
                         agni_importers::asset_gateway::RESOLVER_NAME.to_string(),
-                        agni_importers::asset_gateway::asset_resolver(
-                            dir.clone(),
-                            serving.mesh.clone(),
-                        ),
+                        if published_only {
+                            agni_importers::asset_gateway::published_asset_resolver(dir.clone())
+                        } else {
+                            agni_importers::asset_gateway::asset_resolver(
+                                dir.clone(),
+                                serving.mesh.clone(),
+                            )
+                        },
                     ),
                 ]),
             },

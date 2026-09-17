@@ -65,3 +65,8 @@ required-features = ["riftbound-native"]
 name = "deck-gateway"
 path = "src/bin/deck_gateway.rs"
 required-features = ["riftbound-gateway", "riftbound-native"]
+
+[[bin]]
+name = "curate-store"
+path = "src/bin/curate_store.rs"
+required-features = ["riftbound-gateway", "riftbound-native"]

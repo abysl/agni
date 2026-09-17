@@ -61,6 +61,14 @@ pub fn decide(store: &BlobStore, journal: &str, name: &str, key: &str, mesh: &Me
 }
 
 pub fn asset_resolver(dir: PathBuf, mesh: Arc<Mesh>) -> Resolver {
+    resolver(dir, Some(mesh))
+}
+
+pub fn published_asset_resolver(dir: PathBuf) -> Resolver {
+    resolver(dir, None)
+}
+
+fn resolver(dir: PathBuf, mesh: Option<Arc<Mesh>>) -> Resolver {
     Arc::new(move |request: &ResolveRequest| {
         let Some(key) = request
             .params
@@ -78,7 +86,14 @@ pub fn asset_resolver(dir: PathBuf, mesh: Arc<Mesh>) -> Resolver {
         let Ok(store) = BlobStore::open(&dir) else {
             return ResolveReply::error(500, "store unavailable");
         };
-        match decide(&store, journal, name, &key, &mesh) {
+        let outcome = match &mesh {
+            Some(mesh) => decide(&store, journal, name, &key, mesh),
+            None => match Journal::open(&store, journal).get(&store, name) {
+                Some(hash) => Outcome::Held(hash),
+                None => return ResolveReply::error(404, "asset not published by this service"),
+            },
+        };
+        match outcome {
             Outcome::Held(hash) => {
                 let _ = publish_index(&dir);
                 ResolveReply::json(200, json!({ "hash": hash.to_string() }).to_string())
@@ -105,4 +120,40 @@ pub fn asset_resolver(dir: PathBuf, mesh: Arc<Mesh>) -> Resolver {
             }
         }
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::collections::BTreeMap;
+
+    #[test]
+    fn published_service_refuses_unknown_assets_even_with_an_allowed_source_url() {
+        let dir =
+            std::env::temp_dir().join(format!("agni-published-assets-{}", std::process::id()));
+        std::fs::create_dir(&dir).unwrap();
+        let store = BlobStore::open(&dir).unwrap();
+        let hash = Journal::open(&store, "playmats")
+            .put(&store, "approved", b"published image")
+            .unwrap();
+        let resolve = published_asset_resolver(dir.clone());
+        let mut request = ResolveRequest {
+            name: RESOLVER_NAME.into(),
+            params: BTreeMap::from([
+                ("key".into(), "playmats/unknown".into()),
+                ("url".into(), "https://cards.scryfall.io/random.jpg".into()),
+            ]),
+        };
+        assert_eq!(resolve(&request).status, 404);
+        request
+            .params
+            .insert("key".into(), "playmats/approved".into());
+        let reply = resolve(&request);
+        assert_eq!(reply.status, 200);
+        assert!(String::from_utf8(reply.body)
+            .unwrap()
+            .contains(&hash.to_string()));
+        assert_eq!(art::load_journal(&store, "playmats").len(), 1);
+        std::fs::remove_dir_all(dir).unwrap();
+    }
 }
