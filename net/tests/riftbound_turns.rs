@@ -1,4 +1,4 @@
-use agni_core::{CardFace, PlayerId, Zone};
+use agni_core::{CardFace, CardId, PlayerId, Zone};
 use agni_engine_host::{load_engine, load_plugin, WasmEngine, WasmPlugin};
 use agni_harden::{harden, HardenConfig, HardenedModule};
 use agni_net::session::{
@@ -829,6 +829,101 @@ fn manual_recovery_reveal_conceal_and_shuffle_cross_hardened_module_abis() {
     )
     .unwrap();
     assert_eq!(restored.state(), client.state());
+}
+
+#[test]
+fn reflection_copies_a_public_face_might_and_script_across_hardened_host_and_joiner_replay() {
+    let (mut host, mut client, ada) = open_table();
+    let source = deal(
+        &mut host,
+        &mut client,
+        0,
+        vec![unit("Covert Informant", 3, 1, "Mind", 4)],
+        ZONE_BASE,
+    )[0];
+    let mut mirror = spell("Mirror Image", 3, 2, "Mind");
+    mirror.domain = vec!["Mind".into(), "Order".into()];
+    let mirror = deal(&mut host, &mut client, 0, vec![mirror], ZONE_HAND)[0];
+    let entries = host
+        .intent(
+            0,
+            WireIntent::Move {
+                card: mirror,
+                to: WireZone::Plugin(ZONE_CHAIN),
+                seat: 0,
+                index: TOP,
+            },
+        )
+        .expect("Mirror Image is playable on the free table");
+    relay(&mut client, &entries);
+    let source_option = option_index(&host.plugin_view(0), &card_option(source));
+    pick(&mut host, &mut client, 0, source_option);
+    from_host(&mut host, &mut client, TurnEvent::Pass);
+    from_client(&mut host, &mut client, ada, TurnEvent::Pass);
+
+    let reflection = *host
+        .state()
+        .tokens
+        .iter()
+        .next()
+        .expect("Mirror Image creates a Reflection token");
+    let copy_label = format!("{{card {reflection}}}: empower (3 energy)");
+    assert_eq!(face_name(&host, reflection), "Covert Informant");
+    assert_eq!(
+        host.state()
+            .table
+            .get(CardId(reflection))
+            .unwrap()
+            .face
+            .might,
+        Some(4)
+    );
+    assert!(host.state().is_token(reflection));
+    assert_eq!(
+        client
+            .state()
+            .table
+            .get(CardId(reflection))
+            .unwrap()
+            .face
+            .name,
+        "Covert Informant"
+    );
+    assert_eq!(
+        client
+            .state()
+            .table
+            .get(CardId(reflection))
+            .unwrap()
+            .face
+            .might,
+        Some(4)
+    );
+    assert!(client.state().is_token(reflection));
+    assert!(labels(&host.plugin_view(0)).contains(&copy_label));
+    assert!(labels(&client.plugin_view(0)).contains(&copy_label));
+
+    let mut restored = ClientSession::from_welcome_with(
+        ada,
+        host.roster(),
+        host.log().to_vec(),
+        wasm_engine(),
+        Some(wasm_plugin()),
+    )
+    .expect("the joiner rebuilds the transformed token from the host log");
+    assert_eq!(restored.state(), client.state());
+    assert_eq!(
+        restored
+            .state()
+            .table
+            .get(CardId(reflection))
+            .unwrap()
+            .face
+            .might,
+        Some(4)
+    );
+    assert!(restored.state().is_token(reflection));
+    assert!(labels(&restored.plugin_view(0)).contains(&copy_label));
 }
 
 fn roll_for_first(host: &mut HostSession, client: &mut ClientSession, ada: u8) -> u8 {

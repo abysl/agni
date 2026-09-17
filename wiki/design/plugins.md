@@ -34,6 +34,17 @@ An ABI version, game-state encoding version, wire version, and application
 version are different compatibility signals. Update the one whose contract
 changed and test older data where compatibility is intended.
 
+Engine ABI 4 and plugin ABI 1 add the public-face `Transform` effect used by
+copies. Hosts accept plugin ABI 0 as a compatible older subset, but reject
+unknown newer plugin ABIs before a table starts. A new plugin that emits this
+effect must be paired with the updated engine and host; transferring a pinned
+plugin alone cannot teach an older host how to decode its verdict.
+
+Wire 9 is the compatible maintenance protocol for these effects without chat
+messages. All players must update together; wire 7 clients cannot replay copy
+effects. Wire 8 separately introduced chat messages and is not interchangeable
+with the maintenance protocol.
+
 ## Test before integration
 
 Use pure rule tests for decisions and refusals, host tests for ABI behavior,

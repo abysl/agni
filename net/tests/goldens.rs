@@ -200,7 +200,7 @@ fn host_messages() -> Vec<HostMsg> {
 fn the_client_wire_encoding_is_pinned() {
     let messages = client_messages();
     let bytes: Vec<u8> = messages.iter().flat_map(encode_client).collect();
-    check_golden("client_v8.hex", &bytes);
+    check_golden("client_v10.hex", &bytes);
     for msg in &messages {
         assert_eq!(decode_client(&encode_client(msg)).unwrap(), *msg);
     }
@@ -210,7 +210,7 @@ fn the_client_wire_encoding_is_pinned() {
 fn the_host_wire_encoding_is_pinned() {
     let messages = host_messages();
     let bytes: Vec<u8> = messages.iter().flat_map(encode_host).collect();
-    check_golden("host_v8.hex", &bytes);
+    check_golden("host_v10.hex", &bytes);
     for msg in &messages {
         assert_eq!(decode_host(&encode_host(msg)).unwrap(), *msg);
     }

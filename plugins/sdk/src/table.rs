@@ -696,6 +696,14 @@ impl Snapshot {
 
     pub fn apply(&mut self, effect: &Effect, actor: u8) -> Result<(), ApplyError> {
         match effect {
+            Effect::Transform { card, face } => {
+                let held = self.card_mut(*card).ok_or(ApplyError::UnknownCard)?;
+                if held.is_hidden() || face.is_hidden() {
+                    return Err(ApplyError::HiddenFace);
+                }
+                held.set_face(face);
+                Ok(())
+            }
             Effect::Move {
                 card,
                 zone,

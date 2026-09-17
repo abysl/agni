@@ -79,14 +79,19 @@ pub fn wears_a_copied_face(ctx: &Ctx, token: u32) -> bool {
 }
 
 pub fn become_copy_of(ctx: &mut Ctx, token: u32, of: u32) -> bool {
-    if !ctx.on_board(token) || ctx.card(of).is_none() {
+    if !ctx.is_token(token) || !ctx.on_board(token) || !ctx.on_board(of) {
         return false;
     }
-    let might = ctx.current_might(of);
-    ctx.narrate(format!(
-        "{{card {token}}} would become a copy of {{card {of}}} ({might} Might) · the engine owes Ctx::become_copy"
-    ));
-    false
+    let Some(face) = ctx
+        .card(of)
+        .map(|card| card.face())
+        .filter(|face| !face.is_hidden())
+    else {
+        return false;
+    };
+    ctx.emit(Effect::Transform { card: token, face });
+    ctx.narrate(format!("{{card {token}}} becomes a copy of {{card {of}}}"));
+    true
 }
 
 fn unmask(ctx: &mut Ctx, item: &Item, _: Stage) -> Flow {
@@ -184,8 +189,7 @@ mod tests {
     }
 
     #[test]
-    fn played_to_a_battlefield_it_plays_two_exhausted_reflections_there_and_narrates_the_copy_owed()
-    {
+    fn played_to_a_battlefield_it_plays_two_exhausted_copies_of_the_keeper() {
         let mut fixture = masquerade(fixtures::HAND);
         let action = fixtures::move_action(KEEPER, fixtures::BF1, 0);
         let mut ctx = fixture.ctx_for(0, &action);
@@ -209,30 +213,28 @@ mod tests {
         let next = ctx.table.next_id;
         resolve_chain(&mut ctx);
         assert!(ctx.blob.chain.is_empty());
-        let reflections = reflections_of(&ctx, 0);
-        assert_eq!(reflections, [next, next + 1]);
-        for reflection in &reflections {
-            assert!(is_reflection(&ctx, *reflection));
-            assert!(ctx.is_token(*reflection));
-            assert!(ctx.is_unit(*reflection));
+        let reflections = [next, next + 1];
+        for reflection in reflections {
+            assert!(ctx.is_token(reflection));
+            assert!(ctx.is_unit(reflection));
             assert_eq!(
-                ctx.location(*reflection),
+                ctx.location(reflection),
                 Some(Location::Battlefield(fixtures::BF1)),
                 "here · where the Keeper was played"
             );
-            assert_eq!(ctx.controller(*reflection), 0);
+            assert_eq!(ctx.controller(reflection), 0);
             assert!(
-                ctx.card(*reflection).unwrap().exhausted,
+                ctx.card(reflection).unwrap().exhausted,
                 "they enter exhausted"
             );
             assert!(ctx.events.iter().any(|event| matches!(
                 event,
-                Event::Played { card, controller: 0, origin: Origin::Board, .. } if card == reflection
+                Event::Played { card, controller: 0, origin: Origin::Board, .. } if *card == reflection
             )));
             assert!(ctx.blob.log.contains(&format!(
-                "{{card {reflection}}} would become a copy of {{card {KEEPER}}} (1 Might) · the engine owes Ctx::become_copy"
+                "{{card {reflection}}} becomes a copy of {{card {KEEPER}}}"
             )));
-            assert!(!wears_a_copied_face(&ctx, *reflection));
+            assert!(wears_a_copied_face(&ctx, reflection));
         }
         assert!(!is_reflection(&ctx, KEEPER));
         assert_eq!(
@@ -298,7 +300,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "engine gap · Token::Reflection and a copy primitive: engine/ctx.rs has no Reflection face, so reflection_face_until_token_reflection_lands builds it and spawn_reflection replays Ctx::spawn; no Token or CardState field models a copy, so become_copy_of narrates and wears_a_copied_face reads false. With Ctx::become_copy(token, of) the Reflections take the Keeper's name, script and Might (477.1.b), each carries Temporary and dies at the next Beginning Phase, and cards/mod.rs knows the Reflection name"]
     fn the_reflections_become_copies_of_the_keeper_and_the_engine_knows_the_token_name() {
         let mut fixture = masquerade(fixtures::HAND);
         let action = fixtures::move_action(KEEPER, fixtures::BASE, 0);

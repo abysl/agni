@@ -7,7 +7,8 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 use std::collections::BTreeMap;
 
-pub const ENGINE_ABI_VERSION: u32 = 3;
+pub const ENGINE_ABI_VERSION: u32 = 4;
+pub const PLUGIN_ABI_VERSION: u32 = 1;
 
 pub fn encode<T: Serialize>(value: &T) -> Vec<u8> {
     let mut out = Vec::new();

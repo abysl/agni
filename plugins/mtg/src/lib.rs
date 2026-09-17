@@ -1,4 +1,4 @@
-pub const PLUGIN_ABI_VERSION: u32 = 0;
+pub const PLUGIN_ABI_VERSION: u32 = agni_plugin_sdk::PLUGIN_ABI_VERSION;
 
 pub const MANIFEST: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/manifest.cbor"));
 pub const ACCEPT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/accept.cbor"));
@@ -41,6 +41,6 @@ mod tests {
     #[test]
     fn the_view_stub_is_cbor_null() {
         assert_eq!(VIEW, [0xf6]);
-        assert_eq!(PLUGIN_ABI_VERSION, 0);
+        assert_eq!(PLUGIN_ABI_VERSION, agni_sim::abi::PLUGIN_ABI_VERSION);
     }
 }

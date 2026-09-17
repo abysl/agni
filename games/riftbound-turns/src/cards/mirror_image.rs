@@ -34,15 +34,16 @@ mod tests {
         is_reflection, reflection_face_until_token_reflection_lands, REFLECTION, REFLECTION_MIGHT,
     };
     use crate::cards::prelude::UNIT;
-    use crate::cards::{script_of, Keyword, Trigger, IMPLICIT_TEMPORARY, KIND_UNIT};
+    use crate::cards::{script_of, Keyword, Resolved, Trigger, IMPLICIT_TEMPORARY, KIND_UNIT};
     use crate::engine::ctx::{EntryMove, Event};
     use crate::engine::fixtures::{self, Fixture};
     use crate::engine::legal::{self, Reason};
     use crate::engine::{play as play_engine, triggers};
     use crate::rules::COUNTER_TEMPORARY;
-    use crate::state::{Origin, PromptWhy, TargetRef};
-    use crate::Refusal;
-    use agni_plugin_sdk::decide::{Effect, TOP};
+    use crate::state::{GameBlob, Mode, Origin, PromptWhy, TargetRef};
+    use crate::{Refusal, TurnEvent};
+    use agni_plugin_sdk::decide::{Action, Effect, Request, TOP};
+    use agni_plugin_sdk::prompt::Pick;
     use agni_plugin_sdk::table::{CardInfo, Target};
 
     const MIRROR: u32 = 90;
@@ -93,6 +94,29 @@ mod tests {
             .collect()
     }
 
+    fn apply(
+        table: &mut agni_plugin_sdk::table::Snapshot,
+        blob: &mut GameBlob,
+        seat: u8,
+        action: Action,
+    ) {
+        let request = Request {
+            plugin_state: blob.encode(),
+            players: 2,
+            seat,
+            action: action.clone(),
+            table: table.clone(),
+        };
+        let verdict =
+            crate::engine::decide(&request, GameBlob::decode(&request.plugin_state).unwrap())
+                .unwrap();
+        if let Action::Move { .. } = action {
+            table.apply_entry(&action, seat).unwrap();
+        }
+        table.apply_all(&verdict.effects, seat).unwrap();
+        *blob = GameBlob::decode(&verdict.plugin_state.unwrap()).unwrap();
+    }
+
     #[test]
     fn the_script_is_a_plain_spell_over_any_unit_and_the_reflection_face_is_a_blank_unit() {
         assert!(std::ptr::eq(script_of("Mirror Image").unwrap(), &CARD));
@@ -134,7 +158,11 @@ mod tests {
             Effect::Spawn { face, zone, seat: 0, owner: Some(0) }
                 if face.name == REFLECTION && *zone == fixtures::BASE
         )));
-        assert!(is_reflection(&ctx, TOKEN));
+        assert!(!is_reflection(&ctx, TOKEN));
+        assert_eq!(
+            ctx.card(TOKEN).unwrap().name,
+            ctx.card(fixtures::THEIR_UNIT).unwrap().name
+        );
         assert!(ctx.is_token(TOKEN));
         assert_eq!(ctx.location(TOKEN), Some(Location::Base(0)));
         assert_eq!(ctx.units_at(Location::Base(0)).len(), units + 1);
@@ -154,10 +182,10 @@ mod tests {
             .blob
             .log
             .contains(&"{seat 0} plays a ready {card 200} to their base".to_string()));
-        assert!(ctx.blob.log.contains(
-            &"{card 200} would become a copy of {card 81} (2 Might) · the engine owes Ctx::become_copy"
-                .to_string()
-        ));
+        assert!(ctx
+            .blob
+            .log
+            .contains(&"{card 200} becomes a copy of {card 81}".to_string()));
         assert!(ctx
             .blob
             .log
@@ -217,7 +245,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "engine gap · Token::Reflection and a copy primitive: no Token or CardState field models a copy, so keeper_of_masks::become_copy_of only narrates and the Reflection stays a 0-Might blank; Ctx::become_copy(token, of) gives it the copied unit's face, script and Might with [Temporary] granted after (the Keeper of Masks / LeBlanc - Deceiver row)"]
     fn the_reflection_carries_the_copied_units_might_name_and_script() {
         let mut fixture = hall();
         let mut ctx = fixture.ctx();
@@ -231,7 +258,72 @@ mod tests {
             ctx.blob.log
         );
         assert_eq!(ctx.card(TOKEN).unwrap().name, "Vi");
+        assert!(ctx.effects.iter().any(|effect| matches!(
+            effect,
+            Effect::Transform { card: TOKEN, face } if face.name == "Vi"
+        )));
         assert!(ctx.is_temporary(TOKEN));
         assert!(ctx.is_token(TOKEN));
+    }
+
+    #[test]
+    fn a_serialized_play_request_persists_the_copied_face_and_script() {
+        let fixture = hall();
+        let source = fixture.scripts.of_card(fixtures::VI).unwrap();
+        let mut table = fixture.table.clone();
+        let mut blob = GameBlob::start(2, 0, Mode::Free);
+        apply(
+            &mut table,
+            &mut blob,
+            0,
+            Action::Move {
+                card: MIRROR,
+                to: Some(fixtures::CHAIN),
+                seat: 0,
+                index: TOP,
+                hidden: false,
+            },
+        );
+        let offered = blob.offered(&table).unwrap();
+        let option = offered
+            .iter()
+            .position(|option| option.label == format!("{{card {}}}", fixtures::VI))
+            .unwrap();
+        let prompt = blob.prompt.as_ref().unwrap().id;
+        apply(
+            &mut table,
+            &mut blob,
+            0,
+            Action::Game(
+                TurnEvent::Pick(Pick {
+                    prompt,
+                    option: option as u16,
+                })
+                .encode(),
+            ),
+        );
+        apply(
+            &mut table,
+            &mut blob,
+            0,
+            Action::Game(TurnEvent::Pass.encode()),
+        );
+        apply(
+            &mut table,
+            &mut blob,
+            1,
+            Action::Game(TurnEvent::Pass.encode()),
+        );
+        assert_eq!(table.card(TOKEN).unwrap().name, "Vi");
+        assert!(table.is_token(TOKEN));
+        assert!(std::ptr::eq(
+            Resolved::of(&table).of_card(TOKEN).unwrap(),
+            source
+        ));
+        let mut reloaded = GameBlob::decode(&blob.encode()).unwrap();
+        let scripts = Resolved::of(&table);
+        let ctx = Ctx::fresh(&table, &mut reloaded, &scripts, 0);
+        assert_eq!(ctx.current_might(TOKEN), 3);
+        assert!(ctx.is_temporary(TOKEN));
     }
 }

@@ -1,5 +1,5 @@
-use super::prelude::{done, is_empowered, unit, with_statics};
-use super::{Card, Flow, Grant, Item, Stage, Static};
+use super::prelude::{done, is_empowered, triggered, unit, with_statics};
+use super::{Card, Flow, Grant, Item, Stage, Static, Trigger, Who};
 use crate::engine::ctx::Ctx;
 
 pub const BONUS: i16 = 2;
@@ -18,7 +18,15 @@ pub fn empower_me_after_my_combat(ctx: &mut Ctx, item: &Item, _: Stage) -> Flow 
 }
 
 pub static CARD: Card = with_statics(
-    unit("Mournful Witness", &[], &[]),
+    unit(
+        "Mournful Witness",
+        &[],
+        &[triggered(
+            Trigger::CombatEnded(Who::Me),
+            &[],
+            empower_me_after_my_combat,
+        )],
+    ),
     &[Static::While(is_empowered, &[Grant::Might(BONUS)])],
 );
 
@@ -70,11 +78,11 @@ mod tests {
     }
 
     #[test]
-    fn the_script_carries_the_empowered_might_and_no_trigger_until_the_engine_raises_combat_ended()
-    {
+    fn the_script_empowers_after_its_combat_and_carries_the_empowered_might() {
         assert!(std::ptr::eq(script_of("Mournful Witness").unwrap(), &CARD));
         assert!(CARD.keywords.is_empty());
-        assert!(CARD.abilities.is_empty());
+        assert_eq!(CARD.abilities.len(), 1);
+        assert_eq!(CARD.abilities[0].trigger, Trigger::CombatEnded(Who::Me));
         assert_eq!(CARD.statics.len(), 1);
         assert!(matches!(
             CARD.statics[0],
@@ -146,7 +154,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "engine gap · missing triggers: cleanup::after_combat raises CombatWon / CombatLost with the zone and the seat only and Trigger has no CombatEnded(Who); when a combat the Witness was in ends, won, lost or drawn, it must trigger as triggered(CombatEnded(Who::Me), &[], empower_me_after_my_combat) with the Witness as the subject"]
     fn a_combat_the_witness_was_in_ending_empowers_it_whatever_the_result() {
         let mut fixture = wake();
         let mut ctx = fixture.ctx();

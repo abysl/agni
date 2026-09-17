@@ -1,4 +1,4 @@
-pub const PLUGIN_ABI_VERSION: u32 = 0;
+pub const PLUGIN_ABI_VERSION: u32 = agni_plugin_sdk::PLUGIN_ABI_VERSION;
 
 pub const MANIFEST: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/manifest.cbor"));
 pub const ACCEPT: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/accept.cbor"));

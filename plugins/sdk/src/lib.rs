@@ -9,4 +9,4 @@ pub mod table;
 pub mod turns;
 pub mod view;
 
-pub const PLUGIN_ABI_VERSION: u32 = 0;
+pub const PLUGIN_ABI_VERSION: u32 = 1;

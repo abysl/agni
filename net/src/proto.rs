@@ -5,7 +5,7 @@ use agni_sim::wire::{CounterTarget, DealGroup};
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 
-pub const WIRE_VERSION: u32 = 8;
+pub const WIRE_VERSION: u32 = 10;
 
 pub const MAX_CHAT_BYTES: usize = 2000;
 

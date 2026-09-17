@@ -15,7 +15,12 @@ pub const RESOLVER_NAME: &str = "deck";
 /// which put three Riftbound URLs inside a library whose own rules say it
 /// carries no game knowledge. Fetch policy travels with the thing that knows
 /// what a deck is.
-pub const DECK_SITE_ALLOWLIST: [&str; 3] = ["piltoverarchive.com", "riftdecks.com", "riftmana.com"];
+pub const DECK_SITE_ALLOWLIST: [&str; 4] = [
+    "piltoverarchive.com",
+    "riftdecks.com",
+    "riftmana.com",
+    "tcg-arena.fr",
+];
 
 /// Host-exact allowlist check. Matches the real host, so neither a lookalike
 /// domain (`piltoverarchive.com.evil.com`) nor a userinfo trick
