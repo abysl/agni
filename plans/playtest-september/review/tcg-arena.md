@@ -53,7 +53,7 @@ bundle, card database, or art was committed.
 
 Final verification: all 14 tests selected by `tcg_arena` passed with
 `--offline --locked -p agni-importers --features riftbound-native --lib`, using
-`CARGO_TARGET_DIR=/tmp/kai-dusk-rose.adTLQw/agni/target`, three build jobs,
+the shared build cache, three build jobs,
 debug info disabled and incremental compilation disabled. Changed Rust files
 were formatted; `git diff --check` passed. Broader checks were not repeated
 for this bounded verification. This follow-up changes only
