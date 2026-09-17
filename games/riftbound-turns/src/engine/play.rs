@@ -500,6 +500,10 @@ pub fn advance(ctx: &mut Ctx, item: u16) -> Result<(), Refusal> {
                         Some(_) => {}
                     }
                 }
+                if pay::recycle_choices(ctx, seat, &total, Paying::Item(&pending.item)).len() > 1 {
+                    ctx.ask(seat, 1, 1, cancellable, PromptWhy::PayWith { item });
+                    return Ok(());
+                }
                 let plan = match pay::plan(ctx, seat, &total) {
                     Ok(plan) => plan,
                     Err(_) if pending.item.limited.is_some() => {
@@ -847,7 +851,23 @@ pub fn choose_payment(ctx: &mut Ctx, item: u16, gold: Option<u32>) -> Result<(),
         .map(|pending| pending.item.controller)
         .unwrap_or(0);
     if let Some(gold) = gold {
-        if !pay::ready_golds(ctx, seat).contains(&gold) {
+        let pending = ctx.blob.pending(item).map(|pending| pending.item.clone());
+        let cost = pending
+            .as_ref()
+            .map(|pending| cost::of_item(ctx, pending, None))
+            .unwrap_or_default();
+        let selectable = pay::ready_golds(ctx, seat).contains(&gold)
+            || pay::recycle_choices(
+                ctx,
+                seat,
+                &cost,
+                pending
+                    .as_ref()
+                    .map(Paying::Item)
+                    .unwrap_or(Paying::Applied),
+            )
+            .contains(&gold);
+        if !selectable {
             return Err(Refusal::Illegal(Reason::NotALegalTarget));
         }
         ctx.set_flag(gold, crate::state::FLAG_PAYING, true);
@@ -1268,6 +1288,9 @@ mod tests {
         .unwrap();
         rune_instead.blob.close_prompt();
         choose_payment(&mut rune_instead, 2, None).unwrap();
+        assert_eq!(rune_instead.blob.why, Some(PromptWhy::PayWith { item: 2 }));
+        rune_instead.blob.close_prompt();
+        choose_payment(&mut rune_instead, 2, Some(fixtures::RUNE_A)).unwrap();
         assert!(rune_instead.card(85).is_some(), "the Gold is left alone");
         assert!(rune_instead.effects.iter().any(|effect| matches!(
             effect,
@@ -1276,11 +1299,39 @@ mod tests {
         let mut plain = Fixture::enforced();
         let mut ctx = plain.ctx_for(0, &action);
         begin(&mut ctx, 0, fixtures::HAND_SPELL, Origin::Hand, None).unwrap();
-        assert_ne!(
+        assert_eq!(
             ctx.blob.why,
             Some(PromptWhy::PayWith { item: 1 }),
-            "no Gold, no question"
+            "the spent and ready Fury runes are a meaningful choice"
         );
+        assert_eq!(
+            prompts::offered(&ctx)
+                .iter()
+                .map(|option| option.label.as_str())
+                .collect::<Vec<_>>(),
+            [
+                "recycle {card 40}",
+                "recycle {card 41}",
+                "recycle {card 43}",
+                "cancel"
+            ]
+        );
+        assert!(ctx.effects.is_empty(), "the pending cost is atomic");
+        assert_eq!(
+            choose_payment(&mut ctx, 1, Some(42)),
+            Err(Refusal::Illegal(Reason::NotALegalTarget))
+        );
+        assert!(
+            ctx.effects.is_empty(),
+            "an invalid rune choice spends nothing"
+        );
+        ctx.blob.close_prompt();
+        choose_payment(&mut ctx, 1, Some(41)).unwrap();
+        assert!(ctx.effects.iter().any(|effect| matches!(
+            effect,
+            Effect::Move { card: 41, zone, .. } if *zone == fixtures::RUNE_DECK
+        )));
+        assert!(ctx.card(fixtures::RUNE_A).is_some());
     }
 
     #[test]
