@@ -1212,6 +1212,7 @@ mod tests {
         .unwrap();
         settle(&mut ctx).unwrap();
         choose(&mut ctx, 0, &format!("{{card {GUARDED}}}")).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         priority::pass(&mut ctx, 0).unwrap();
         priority::pass(&mut ctx, 1).unwrap();
         assert_eq!(

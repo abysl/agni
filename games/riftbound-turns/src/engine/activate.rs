@@ -808,6 +808,7 @@ mod tests {
         );
         let hand = ctx.hand_of(0).len();
         activate(&mut ctx, 0, FOUNTAIN, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(
             !ctx.card(FOUNTAIN).unwrap().exhausted,
             "the gear says otherwise, so it does not exhaust"
@@ -1275,6 +1276,7 @@ mod tests {
             "the owner is not"
         );
         activate(&mut ctx, 0, FOUNTAIN, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.has_flag(FOUNTAIN, FLAG_ONCE_USED));
     }
 }
