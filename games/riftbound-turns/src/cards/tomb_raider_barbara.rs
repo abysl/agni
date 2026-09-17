@@ -107,7 +107,8 @@ mod tests {
 
     fn dig(ctx: &mut Ctx) -> Result<(), Refusal> {
         play_engine::begin(ctx, 0, BARBARA, Origin::Hand, Some(Location::Base(0)))?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, 0)
     }
 
     fn labels(ctx: &Ctx) -> Vec<String> {
@@ -138,7 +139,8 @@ mod tests {
             };
             play_engine::choose_targets(ctx, item, spec, &answered.prompt.picked)?;
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, 0)
     }
 
     fn resolve(ctx: &mut Ctx) {

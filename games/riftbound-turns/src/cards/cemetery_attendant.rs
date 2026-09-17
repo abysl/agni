@@ -114,7 +114,8 @@ mod tests {
 
     fn hire(ctx: &mut Ctx) -> Result<(), Refusal> {
         play_engine::begin(ctx, 0, ATTENDANT, Origin::Hand, Some(Location::Base(0)))?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, 0)
     }
 
     fn pending(ctx: &Ctx) -> u16 {

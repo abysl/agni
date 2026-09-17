@@ -43,6 +43,7 @@ struct Rune {
     id: u32,
     domain: Option<Domain>,
     spent: bool,
+    pinned: bool,
 }
 
 type Offer = Option<Vec<Domain>>;
@@ -148,6 +149,7 @@ fn runes_of(ctx: &Ctx, seat: u8) -> Vec<Rune> {
             id: rune.id,
             domain: rune_domain(rune),
             spent: rune.exhausted,
+            pinned: ctx.has_flag(rune.id, FLAG_PAYING),
         })
         .collect()
 }
@@ -445,50 +447,25 @@ fn runes_plan(runes: &[Rune], cost: &Cost) -> Result<(Vec<u32>, Vec<u32>), Refus
         })
         .collect();
     let unwanted = |domain: Option<Domain>| !domain.is_some_and(|held| wanted.contains(&held));
-    let mut ordered: Vec<&Need> = cost
+    let mut ordered: Vec<Need> = cost
         .power
         .iter()
         .filter(|need| matches!(need, Need::Domain(_)))
+        .cloned()
         .collect();
     ordered.extend(
         cost.power
             .iter()
-            .filter(|need| matches!(need, Need::AnyOf(_))),
+            .filter(|need| matches!(need, Need::AnyOf(_)))
+            .cloned(),
     );
     ordered.extend(
         cost.power
             .iter()
-            .filter(|need| matches!(need, Need::Rainbow)),
+            .filter(|need| matches!(need, Need::Rainbow))
+            .cloned(),
     );
-    let mut pool: Vec<Rune> = runes.to_vec();
-    let mut recycle = Vec::new();
-    for need in ordered {
-        let rank = |rune: &Rune| -> Option<u8> {
-            if !need.accepts(rune.domain) {
-                return None;
-            }
-            let preferred = match need {
-                Need::Rainbow => unwanted(rune.domain),
-                _ => true,
-            };
-            Some(match (rune.spent, preferred) {
-                (true, true) => 0,
-                (true, false) => 1,
-                (false, true) => 2,
-                (false, false) => 3,
-            })
-        };
-        let index = pool
-            .iter()
-            .enumerate()
-            .filter_map(|(index, rune)| rank(rune).map(|rank| (rank, index)))
-            .min()
-            .map(|(_, index)| index);
-        match index {
-            Some(index) => recycle.push(pool.remove(index).id),
-            None => return Err(Refusal::NoPowerOf),
-        }
-    }
+    let recycle = assign_runes(&ordered, runes, &unwanted).ok_or(Refusal::NoPowerOf)?;
     let mut exhaust: Vec<u32> = ready
         .iter()
         .map(|rune| rune.id)
@@ -511,6 +488,64 @@ fn runes_plan(runes: &[Rune], cost: &Cost) -> Result<(Vec<u32>, Vec<u32>), Refus
         exhaust.extend(more.into_iter().take(energy - exhaust.len()));
     }
     Ok((exhaust, recycle))
+}
+
+fn assign_runes(
+    needs: &[Need],
+    runes: &[Rune],
+    unwanted: &impl Fn(Option<Domain>) -> bool,
+) -> Option<Vec<u32>> {
+    let Some((need, rest)) = needs.split_first() else {
+        return (!runes.iter().any(|rune| rune.pinned)).then(Vec::new);
+    };
+    let preferred = |rune: &Rune| match need {
+        Need::Rainbow => unwanted(rune.domain),
+        _ => true,
+    };
+    let rank = |rune: &Rune| match (rune.spent, preferred(rune)) {
+        (true, true) => 0,
+        (true, false) => 1,
+        (false, true) => 2,
+        (false, false) => 3,
+    };
+    let mut candidates: Vec<usize> = runes
+        .iter()
+        .enumerate()
+        .filter(|(_, rune)| need.accepts(rune.domain))
+        .map(|(index, _)| index)
+        .collect();
+    candidates.sort_by_key(|index| (!runes[*index].pinned, rank(&runes[*index]), *index));
+    for index in candidates {
+        let rune = runes[index];
+        let mut remaining = runes.to_vec();
+        remaining.remove(index);
+        if let Some(mut assigned) = assign_runes(rest, &remaining, unwanted) {
+            assigned.insert(0, rune.id);
+            return Some(assigned);
+        }
+    }
+    None
+}
+
+pub fn recycle_choices(ctx: &Ctx, seat: u8, cost: &Cost, paying: Paying) -> Vec<u32> {
+    let cost = from_pool(ctx, seat, cost);
+    let sources = sources(ctx, seat, paying);
+    let mut runes = runes_of(ctx, seat);
+    let mut choices = Vec::new();
+    for index in 0..runes.len() {
+        if runes[index].pinned {
+            continue;
+        }
+        runes[index].pinned = true;
+        let selectable = take(ctx, &cost, &sources, &runes)
+            .runes
+            .is_ok_and(|(_, recycle)| recycle.contains(&runes[index].id));
+        runes[index].pinned = false;
+        if selectable {
+            choices.push(runes[index].id);
+        }
+    }
+    choices
 }
 
 pub fn affordable(ctx: &Ctx, seat: u8, cost: &Cost) -> bool {
@@ -573,6 +608,7 @@ pub fn pay(ctx: &mut Ctx, seat: u8, plan: &Plan) {
             ctx.exhaust(*rune);
         }
         for rune in &plan.recycle {
+            ctx.set_flag(*rune, FLAG_PAYING, false);
             ctx.emit(Effect::Move {
                 card: *rune,
                 zone: deck,
@@ -875,6 +911,132 @@ mod tests {
         ctx.set_flag(86, FLAG_PAYING, true);
         clear_pins(&mut ctx, 0);
         assert!(!ctx.has_flag(86, FLAG_PAYING));
+    }
+
+    #[test]
+    fn rune_choices_preserve_domain_and_exhaustion_decisions_across_reload() {
+        let mut fixture = Fixture::enforced();
+        let mut ctx = fixture.ctx();
+        let rainbow = Cost {
+            power: vec![Need::Rainbow],
+            ..Cost::default()
+        };
+        assert_eq!(
+            recycle_choices(&ctx, 0, &rainbow, Paying::Applied),
+            [fixtures::RUNE_A, 41, 42, 43],
+            "every rune identity is a choice"
+        );
+        ctx.set_flag(42, FLAG_PAYING, true);
+        let encoded = ctx.blob.encode();
+        let decoded = crate::state::GameBlob::decode(&encoded).unwrap();
+        drop(ctx);
+        let mut fixture = fixture;
+        fixture.blob = decoded;
+        let ctx = fixture.ctx();
+        assert!(ctx.has_flag(42, FLAG_PAYING));
+        assert_eq!(plan(&ctx, 0, &rainbow).unwrap().recycle, [42]);
+        assert!(recycle_choices(&ctx, 0, &rainbow, Paying::Applied).is_empty());
+    }
+
+    #[test]
+    fn identical_runes_are_each_offered_by_identity() {
+        let mut fixture = Fixture::enforced();
+        fixture.table.card_mut(fixtures::RUNE_A).unwrap().exhausted = false;
+        fixture.table.cards.retain(|card| card.id != 42);
+        let ctx = fixture.ctx();
+        let fury = Cost {
+            power: vec![Need::Domain(Domain::Fury)],
+            ..Cost::default()
+        };
+        assert_eq!(
+            recycle_choices(&ctx, 0, &fury, Paying::Applied),
+            [fixtures::RUNE_A, 41, 43]
+        );
+        assert_eq!(plan(&ctx, 0, &fury).unwrap().recycle, [fixtures::RUNE_A]);
+    }
+
+    #[test]
+    fn pinned_hybrid_runes_find_a_globally_valid_assignment() {
+        let runes = [
+            Rune {
+                id: 1,
+                domain: Some(Domain::Fury),
+                spent: false,
+                pinned: true,
+            },
+            Rune {
+                id: 2,
+                domain: Some(Domain::Calm),
+                spent: false,
+                pinned: true,
+            },
+        ];
+        let cost = Cost {
+            power: vec![
+                Need::AnyOf(vec![Domain::Fury, Domain::Calm]),
+                Need::AnyOf(vec![Domain::Fury, Domain::Mind]),
+            ],
+            ..Cost::default()
+        };
+        assert_eq!(runes_plan(&runes, &cost).unwrap().1, [2, 1]);
+        let partial = [
+            Rune {
+                id: 1,
+                domain: Some(Domain::Fury),
+                spent: false,
+                pinned: true,
+            },
+            Rune {
+                id: 2,
+                domain: Some(Domain::Calm),
+                spent: false,
+                pinned: false,
+            },
+        ];
+        assert_eq!(runes_plan(&partial, &cost).unwrap().1, [2, 1]);
+        let open = [
+            Rune {
+                id: 1,
+                domain: Some(Domain::Fury),
+                spent: false,
+                pinned: false,
+            },
+            Rune {
+                id: 2,
+                domain: Some(Domain::Calm),
+                spent: false,
+                pinned: false,
+            },
+        ];
+        assert_eq!(runes_plan(&open, &cost).unwrap().1, [2, 1]);
+    }
+
+    #[test]
+    fn clearing_payment_pins_restores_every_selected_rune() {
+        let mut fixture = Fixture::enforced();
+        let mut ctx = fixture.ctx();
+        ctx.set_flag(fixtures::RUNE_A, FLAG_PAYING, true);
+        ctx.set_flag(41, FLAG_PAYING, true);
+        clear_pins(&mut ctx, 0);
+        assert!(!ctx.has_flag(fixtures::RUNE_A, FLAG_PAYING));
+        assert!(!ctx.has_flag(41, FLAG_PAYING));
+        assert!(ctx.effects.is_empty());
+    }
+
+    #[test]
+    fn paying_clears_recycled_rune_pins_before_the_next_plan() {
+        let mut fixture = Fixture::enforced();
+        let mut ctx = fixture.ctx();
+        let rainbow = Cost {
+            power: vec![Need::Rainbow],
+            ..Cost::default()
+        };
+        ctx.set_flag(42, FLAG_PAYING, true);
+        let selected = plan(&ctx, 0, &rainbow).unwrap();
+        assert_eq!(selected.recycle, [42]);
+        pay(&mut ctx, 0, &selected);
+        assert!(!ctx.has_flag(42, FLAG_PAYING));
+        assert_eq!(plan(&ctx, 0, &rainbow).unwrap().recycle, [fixtures::RUNE_A]);
     }
 
     #[test]

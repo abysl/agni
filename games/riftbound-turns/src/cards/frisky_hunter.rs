@@ -143,7 +143,8 @@ pub mod tests {
 
     fn pounce(ctx: &mut Ctx, at: Location) -> Result<(), Refusal> {
         play_engine::begin(ctx, 0, HUNTER, Origin::Hand, Some(at))?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, 0)
     }
 
     fn resolve_chain(ctx: &mut Ctx) {

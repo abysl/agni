@@ -94,7 +94,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         play_engine::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn play_from_facedown(ctx: &mut Ctx, zone: u16) -> Result<(), Refusal> {
@@ -103,7 +104,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(SWITCHEROO, chain, 0), 0)
             .unwrap();
         play_engine::begin(ctx, 0, SWITCHEROO, Origin::Facedown { zone }, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, 0)
     }
 
     fn labels(ctx: &Ctx) -> Vec<String> {
@@ -130,7 +132,8 @@ mod tests {
             }
             (why, answer) => panic!("Switcheroo opens only target prompts: {why:?} {answer:?}"),
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn choose(ctx: &mut Ctx, seat: u8, label: &str) -> Result<(), Refusal> {

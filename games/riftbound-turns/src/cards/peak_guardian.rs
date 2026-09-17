@@ -102,6 +102,7 @@ mod tests {
     fn play_to(ctx: &mut Ctx, at: Location) {
         plays::begin(ctx, 0, GUARDIAN, Origin::Hand, Some(at)).unwrap();
         settle(ctx).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         assert!(ctx.on_board(GUARDIAN));
         assert_eq!(ctx.location(GUARDIAN), Some(at));
         assert_eq!(ctx.blob.chain.len(), 1);

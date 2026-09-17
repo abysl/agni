@@ -94,6 +94,7 @@ mod tests {
 
     fn empower_him(ctx: &mut Ctx) {
         activate::activate(ctx, 0, GANGPLANK, EMPOWER_ABILITY).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         priority::pass(ctx, 0).unwrap();
         priority::pass(ctx, 1).unwrap();
         assert!(ctx.is_empowered(GANGPLANK));
@@ -143,6 +144,7 @@ mod tests {
         );
         assert!(offers[0].enabled);
         activate::activate(&mut ctx, 0, GANGPLANK, EMPOWER_ABILITY).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none());
         for rune in BODY_RUNES {
             assert_ne!(
@@ -186,6 +188,7 @@ mod tests {
             "an exhausted rune is still recycled for its power"
         );
         activate::activate(&mut ctx, 0, GANGPLANK, EMPOWER_ABILITY).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_ne!(
             ctx.card(BODY_RUNES[1]).unwrap().zone,
             Some(fixtures::RUNE_POOL)

@@ -68,7 +68,8 @@ mod tests {
         let entry = ctx.entry.ok_or(Refusal::Illegal(Reason::NoSuchCard))?;
         let intent = legal::classify(ctx, seat, &entry)?;
         act(ctx, seat, intent)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn refuse(fixture: &mut Fixture, seat: u8, card: u32, to: u16) -> Refusal {
@@ -88,7 +89,8 @@ mod tests {
         if let Some(answered) = prompts::answer(ctx, seat, Pick { prompt, option })? {
             resume(ctx, &answered)?;
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn labels(ctx: &Ctx) -> Vec<String> {

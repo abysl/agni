@@ -199,6 +199,7 @@ mod tests {
         let mut ctx = fixture.ctx_for(0, &action);
         march::standard_move(&mut ctx, 0, HERALD, from, to);
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::pass_until_open(&mut ctx);
         let table = ctx.table.clone();
         drop(ctx);
@@ -219,6 +220,7 @@ mod tests {
         let mut ctx = fixture.ctx_for(0, &action);
         assert!(chain::face_arrived(&mut ctx, card).unwrap());
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::pass_until_open(&mut ctx);
         assert!(ctx.fault.is_none(), "{:?}", ctx.fault);
         let table = ctx.table.clone();
@@ -230,6 +232,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         ctx.kill(HERALD, Cause::Cleanup { last_item: None });
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.card(HERALD).unwrap().zone, Some(fixtures::TRASH));
         assert_eq!(ctx.blob.chain.len(), 1);
         assert!(matches!(
@@ -356,6 +359,7 @@ mod tests {
             Location::Base(0),
         );
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.location(HERALD), Some(Location::Base(0)));
         assert!(ctx.blob.chain.is_empty(), "to a battlefield, not home");
     }
@@ -579,6 +583,7 @@ mod tests {
         let mut ctx = fixture.ctx_for(0, &action);
         assert!(chain::face_arrived(&mut ctx, fixtures::HAND_UNIT).unwrap());
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::pass_until_open(&mut ctx);
         assert!(ctx.events.iter().any(|event| matches!(
             event,

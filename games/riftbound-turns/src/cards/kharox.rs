@@ -205,6 +205,7 @@ mod tests {
 
     fn empower_him(ctx: &mut Ctx) -> u16 {
         activate::activate(ctx, 0, KHAROX, 0).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         priority::pass(ctx, 0).unwrap();
         priority::pass(ctx, 1).unwrap();
         assert!(ctx.is_empowered(KHAROX));
@@ -265,6 +266,7 @@ mod tests {
         let mut ctx = fixture.ctx_for(1, &action);
         assert!(chain::face_arrived(&mut ctx, card).unwrap());
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.fault.is_none(), "{:?}", ctx.fault);
         let table = ctx.table.clone();
         drop(ctx);

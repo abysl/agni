@@ -153,6 +153,7 @@ mod tests {
         let mut ctx = fixture.ctx_for(0, &action);
         plays::begin(&mut ctx, 0, HERDER, Origin::Hand, Some(Location::Base(0))).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.chain.len(), 1);
         fixtures::pass_until_open(&mut ctx);
         assert!(ctx.is_buffed(HERDER));

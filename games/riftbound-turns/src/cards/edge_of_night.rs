@@ -173,7 +173,8 @@ mod tests {
             (PromptWhy::Resume { .. }, _) => resume(ctx, &answered)?,
             (why, answer) => panic!("Edge of Night never asks this: {why:?} {answer:?}"),
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn labels(ctx: &Ctx) -> Vec<String> {

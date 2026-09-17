@@ -97,6 +97,7 @@ mod tests {
         if when_empowered {
             let mut ctx = fixture.ctx();
             activate::activate(&mut ctx, 0, DAME, 0).unwrap();
+            fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
             priority::pass(&mut ctx, 0).unwrap();
             priority::pass(&mut ctx, 1).unwrap();
             assert!(ctx.is_empowered(DAME));
@@ -142,6 +143,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         assert!(ctx.mark_attacker(DAME));
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.why, Some(PromptWhy::Target { item: 2, spec: 0 }));
         let mut offered = fixtures::labels(&ctx);
         offered.sort();
@@ -191,6 +193,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         assert!(ctx.mark_defender(DAME));
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(matches!(
             ctx.blob.why,
             Some(PromptWhy::Target { spec: 0, .. })
@@ -223,6 +226,7 @@ mod tests {
         assert!(!ctx.is_empowered(DAME));
         assert!(ctx.mark_attacker(DAME));
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(
             ctx.blob.chain.is_empty(),
             "828.1.c · no Empowered, no ability"
@@ -231,6 +235,7 @@ mod tests {
         ctx.clear_designation(DAME);
         assert!(ctx.mark_defender(DAME));
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.chain.is_empty());
         assert_eq!(ctx.current_might(DAME), 5);
         drop(ctx);
@@ -239,6 +244,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         assert!(ctx.mark_attacker(DAME));
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         fixtures::choose(&mut ctx, 0, &format!("{{card {BRUTE}}}")).unwrap();
         ctx.table.card_mut(BRUTE).unwrap().zone = Some(fixtures::BASE);
         fixtures::pass_until_open(&mut ctx);

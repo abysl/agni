@@ -179,6 +179,7 @@ mod tests {
         let runes = ctx.runes_of(0).len();
         let ready = ctx.ready_runes_of(0).len();
         activate::activate(&mut ctx, 0, RENATA, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(
             !ctx.card(RENATA).unwrap().exhausted,
             "no exhaust in the cost"
@@ -199,6 +200,7 @@ mod tests {
             .log
             .contains(&format!("{{card {RENATA}}} · {{seat 0}} draws 1")));
         activate::activate(&mut ctx, 0, RENATA, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         resolve_chain(&mut ctx);
         assert_eq!(
             ctx.hand_of(0).len(),
@@ -214,6 +216,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         let runes = ctx.runes_of(0).len();
         activate::activate(&mut ctx, 0, RENATA, 1).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(
             ctx.card(RENATA).unwrap().exhausted,
             "exhausting her is the cost"

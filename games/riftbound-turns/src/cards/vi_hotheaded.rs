@@ -136,6 +136,7 @@ mod tests {
         assert_eq!(ctx.current_might(VI), 5, "3 + Assault 2 while attacking");
         let ready = ctx.ready_runes_of(0).len();
         activate::activate(&mut ctx, 0, VI, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none(), "no target to ask for");
         assert!(!ctx.card(VI).unwrap().exhausted, "no exhaust in the cost");
         assert_eq!(fury_runes_recycled(&ctx), 1, "{:?}", ctx.effects);
@@ -195,10 +196,12 @@ mod tests {
         fixture.resolve();
         let mut ctx = fixture.ctx();
         activate::activate(&mut ctx, 0, VI, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         priority::pass(&mut ctx, 0).unwrap();
         priority::pass(&mut ctx, 1).unwrap();
         assert_eq!(ctx.current_might(VI), 6);
         activate::activate(&mut ctx, 0, VI, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         priority::pass(&mut ctx, 0).unwrap();
         priority::pass(&mut ctx, 1).unwrap();
         assert_eq!(
@@ -212,6 +215,7 @@ mod tests {
         let mut shrunk = gym(fixtures::BASE);
         let mut ctx = shrunk.ctx();
         activate::activate(&mut ctx, 0, VI, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         let eclipse = Item::new(
             9,
             ItemKind::Spell {

@@ -74,6 +74,7 @@ mod tests {
 
     fn empowered_by_paying(ctx: &mut Ctx) {
         activate::activate(ctx, 0, WITHERCLAW, 0).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         resolve_all(ctx);
         assert!(ctx.is_empowered(WITHERCLAW));
     }
@@ -134,6 +135,7 @@ mod tests {
         let runes = ctx.runes_of(0).len();
         let ready = ctx.ready_runes_of(0).len();
         activate::activate(&mut ctx, 0, WITHERCLAW, 0).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none());
         assert_eq!(
             ctx.runes_of(0).len(),
@@ -167,6 +169,7 @@ mod tests {
         assert_eq!(ctx.kill(WITHERCLAW, Cause::Item(9)), Killed::Yes);
         assert!(ctx.in_trash(WITHERCLAW));
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.chain.len(), 1);
         assert!(matches!(
             ctx.blob.chain[0].kind,
@@ -195,6 +198,7 @@ mod tests {
         let pool = pool_of(&ctx, 0);
         assert_eq!(ctx.kill(WITHERCLAW, Cause::Item(9)), Killed::Yes);
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(
             ctx.blob.chain.is_empty(),
             "727.1.c.1 · not Empowered, the Deathknell never triggers"

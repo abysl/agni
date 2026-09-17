@@ -73,7 +73,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         plays::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn pick(ctx: &mut Ctx, seat: u8, option: u16) -> Result<(), Refusal> {
@@ -93,7 +94,8 @@ mod tests {
             }
             (other, _) => panic!("unexpected prompt {other:?}"),
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn labels(ctx: &Ctx) -> Vec<String> {

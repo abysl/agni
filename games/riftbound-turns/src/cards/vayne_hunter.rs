@@ -82,6 +82,7 @@ mod tests {
             cleanup::Established::Conquered(0)
         );
         settle(ctx).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
     }
 
     fn resolve_chain(ctx: &mut Ctx) {
@@ -240,6 +241,7 @@ mod tests {
         let mut ctx = fixture.ctx();
         play_engine::begin(&mut ctx, 0, VAYNE, Origin::Hand, Some(Location::Base(0))).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.events.iter().any(|event| matches!(
             event,
             Event::Played { card, controller: 0, .. } if *card == VAYNE

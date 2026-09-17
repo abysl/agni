@@ -1,4 +1,4 @@
-use crate::cards::{ModeTiming, NameKind, SelfCost, Stage};
+use crate::cards::{ModeTiming, NameKind, Paying, SelfCost, Stage};
 use crate::engine::ctx::{Ctx, Location};
 use crate::engine::{
     activate, chain, combat, cost, kill, legal, march, pay, play, showdown, targets, triggers,
@@ -140,12 +140,34 @@ pub fn options(ctx: &Ctx, prompt: &Prompt, why: PromptWhy) -> Vec<Opt> {
             .map(|index| ctx.blob.staged[index].zone)
             .map(|zone| Opt::new(format!("{{zone {zone}}}"), Answer::Zone(zone)))
             .collect(),
-        PromptWhy::PayWith { .. } => {
-            let mut options: Vec<Opt> = pay::ready_golds(ctx, prompt.seat)
+        PromptWhy::PayWith { item } => {
+            let pending = ctx.blob.pending(item);
+            let choosing_rune =
+                pending.is_some_and(|pending| pending.item.stage == play::STAGE_PAY);
+            let mut options: Vec<Opt> = if choosing_rune {
+                let cost = pending
+                    .map(|pending| cost::of_item(ctx, &pending.item, None))
+                    .unwrap_or_default();
+                pay::recycle_choices(
+                    ctx,
+                    prompt.seat,
+                    &cost,
+                    pending
+                        .map(|pending| Paying::Item(&pending.item))
+                        .unwrap_or(Paying::Applied),
+                )
                 .into_iter()
-                .map(|gold| Opt::card(format!("kill {{card {gold}}}"), gold))
-                .collect();
-            options.push(Opt::new("recycle a rune", Answer::Done));
+                .map(|rune| Opt::card(format!("recycle {{card {rune}}}"), rune))
+                .collect()
+            } else {
+                pay::ready_golds(ctx, prompt.seat)
+                    .into_iter()
+                    .map(|gold| Opt::card(format!("kill {{card {gold}}}"), gold))
+                    .collect()
+            };
+            if !choosing_rune {
+                options.push(Opt::new("recycle a rune", Answer::Done));
+            }
             prompt.numbered(options)
         }
         PromptWhy::Discard { .. } => prompt.numbered(
@@ -560,7 +582,15 @@ pub fn status(ctx: &Ctx, why: PromptWhy) -> String {
                 .pending(item)
                 .map(|pending| cost::of_item(ctx, &pending.item, None).power.len())
                 .unwrap_or(1);
-            format!("pay {power} power for {} with", card_of(item))
+            let choosing_rune = ctx
+                .blob
+                .pending(item)
+                .is_some_and(|pending| pending.item.stage == play::STAGE_PAY);
+            if choosing_rune {
+                format!("choose a rune to recycle for {}", card_of(item))
+            } else {
+                format!("pay {power} power for {} with", card_of(item))
+            }
         }
         PromptWhy::Discard { .. } => "discard a card".to_string(),
         PromptWhy::Shuffle { .. } => {

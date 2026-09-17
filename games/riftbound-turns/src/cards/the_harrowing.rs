@@ -247,6 +247,7 @@ pub mod tests {
         fixtures::play_from_hand(&mut ctx, 0, HARROWING).unwrap();
         fixtures::pass_until_open(&mut ctx);
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none(), "{:?}", fixtures::labels(&ctx));
         assert_eq!(ctx.location(CHEAP), Some(Location::Base(0)));
         assert_eq!(ctx.blob.chain.len(), 1, "the Crab's own play trigger");
@@ -315,6 +316,7 @@ pub mod tests {
             Err(Refusal::Pick(PickRefusal::NotYourPrompt { seat: 0 }))
         );
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(
             ctx.location(CHEAP),
             Some(Location::Base(0)),
@@ -367,6 +369,7 @@ pub mod tests {
             cleanup::Established::Conquered(0)
         );
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(
             recruit_locations(&ctx, 0, GRIMWYRM),
             [Location::Battlefield(fixtures::BF1)],

@@ -105,7 +105,8 @@ mod tests {
         let entry = ctx.entry.ok_or(Refusal::Illegal(Reason::NoSuchCard))?;
         let intent = legal::classify(ctx, seat, &entry)?;
         act(ctx, seat, intent)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn answer(ctx: &mut Ctx, seat: u8, option: u16) -> Result<(), Refusal> {
@@ -118,7 +119,8 @@ mod tests {
         if let Some(answered) = prompts::answer(ctx, seat, Pick { prompt, option })? {
             resume(ctx, &answered)?;
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn note(ctx: &mut Ctx, item: usize, zone: u16) {
@@ -313,6 +315,7 @@ mod tests {
             Moved::Moved
         );
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         note(&mut ctx, 0, fixtures::BASE);
         priority::pass(&mut ctx, 0).unwrap();
         priority::pass(&mut ctx, 1).unwrap();
@@ -323,6 +326,7 @@ mod tests {
             Moved::Moved
         );
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.chain.len(), 1, "the walk home is a move too");
         assert_eq!(
             ctx.blob.chain[0].controller, 0,
@@ -353,6 +357,7 @@ mod tests {
             MoveCause::Effect,
         );
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(ctx.blob.chain.len(), 1);
         assert_eq!(
             ctx.blob.chain[0].noted.map(|noted| noted.zone),
@@ -371,6 +376,7 @@ mod tests {
         )));
         ctx.recall(FAWN, true);
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert!(ctx.blob.chain.is_empty(), "434.1: a recall is not a move");
         assert!(ctx.blob.queue.is_empty());
         assert!(sprites_of(&ctx, 0).is_empty());
@@ -388,6 +394,7 @@ mod tests {
             Moved::Moved
         );
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         note(&mut ctx, 0, fixtures::BF2);
         priority::pass(&mut ctx, 0).unwrap();
         priority::pass(&mut ctx, 1).unwrap();
@@ -425,6 +432,7 @@ mod tests {
         );
         act(&mut ctx, 0, intent).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         assert_eq!(
             ctx.blob.why,
             Some(PromptWhy::OptionalCost { item: 1, cost: 0 }),
@@ -442,11 +450,16 @@ mod tests {
         );
         assert!(sprites_of(&ctx, 0).is_empty(), "entering is not moving");
         drop(ctx);
-        let mut plain = fixture;
+        let mut plain = glade(4);
+        plain.table.cards.retain(|card| card.id != FAWN);
+        plain.table.cards.push(fixtures::rune(46, 0, "Mind", false));
+        plain.table.cards.push(fixtures::rune(47, 0, "Mind", false));
+        plain.resolve();
         let mut ctx = plain.ctx_for(0, &action);
         let intent = legal::classify(&ctx, 0, &ctx.entry.unwrap()).unwrap();
         act(&mut ctx, 0, intent).unwrap();
         settle(&mut ctx).unwrap();
+        fixtures::settle_rune_payments(&mut ctx, 0).unwrap();
         answer(&mut ctx, 0, 1).unwrap();
         assert!(
             ctx.card(CHAMPION_FAWN).unwrap().exhausted,

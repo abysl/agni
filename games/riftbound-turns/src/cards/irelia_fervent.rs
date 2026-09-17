@@ -93,7 +93,8 @@ mod tests {
         if let Some(answered) = prompts::answer(ctx, seat, Pick { prompt, option })? {
             resume(ctx, &answered)?;
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn entry(ctx: &Ctx, seat: u8, card: u32) -> EntryMove {
@@ -115,7 +116,8 @@ mod tests {
             .apply_entry(&fixtures::move_action(card, chain, 0), seat)
             .unwrap();
         play_engine::begin(ctx, seat, card, Origin::Hand, None)?;
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn resolve_top(ctx: &mut Ctx) {

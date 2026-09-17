@@ -87,6 +87,7 @@ mod tests {
     fn enter(ctx: &mut Ctx, to: Location) {
         play_engine::begin(ctx, 0, BROADMANE, Origin::Hand, Some(to)).unwrap();
         settle(ctx).unwrap();
+        fixtures::settle_rune_payments(ctx, 0).unwrap();
         assert!(ctx.blob.prompt.is_none(), "nothing is chosen");
         assert_eq!(ctx.blob.chain.len(), 1);
         assert!(matches!(

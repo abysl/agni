@@ -70,7 +70,8 @@ mod tests {
             }
             (why, answer) => panic!("Boots opens only target prompts: {why:?} {answer:?}"),
         }
-        settle(ctx)
+        settle(ctx)?;
+        fixtures::settle_rune_payments(ctx, seat)
     }
 
     fn labels(ctx: &Ctx) -> Vec<String> {
