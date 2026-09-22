@@ -4,6 +4,8 @@ use crate::{
 };
 use std::collections::BTreeMap;
 
+mod bans;
+
 pub const COPY_LIMIT: u32 = 3;
 pub const SIGNATURE_CAP: u32 = 3;
 pub const COLORLESS: &str = "Colorless";
@@ -11,12 +13,13 @@ pub const COLORLESS: &str = "Colorless";
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Mode {
     Standard,
+    Constructed2v2,
 }
 
 impl Mode {
     pub fn battlefields(self) -> u32 {
         match self {
-            Self::Standard => BATTLEFIELD_COUNT as u32,
+            Self::Standard | Self::Constructed2v2 => BATTLEFIELD_COUNT as u32,
         }
     }
 }
@@ -41,6 +44,9 @@ pub enum Zone {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Rule {
+    Banned {
+        name: String,
+    },
     LegendMissing,
     LegendNotLegend,
     OutOfIdentity {
@@ -713,6 +719,7 @@ pub fn check(deck: &ResolvedDeck, mode: Mode) -> Report {
     let runes = checker.runes();
     let battlefields = checker.battlefields();
     let sideboard = checker.sideboard(&main);
+    checker.findings.extend(bans::findings(deck, mode));
     let breaks = checker
         .findings
         .iter()
@@ -1454,5 +1461,45 @@ mod tests {
         assert_eq!(report.flagged("ogn-500-298"), Some(Grade::Break));
         assert_eq!(report.flagged("ogn-001-298"), None);
         assert_eq!(report.breaks(), 1);
+    }
+
+    #[test]
+    fn banned_cards_break_the_main_deck_instead_of_remaining_legal() {
+        for (name, id) in [
+            ("Ekko - Recurrent", "ogn-110-298"),
+            ("Stacked Deck", "ogn-183-298"),
+        ] {
+            let mut deck = legal_deck();
+            deck.main_deck[0].card.name = name.into();
+            deck.main_deck[0].card.riftbound_id = id.into();
+            let report = check(&deck, Mode::Standard);
+            assert!(
+                report
+                    .findings
+                    .iter()
+                    .any(|finding| finding.grade == Grade::Break
+                        && finding.detail.contains("banned")),
+                "{name}: {report:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn a_banned_sideboard_card_is_a_break_not_an_advisory() {
+        let mut deck = legal_deck();
+        deck.sideboard.push(entry(
+            card("Stacked Deck", "ogn-183-298", "Spell", &["Calm"], &[]),
+            1,
+        ));
+        let report = check(&deck, Mode::Standard);
+        assert!(
+            report
+                .findings
+                .iter()
+                .any(|finding| finding.zone == Zone::Sideboard
+                    && finding.grade == Grade::Break
+                    && finding.detail.contains("banned")),
+            "{report:?}"
+        );
     }
 }
