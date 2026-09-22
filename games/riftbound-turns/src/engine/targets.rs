@@ -78,7 +78,32 @@ pub fn specs_of_execution(ctx: &Ctx, item: &ChainItem, execution: u8) -> &'stati
         .map(|mode| mode.targets)
         .unwrap_or(&[])
 }
+pub fn snapshot_ability(ctx: &Ctx, item: &mut ChainItem) {
+    let (ItemKind::Trigger { source, index } | ItemKind::Ability { source, index }) = item.kind
+    else {
+        return;
+    };
+    let Some(script) = ctx.script(source) else {
+        return;
+    };
+    if script.abilities.get(usize::from(index)).is_some()
+        && crate::cards::script_of(script.name)
+            .is_some_and(|registered| std::ptr::eq(registered, script))
+    {
+        item.ability_script = Some(script.name.into());
+    }
+}
+
 pub fn ability_of(ctx: &Ctx, item: &ChainItem) -> Option<&'static Ability> {
+    if let Some(script) = item
+        .ability_script
+        .as_deref()
+        .and_then(crate::cards::script_of)
+    {
+        return script
+            .abilities
+            .get(usize::from(item.kind.ability_index()?));
+    }
     ability_of_kind(ctx, item.kind)
 }
 pub fn specs_of(ctx: &Ctx, item: &ChainItem) -> Vec<TargetSpec> {

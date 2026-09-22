@@ -100,7 +100,7 @@ fn queue(ctx: &mut Ctx, activation: Activation, zone: u16, needs: Needs) {
     );
     item.stage = STAGE_TARGET;
     item.subject = Some(TargetRef::Zone(zone));
-    ctx.blob.queue.push(Pending { item, needs });
+    ctx.enqueue(Pending { item, needs });
 }
 
 fn activate_conquer_effects_of_units_here(ctx: &mut Ctx, item: &Item, _: Stage) -> Flow {

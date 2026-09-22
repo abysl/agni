@@ -6,7 +6,7 @@ use agni_plugin_sdk::prompt::Prompt;
 use agni_plugin_sdk::turns::{PassWindow, TurnOrder};
 use std::sync::OnceLock;
 
-pub const BLOB_VERSION: u64 = 15;
+pub const BLOB_VERSION: u64 = 16;
 pub const NARRATION_LINES: usize = 12;
 pub const DIE_SIDES: u8 = 6;
 
@@ -1697,6 +1697,7 @@ pub struct ChainItem {
     pub execution: u8,
     pub awaiting: Vec<u32>,
     pub limited: Option<Limited>,
+    pub ability_script: Option<String>,
 }
 
 impl ChainItem {
@@ -1716,6 +1717,7 @@ impl ChainItem {
             execution: 0,
             awaiting: Vec::new(),
             limited: None,
+            ability_script: None,
         }
     }
 
@@ -1777,7 +1779,7 @@ impl ChainItem {
     }
 
     fn write(&self, writer: &mut Writer) {
-        writer.array(14);
+        writer.array(15);
         writer.unsigned(u64::from(self.id));
         self.kind.write(writer);
         writer.unsigned(u64::from(self.controller));
@@ -1813,10 +1815,20 @@ impl ChainItem {
             Some(limited) => limited.write(writer),
             None => writer.null(),
         }
+        text_or_null(writer, self.ability_script.as_deref());
     }
 
     fn read_version(reader: &mut Reader, version: u64) -> Option<Self> {
-        fixed(reader, if version >= 12 { 14 } else { 13 })?;
+        fixed(
+            reader,
+            if version >= 16 {
+                15
+            } else if version >= 12 {
+                14
+            } else {
+                13
+            },
+        )?;
         let id = u16_of(reader)?;
         let kind = ItemKind::read_version(reader, version)?;
         let controller = u8_of(reader)?;
@@ -1879,6 +1891,11 @@ impl ChainItem {
             execution,
             awaiting,
             limited,
+            ability_script: if version >= 16 {
+                text_or_none(reader)?
+            } else {
+                None
+            },
         })
     }
 }
@@ -2906,7 +2923,7 @@ impl GameBlob {
 
     pub fn decode(bytes: &[u8]) -> Option<Self> {
         let version = match discriminator(bytes) {
-            Some(("v", version @ (7 | 9 | 10 | 11 | 12 | 13 | 14 | 15))) => version,
+            Some(("v", version @ (7 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16))) => version,
             _ => return None,
         };
         let mut reader = Reader::new(bytes);
@@ -3155,7 +3172,7 @@ mod tests {
         );
         assert_eq!(started.core().unwrap().first, 1);
         assert!(bytes.len() < 40, "a quiet blob is small: {}", bytes.len());
-        assert_eq!(GameBlob::default().encode(), [0xa1, 0x61, b'v', 0x0f]);
+        assert_eq!(GameBlob::default().encode(), [0xa1, 0x61, b'v', 0x10]);
     }
 
     #[test]
@@ -4123,8 +4140,15 @@ mod tests {
                 }
             ]
         );
-        let mut current = bytes.to_vec();
-        current[3] = BLOB_VERSION as u8;
+        let current = vec![
+            0xa4, 0x61, 0x76, 0x10, 0x62, 0x63, 0x68, 0x81, 0x8f, 0x01, 0x84, 0x04, 0x02, 0x03,
+            0x04, 0x00, 0x00, 0x82, 0x03, 0x00, 0x80, 0x80, 0x84, 0x00, 0x01, 0x02, 0x03, 0x00,
+            0x85, 0x09, 0x21, 0x01, 0xf5, 0xf5, 0xf6, 0x00, 0x81, 0x18, 0x4d, 0xf6, 0xf6, 0x61,
+            0x71, 0x81, 0x82, 0x8f, 0x02, 0x84, 0x05, 0x06, 0x07, 0x08, 0x01, 0x00, 0x82, 0x03,
+            0x00, 0x80, 0x80, 0x84, 0x00, 0x01, 0x02, 0x03, 0x01, 0x85, 0x09, 0x21, 0x01, 0xf5,
+            0xf5, 0xf6, 0x00, 0x81, 0x18, 0x4d, 0xf6, 0xf6, 0x02, 0x62, 0x78, 0x64, 0x82, 0x83,
+            0x00, 0x09, 0x00, 0x83, 0x01, 0x0a, 0x02,
+        ];
         assert_eq!(decoded.encode(), current);
 
         let xd = bytes.windows(2).position(|window| window == b"xd").unwrap() - 1;

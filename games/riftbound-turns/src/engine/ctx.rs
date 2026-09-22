@@ -11,8 +11,8 @@ use crate::rules::{
 };
 use crate::state::{
     Amount, Ask, CardState, ChainItem, CostedGrant, DamageSource, Death, Delayed, Expiry, GameBlob,
-    ItemKind, NameKind, Noted, Origin, Pool, Prevention, Promise, PromiseEffect, PromiseKind,
-    PromptWhy, TargetRef, When, FLAG_ATTACKER, FLAG_DEFENDER, FLAG_NOT_PLAYED,
+    ItemKind, NameKind, Noted, Origin, Pending, Pool, Prevention, Promise, PromiseEffect,
+    PromiseKind, PromptWhy, TargetRef, When, FLAG_ATTACKER, FLAG_DEFENDER, FLAG_NOT_PLAYED,
     FLAG_NO_MOVE_BY_OWNER, FLAG_REVEALING, FLAG_SHROUDED, FLAG_STUNNED,
 };
 use agni_plugin_sdk::decide::{Action, Effect, TOP};
@@ -353,6 +353,7 @@ pub struct Ctx<'a> {
     pub seat: u8,
     pub actor: u8,
     pub spawned: u32,
+    pub transformed: Vec<u32>,
     pub zones: Zones,
     pub options: Options,
     pub entry: Option<EntryMove>,
@@ -433,6 +434,7 @@ impl<'a> Ctx<'a> {
             seat,
             actor: seat,
             spawned: 0,
+            transformed: Vec::new(),
             zones: Zones::of(table),
             options: Options::of(table),
             entry: None,
@@ -495,18 +497,13 @@ impl<'a> Ctx<'a> {
     }
 
     pub fn script(&self, id: u32) -> Option<&'static Card> {
-        if self.is_token(id)
-            && self
-                .origin
-                .card(id)
-                .zip(self.card(id))
-                .is_some_and(|(before, after)| before.face() != after.face())
-        {
-            return self.card(id).and_then(cards::resolve);
+        let face = self.last_face(id);
+        if self.transformed.contains(&id) {
+            return face.and_then(cards::resolve);
         }
         self.scripts
             .of_card(id)
-            .or_else(|| self.card(id).and_then(cards::resolve))
+            .or_else(|| face.and_then(cards::resolve))
     }
 
     pub fn deflect_of(&self, card: u32) -> u8 {
@@ -1465,6 +1462,11 @@ impl<'a> Ctx<'a> {
         ) {
             self.forget_index();
         }
+        if let Effect::Transform { card, .. } = &effect {
+            if !self.transformed.contains(card) {
+                self.transformed.push(*card);
+            }
+        }
         self.effects.push(effect);
     }
 
@@ -1604,6 +1606,13 @@ impl<'a> Ctx<'a> {
 
     pub fn is_on_chain(&self, item: u16) -> bool {
         self.chain_item(item).is_some()
+    }
+
+    pub fn enqueue(&mut self, mut pending: Pending) {
+        if pending.item.ability_script.is_none() {
+            crate::engine::targets::snapshot_ability(self, &mut pending.item);
+        }
+        self.blob.queue.push(pending);
     }
 
     pub fn delay(&mut self, when: When, source: u32, seat: u8, ability: u8, args: Vec<u32>) {

@@ -277,7 +277,6 @@ mod tests {
     use crate::engine::{chain, cleanup, prompts, settle};
     use crate::state::{GameBlob, ItemKind, ItemStatus, PromptWhy};
     use crate::Refusal;
-    use agni_plugin_sdk::cbor::{Item as CborItem, Reader, Writer};
     use agni_plugin_sdk::decide::Action;
     use agni_plugin_sdk::prompt::{Pick, PickRefusal};
     use agni_plugin_sdk::table::Face;
@@ -425,101 +424,6 @@ mod tests {
             .held(fixtures::MAIN_DECK, 0)
             .map(|card| card.id)
             .collect()
-    }
-
-    fn legacy_v11(bytes: &[u8]) -> Vec<u8> {
-        fn raw_value<'a>(reader: &mut Reader<'a>, bytes: &'a [u8]) -> &'a [u8] {
-            let start = reader.position();
-            reader.skip().unwrap();
-            &bytes[start..reader.position()]
-        }
-        fn item<'a>(reader: &mut Reader<'a>, bytes: &'a [u8], writer: &mut Writer) {
-            assert_eq!(reader.array_len(), Some(14));
-            writer.array(13);
-            for _ in 0..13 {
-                writer.raw(raw_value(reader, bytes));
-            }
-            reader.skip().unwrap();
-        }
-        fn row<'a>(
-            reader: &mut Reader<'a>,
-            bytes: &'a [u8],
-            writer: &mut Writer,
-            len: usize,
-            old: usize,
-        ) {
-            assert_eq!(reader.array_len(), Some(len));
-            writer.array(old);
-            for _ in 0..old {
-                writer.raw(raw_value(reader, bytes));
-            }
-            for _ in old..len {
-                reader.skip().unwrap();
-            }
-        }
-        let mut reader = Reader::new(bytes);
-        let mut writer = Writer::new();
-        let fields = reader.map_len().unwrap();
-        writer.map(fields);
-        for _ in 0..fields {
-            let start = reader.position();
-            let key = match reader.item().unwrap() {
-                CborItem::Text(key) => key,
-                _ => panic!("non-text blob key"),
-            };
-            writer.raw(&bytes[start..reader.position()]);
-            match key {
-                "v" => {
-                    reader.skip().unwrap();
-                    writer.unsigned(11);
-                }
-                "ch" => {
-                    let count = reader.array_len().unwrap();
-                    writer.array(count);
-                    for _ in 0..count {
-                        item(&mut reader, bytes, &mut writer);
-                    }
-                }
-                "q" => {
-                    let count = reader.array_len().unwrap();
-                    writer.array(count);
-                    for _ in 0..count {
-                        assert_eq!(reader.array_len(), Some(2));
-                        writer.array(2);
-                        item(&mut reader, bytes, &mut writer);
-                        writer.raw(raw_value(&mut reader, bytes));
-                    }
-                }
-                "s" => {
-                    let count = reader.array_len().unwrap();
-                    writer.array(count);
-                    for _ in 0..count {
-                        row(&mut reader, bytes, &mut writer, 17, 14);
-                    }
-                }
-                "c" => {
-                    let count = reader.array_len().unwrap();
-                    writer.array(count);
-                    for _ in 0..count {
-                        row(&mut reader, bytes, &mut writer, 15, 13);
-                    }
-                }
-                "pv" => {
-                    let count = reader.array_len().unwrap();
-                    writer.array(count);
-                    for _ in 0..count {
-                        assert_eq!(reader.array_len(), Some(4));
-                        writer.array(3);
-                        reader.skip().unwrap();
-                        for _ in 0..3 {
-                            writer.raw(raw_value(&mut reader, bytes));
-                        }
-                    }
-                }
-                _ => writer.raw(raw_value(&mut reader, bytes)),
-            }
-        }
-        writer.finish()
     }
 
     #[test]
@@ -672,7 +576,8 @@ mod tests {
             drop(ctx);
             fixture.commit(table);
         }
-        fixture.blob = GameBlob::decode(&legacy_v11(&fixture.blob.encode())).expect("v11 reload");
+        fixture.blob =
+            GameBlob::decode(&fixtures::legacy::encode_v11(&fixture.blob)).expect("v11 reload");
         choose(&mut fixture, &format!("{{zone {}}}", fixtures::BF1));
         let ctx = fixture.ctx();
         assert_eq!(

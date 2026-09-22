@@ -1,3 +1,6 @@
+pub mod legacy;
+mod reload;
+
 use crate::cards::Resolved;
 use crate::engine::ctx::Ctx;
 use crate::engine::{legal, play, priority, prompts, resume, settle};

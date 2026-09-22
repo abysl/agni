@@ -168,7 +168,7 @@ pub fn collect_ordered(ctx: &mut Ctx, seats: &[u8]) -> usize {
             item.stage = play::STAGE_TARGET;
             item.subject = held.subject;
             item.noted = held.noted;
-            ctx.blob.queue.push(Pending { item, needs });
+            ctx.enqueue(Pending { item, needs });
             queued += 1;
         }
     }
@@ -553,11 +553,7 @@ pub fn batch_of(ctx: &Ctx, seat: u8) -> Vec<u16> {
 }
 
 fn untargeted_ability(ctx: &Ctx, item: &ChainItem) -> Option<&'static Ability> {
-    let ability = match item.kind {
-        ItemKind::Trigger { source, index } => targets::ability_at(ctx, source, index),
-        ItemKind::Granted { .. } => targets::ability_of_kind(ctx, item.kind),
-        _ => None,
-    }?;
+    let ability = targets::ability_of(ctx, item)?;
     (ability.targets.is_empty() && item.targets.is_empty()).then_some(ability)
 }
 
@@ -659,7 +655,7 @@ pub fn queue_delayed(ctx: &mut Ctx, when: When) -> usize {
             .map(|arg| TargetRef::Card(*arg))
             .collect();
         item.stage = play::STAGE_PAY;
-        ctx.blob.queue.push(Pending {
+        ctx.enqueue(Pending {
             item,
             needs: Needs::Choices,
         });

@@ -78,7 +78,7 @@ pub fn after_kills(ctx: &mut Ctx, item: u16, dead: &[u32]) -> usize {
             .collect();
         queued.set_slot(SLOT_KILLS, kills);
         queued.stage = play::STAGE_PAY;
-        ctx.blob.queue.push(Pending {
+        ctx.enqueue(Pending {
             item: queued,
             needs: Needs::Choices,
         });
