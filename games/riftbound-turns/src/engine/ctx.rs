@@ -353,6 +353,7 @@ pub struct Ctx<'a> {
     pub seat: u8,
     pub actor: u8,
     pub spawned: u32,
+    pub transformed: Vec<u32>,
     pub zones: Zones,
     pub options: Options,
     pub entry: Option<EntryMove>,
@@ -433,6 +434,7 @@ impl<'a> Ctx<'a> {
             seat,
             actor: seat,
             spawned: 0,
+            transformed: Vec::new(),
             zones: Zones::of(table),
             options: Options::of(table),
             entry: None,
@@ -495,18 +497,13 @@ impl<'a> Ctx<'a> {
     }
 
     pub fn script(&self, id: u32) -> Option<&'static Card> {
-        if self.is_token(id)
-            && self
-                .origin
-                .card(id)
-                .zip(self.card(id))
-                .is_some_and(|(before, after)| before.face() != after.face())
-        {
-            return self.card(id).and_then(cards::resolve);
+        let face = self.last_face(id);
+        if self.transformed.contains(&id) {
+            return face.and_then(cards::resolve);
         }
         self.scripts
             .of_card(id)
-            .or_else(|| self.card(id).and_then(cards::resolve))
+            .or_else(|| face.and_then(cards::resolve))
     }
 
     pub fn deflect_of(&self, card: u32) -> u8 {
@@ -1464,6 +1461,11 @@ impl<'a> Ctx<'a> {
             Effect::Move { .. } | Effect::Spawn { .. } | Effect::Despawn { .. }
         ) {
             self.forget_index();
+        }
+        if let Effect::Transform { card, .. } = &effect {
+            if !self.transformed.contains(card) {
+                self.transformed.push(*card);
+            }
         }
         self.effects.push(effect);
     }

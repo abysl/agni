@@ -106,19 +106,28 @@ fn in_scope(ctx: &Ctx, scope: Scope, source: u32, card: u32) -> bool {
     }
 }
 
-fn aura_sources<'c>(ctx: &'c Ctx) -> impl Iterator<Item = &'c CardInfo> {
-    let known = ctx
-        .scripts
-        .aura_sources()
+fn script_sources<'c>(
+    ctx: &'c Ctx,
+    known: &'c [u32],
+    includes: fn(&Card) -> bool,
+) -> impl Iterator<Item = &'c CardInfo> {
+    let cached = known
         .iter()
+        .filter(|id| !ctx.transformed.contains(id))
         .filter_map(|id| ctx.card(*id));
-    let spawned = ctx
+    let changed = ctx
         .table
         .cards
         .iter()
-        .filter(move |held| ctx.spawned > 0 && held.id >= ctx.origin.next_id)
-        .filter(|held| ctx.script(held.id).is_some_and(|script| script.has_aura()));
-    known.chain(spawned)
+        .filter(move |held| {
+            (ctx.spawned > 0 && held.id >= ctx.origin.next_id) || ctx.transformed.contains(&held.id)
+        })
+        .filter(move |held| ctx.script(held.id).is_some_and(includes));
+    cached.chain(changed)
+}
+
+fn aura_sources<'c>(ctx: &'c Ctx) -> impl Iterator<Item = &'c CardInfo> {
+    script_sources(ctx, ctx.scripts.aura_sources(), Card::has_aura)
 }
 
 fn project(ctx: &Ctx, grants: &mut Vec<(u32, Grant)>, card: u32, source: u32, aura: &Static) {
@@ -176,39 +185,17 @@ pub fn sourced_grants_on(ctx: &Ctx, card: u32) -> Vec<(u32, Grant)> {
 }
 
 fn play_location_sources<'c>(ctx: &'c Ctx) -> impl Iterator<Item = &'c CardInfo> {
-    let known = ctx
-        .scripts
-        .play_location_sources()
-        .iter()
-        .filter_map(|id| ctx.card(*id));
-    let spawned = ctx
-        .table
-        .cards
-        .iter()
-        .filter(move |held| ctx.spawned > 0 && held.id >= ctx.origin.next_id)
-        .filter(|held| {
-            ctx.script(held.id)
-                .is_some_and(|script| script.grants_play_locations())
-        });
-    known.chain(spawned)
+    script_sources(
+        ctx,
+        ctx.scripts.play_location_sources(),
+        Card::grants_play_locations,
+    )
 }
 
 fn base_lock_sources<'c>(ctx: &'c Ctx) -> impl Iterator<Item = &'c CardInfo> {
-    let known = ctx
-        .scripts
-        .base_lock_sources()
-        .iter()
-        .filter_map(|id| ctx.card(*id));
-    let spawned = ctx
-        .table
-        .cards
-        .iter()
-        .filter(move |held| ctx.spawned > 0 && held.id >= ctx.origin.next_id)
-        .filter(|held| {
-            ctx.script(held.id)
-                .is_some_and(|script| script.mentions_static(Static::OpponentsPlayUnitsOnlyToBase))
-        });
-    known.chain(spawned)
+    script_sources(ctx, ctx.scripts.base_lock_sources(), |script| {
+        script.mentions_static(Static::OpponentsPlayUnitsOnlyToBase)
+    })
 }
 
 pub fn has_active_static(ctx: &Ctx, card: u32, wanted: Static) -> bool {

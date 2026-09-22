@@ -360,6 +360,7 @@ pub fn activate(ctx: &mut Ctx, seat: u8, source: u32, index: u8) -> Result<(), R
     };
     let id = ctx.blob.next_item_id();
     let mut item = ChainItem::new(id, kind, seat, Origin::Board);
+    crate::engine::targets::snapshot_ability(ctx, &mut item);
     item.stage = play::STAGE_TARGET;
     ctx.blob.queue.push(Pending {
         item,

@@ -227,9 +227,9 @@ fn legacy(version: u64, seat: impl FnOnce(&mut Writer), card: impl FnOnce(&mut W
     map.finish()
 }
 
-fn canonical_v12(seat: impl FnOnce(&mut Writer), card: impl FnOnce(&mut Writer)) -> Vec<u8> {
+fn canonical_v16(seat: impl FnOnce(&mut Writer), card: impl FnOnce(&mut Writer)) -> Vec<u8> {
     let mut map = MapWriter::new();
-    map.field("v").unsigned(14);
+    map.field("v").unsigned(16);
     let seats = map.field("s");
     seats.array(1);
     seat(seats);
@@ -262,7 +262,7 @@ fn promise_discount(writer: &mut Writer, energy: u8, rainbow: usize) {
 }
 
 fn canonical_seat_v7_old_lock(writer: &mut Writer) {
-    writer.array(16);
+    writer.array(17);
     writer.unsigned(2);
     writer.unsigned(3);
     writer.bool(true);
@@ -284,10 +284,11 @@ fn canonical_seat_v7_old_lock(writer: &mut Writer) {
     writer.array(2);
     writer.unsigned(0);
     writer.unsigned(0);
+    writer.bool(false);
 }
 
 fn canonical_seat_v7_champion(writer: &mut Writer) {
-    writer.array(16);
+    writer.array(17);
     writer.unsigned(2);
     writer.unsigned(3);
     writer.bool(true);
@@ -309,10 +310,11 @@ fn canonical_seat_v7_champion(writer: &mut Writer) {
     writer.array(2);
     writer.unsigned(0);
     writer.unsigned(0);
+    writer.bool(false);
 }
 
 fn canonical_seat_v9(writer: &mut Writer) {
-    writer.array(16);
+    writer.array(17);
     writer.unsigned(1);
     writer.unsigned(2);
     writer.bool(false);
@@ -334,10 +336,11 @@ fn canonical_seat_v9(writer: &mut Writer) {
     writer.array(2);
     writer.unsigned(0);
     writer.unsigned(0);
+    writer.bool(false);
 }
 
 fn canonical_seat_v10(writer: &mut Writer) {
-    writer.array(16);
+    writer.array(17);
     writer.unsigned(2);
     writer.unsigned(4);
     writer.bool(true);
@@ -359,10 +362,11 @@ fn canonical_seat_v10(writer: &mut Writer) {
     writer.array(2);
     writer.unsigned(0);
     writer.unsigned(0);
+    writer.bool(false);
 }
 
 fn canonical_seat_v10_zero_discount(writer: &mut Writer) {
-    writer.array(16);
+    writer.array(17);
     writer.unsigned(2);
     writer.unsigned(4);
     writer.bool(true);
@@ -383,10 +387,11 @@ fn canonical_seat_v10_zero_discount(writer: &mut Writer) {
     writer.array(2);
     writer.unsigned(0);
     writer.unsigned(0);
+    writer.bool(false);
 }
 
-fn canonical_chain_item_v12(writer: &mut Writer, picks: &[u8]) {
-    writer.array(14);
+fn canonical_chain_item_v16(writer: &mut Writer, picks: &[u8]) {
+    writer.array(15);
     writer.unsigned(41);
     writer.array(3);
     writer.unsigned(0);
@@ -408,6 +413,7 @@ fn canonical_chain_item_v12(writer: &mut Writer, picks: &[u8]) {
     writer.null();
     writer.unsigned(0);
     writer.array(0);
+    writer.null();
     writer.null();
 }
 
@@ -442,9 +448,9 @@ fn old_pending_item(writer: &mut Writer, picks: &[u8]) {
     writer.unsigned(1);
 }
 
-fn writer_pending_v12(writer: &mut Writer, picks: &[u8]) {
+fn writer_pending_v16(writer: &mut Writer, picks: &[u8]) {
     writer.array(2);
-    canonical_chain_item_v12(writer, picks);
+    canonical_chain_item_v16(writer, picks);
     writer.unsigned(1);
 }
 
@@ -462,13 +468,13 @@ fn legacy_modes() -> Vec<u8> {
 
 fn canonical_modes() -> Vec<u8> {
     let mut map = MapWriter::new();
-    map.field("v").unsigned(14);
+    map.field("v").unsigned(16);
     let chain = map.field("ch");
     chain.array(1);
-    canonical_chain_item_v12(chain, &[255, 255, 255, 255, 255, 255, 255, 3, 4]);
+    canonical_chain_item_v16(chain, &[255, 255, 255, 255, 255, 255, 255, 3, 4]);
     let queue = map.field("q");
     queue.array(1);
-    writer_pending_v12(queue, &[255, 255, 255, 255, 255, 255, 255, 3, 4]);
+    writer_pending_v16(queue, &[255, 255, 255, 255, 255, 255, 255, 3, 4]);
     map.finish()
 }
 
@@ -602,7 +608,7 @@ fn write_here_to_help_item(writer: &mut Writer, length: usize, limited: bool) {
     writer.array(2);
     writer.unsigned(701);
     writer.unsigned(702);
-    if length == 14 {
+    if length >= 14 {
         if limited {
             writer.array(2);
             writer.array(2);
@@ -615,10 +621,13 @@ fn write_here_to_help_item(writer: &mut Writer, length: usize, limited: bool) {
             writer.null();
         }
     }
+    if length >= 15 {
+        writer.null();
+    }
 }
 
-fn v12_swarm_queen_item(writer: &mut Writer) {
-    writer.array(14);
+fn v16_swarm_queen_item(writer: &mut Writer) {
+    writer.array(15);
     writer.unsigned(502);
     writer.array(3);
     writer.unsigned(3);
@@ -656,6 +665,7 @@ fn v12_swarm_queen_item(writer: &mut Writer) {
     writer.array(1);
     writer.unsigned(703);
     writer.null();
+    writer.null();
 }
 
 fn v11_staged_callbacks() -> Vec<u8> {
@@ -678,18 +688,18 @@ fn v11_staged_callbacks() -> Vec<u8> {
 
 fn canonical_staged_callbacks() -> Vec<u8> {
     let mut map = MapWriter::new();
-    map.field("v").unsigned(14);
+    map.field("v").unsigned(16);
     let chain = map.field("ch");
     chain.array(2);
-    v12_here_to_help_item(chain);
-    v12_swarm_queen_item(chain);
+    v16_here_to_help_item(chain);
+    v16_swarm_queen_item(chain);
     let queue = map.field("q");
     queue.array(2);
     queue.array(2);
-    v12_here_to_help_item(queue);
+    v16_here_to_help_item(queue);
     queue.unsigned(1);
     queue.array(2);
-    v12_swarm_queen_item(queue);
+    v16_swarm_queen_item(queue);
     queue.unsigned(2);
     map.finish()
 }
@@ -779,7 +789,7 @@ fn v7_old_bool_lock_and_named_card_upgrade_to_v10() {
     assert_eq!(decoded.deaths_this_turn.len(), 1);
     assert_canonical_roundtrip(
         &decoded,
-        canonical_v12(canonical_seat_v7_old_lock, canonical_card_v7),
+        canonical_v16(canonical_seat_v7_old_lock, canonical_card_v7),
     );
 }
 
@@ -793,7 +803,7 @@ fn v7_numeric_lock_and_champion_upgrade_to_v10() {
         .contains(agni_riftbound_turns::state::PlayLock::CARDS));
     assert_canonical_roundtrip(
         &decoded,
-        canonical_v12(canonical_seat_v7_champion, canonical_card_v7),
+        canonical_v16(canonical_seat_v7_champion, canonical_card_v7),
     );
 }
 
@@ -808,7 +818,7 @@ fn v9_costed_grants_keep_their_own_chaos_and_rainbow_power() {
     assert_eq!(decoded.cards[0].control_source, Some(9));
     assert_canonical_roundtrip(
         &decoded,
-        canonical_v12(canonical_seat_v9, canonical_card_v9),
+        canonical_v16(canonical_seat_v9, canonical_card_v9),
     );
 }
 
@@ -825,7 +835,7 @@ fn v10_combines_readiness_named_and_costed_state() {
     assert_eq!(decoded.cards[0].hidden_at, None);
     assert_canonical_roundtrip(
         &decoded,
-        canonical_v12(canonical_seat_v10, canonical_card_v10),
+        canonical_v16(canonical_seat_v10, canonical_card_v10),
     );
 }
 
@@ -835,7 +845,7 @@ fn v10_discount_and_economy_rows_migrate_to_v11() {
     assert!(zero.seats[0].promises.is_empty());
     assert_canonical_roundtrip(
         &zero,
-        canonical_v12(canonical_seat_v10_zero_discount, canonical_card_v10),
+        canonical_v16(canonical_seat_v10_zero_discount, canonical_card_v10),
     );
 
     assert!(
@@ -1046,4 +1056,76 @@ fn incompatible_versions_and_layouts_are_refused() {
     let mut truncated = legacy(10, seat_v10, card_v10);
     truncated.pop();
     assert!(GameBlob::decode(&truncated).is_none());
+}
+
+fn v16_here_to_help_item(writer: &mut Writer) {
+    write_here_to_help_item(writer, 15, false);
+}
+
+fn independent_trigger(writer: &mut Writer, version: u64) {
+    writer.array(if version >= 16 { 15 } else { 14 });
+    writer.unsigned(1);
+    writer.array(3);
+    writer.unsigned(3);
+    writer.unsigned(200);
+    writer.unsigned(0);
+    writer.unsigned(0);
+    writer.unsigned(0);
+    writer.array(2);
+    writer.unsigned(3);
+    writer.unsigned(0);
+    writer.array(0);
+    writer.array(0);
+    writer.array(0);
+    writer.unsigned(0);
+    writer.null();
+    writer.null();
+    writer.unsigned(0);
+    writer.array(0);
+    writer.null();
+    if version >= 16 {
+        writer.text("Honest Broker");
+    }
+}
+
+#[test]
+fn v16_preserves_ability_scripts_in_pending_and_finalized_items() {
+    for pending in [false, true] {
+        let mut map = MapWriter::new();
+        map.field("v").unsigned(16);
+        let writer = map.field(if pending { "q" } else { "ch" });
+        writer.array(1);
+        if pending {
+            writer.array(2);
+        }
+        independent_trigger(writer, 16);
+        if pending {
+            writer.unsigned(1);
+        }
+        let bytes = map.finish();
+        let blob = GameBlob::decode(&bytes).unwrap();
+        let item = if pending {
+            &blob.queue[0].item
+        } else {
+            &blob.chain[0]
+        };
+        assert_eq!(item.ability_script.as_deref(), Some("Honest Broker"));
+        assert_eq!(blob.encode(), bytes);
+    }
+}
+
+#[test]
+fn v15_items_default_to_live_ability_lookup_and_v16_requires_the_new_field() {
+    let mut map = MapWriter::new();
+    map.field("v").unsigned(15);
+    let writer = map.field("ch");
+    writer.array(1);
+    independent_trigger(writer, 15);
+    let bytes = map.finish();
+    let blob = GameBlob::decode(&bytes).unwrap();
+    assert!(blob.chain[0].ability_script.is_none());
+    assert_eq!(GameBlob::decode(&blob.encode()), Some(blob));
+    let mut bad_version = bytes;
+    bad_version[3] = 16;
+    assert!(GameBlob::decode(&bad_version).is_none());
 }

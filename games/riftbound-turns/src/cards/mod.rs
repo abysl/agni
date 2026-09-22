@@ -591,6 +591,8 @@ pub mod rebuttal;
 pub mod reckoners_arena;
 pub mod recurve_bow;
 pub mod red_brambleback;
+#[cfg(test)]
+mod reflection_tests;
 pub mod reinforce;
 pub mod rek_sai_breacher;
 pub mod rek_sai_swarm_queen;

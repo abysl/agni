@@ -316,11 +316,12 @@ mod tests {
             &bytes[start..reader.position()]
         }
         fn item<'a>(reader: &mut Reader<'a>, bytes: &'a [u8], writer: &mut Writer) {
-            assert_eq!(reader.array_len(), Some(14));
+            assert_eq!(reader.array_len(), Some(15));
             writer.array(13);
             for _ in 0..13 {
                 writer.raw(raw_value(reader, bytes));
             }
+            reader.skip().unwrap();
             reader.skip().unwrap();
         }
         fn row<'a>(
