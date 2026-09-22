@@ -921,6 +921,8 @@ pub const TOKEN_GOLD: &str = "Gold";
 pub const TOKEN_SAND_SOLDIER: &str = "Sand Soldier";
 pub const TOKEN_SHADOW_CLONE: &str = "Shadow Clone";
 pub const TOKEN_TENTACLE: &str = "Tentacle";
+pub const TOKEN_MECH: &str = "Mech";
+pub const MECH_MIGHT: u8 = 3;
 pub const TAGS: &[&str] = &[
     "Ahri",
     "Akali",
@@ -2766,6 +2768,7 @@ pub fn is_token_name(name: &str) -> bool {
             | TOKEN_SAND_SOLDIER
             | TOKEN_SHADOW_CLONE
             | TOKEN_TENTACLE
+            | TOKEN_MECH
             | TOKEN_BRUSH
             | TOKEN_BARON_PIT
     )
@@ -3216,6 +3219,7 @@ mod tests {
         assert!(is_token_name(TOKEN_SAND_SOLDIER));
         assert!(is_token_name(TOKEN_SHADOW_CLONE));
         assert!(is_token_name(TOKEN_TENTACLE));
+        assert!(is_token_name(TOKEN_MECH));
         assert!(is_token_name(TOKEN_BRUSH));
         assert!(is_token_name(TOKEN_BARON_PIT));
         assert!(std::ptr::eq(

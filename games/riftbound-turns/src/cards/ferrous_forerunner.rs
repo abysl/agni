@@ -1,48 +1,20 @@
 use super::faithful_manufactor::recruits_playable_at;
-use super::prelude::{deathknell, done, unit, Location};
-use super::rumble_mechanized_menace::MECH_TOKEN;
-use super::{Card, Flow, Item, Keyword, Stage, KIND_UNIT};
-use crate::engine::ctx::{Ctx, Event};
+use super::prelude::{deathknell, done, spawn, unit, Location, Token};
+pub use super::MECH_MIGHT;
+use super::{Card, Flow, Item, Keyword, Stage};
+use crate::engine::ctx::Ctx;
 use crate::engine::march::describe;
-use crate::state::Origin;
-use agni_plugin_sdk::decide::Effect;
-use agni_plugin_sdk::table::Face;
 
-pub const MECH_MIGHT: u8 = 3;
 pub const MECH_ARRIVES_READY: bool = false;
 pub const MECHS: usize = 2;
 
-pub fn mech_face_until_token_mech_lands() -> Face {
-    Face::named(MECH_TOKEN)
-        .with_kind(KIND_UNIT)
-        .with_might(Some(MECH_MIGHT))
-}
-
 pub fn spawn_mech(ctx: &mut Ctx, owner: u8, at: Location) -> Option<u32> {
-    let (zone, seat) = ctx.zone_of(at)?;
-    let id = ctx.table.next_id;
-    ctx.emit(Effect::Spawn {
-        face: mech_face_until_token_mech_lands(),
-        zone,
-        seat,
-        owner: Some(owner),
-    });
-    ctx.spawned += 1;
-    if !MECH_ARRIVES_READY {
-        ctx.exhaust(id);
-    }
-    ctx.raise(Event::Played {
-        card: id,
-        controller: owner,
-        kind: KIND_UNIT.into(),
-        origin: Origin::Board,
-        paid_additional: false,
-    });
+    let mech = spawn(ctx, owner, Token::Mech, at, MECH_ARRIVES_READY)?;
     ctx.narrate(format!(
-        "{{seat {owner}}} plays {{card {id}}} to {}",
+        "{{seat {owner}}} plays {{card {mech}}} to {}",
         describe(at)
     ));
-    Some(id)
+    Some(mech)
 }
 
 pub fn play_mechs(ctx: &mut Ctx, owner: u8, at: Location, count: usize) -> Vec<u32> {
@@ -73,12 +45,13 @@ pub static CARD: Card = unit(
 #[cfg(test)]
 pub mod tests {
     use super::*;
-    use crate::cards::rumble_mechanized_menace::is_mech;
-    use crate::cards::{script_of, Trigger};
-    use crate::engine::ctx::Cause;
+    use crate::cards::rumble_mechanized_menace::{is_mech, MECH_TOKEN};
+    use crate::cards::{script_of, Trigger, KIND_UNIT};
+    use crate::engine::ctx::{Cause, Event};
     use crate::engine::fixtures::{self, Fixture};
     use crate::engine::{priority, settle};
-    use crate::state::ItemKind;
+    use crate::state::{ItemKind, Origin};
+    use agni_plugin_sdk::decide::Effect;
     use agni_plugin_sdk::table::CardInfo;
 
     const FORERUNNER: u32 = 90;
@@ -132,7 +105,7 @@ pub mod tests {
         assert!(!death.optional);
         assert!(death.cost.is_none() && death.condition.is_none());
         assert_eq!(MECHS, 2);
-        let face = mech_face_until_token_mech_lands();
+        let face = Token::Mech.face();
         assert_eq!(face.name, MECH_TOKEN);
         assert_eq!(face.kind.as_deref(), Some(KIND_UNIT));
         assert_eq!(face.might, Some(MECH_MIGHT));
@@ -194,6 +167,30 @@ pub mod tests {
     }
 
     #[test]
+    fn each_mech_from_the_forerunners_death_triggers_rengar_pridestalker() {
+        let mut fixture = vanguard(fixtures::BASE);
+        fixture.table.card_mut(fixtures::LEGEND_CARD).unwrap().name =
+            crate::cards::rengar_pridestalker::CARD.name.into();
+        fixture.resolve();
+        let mut ctx = fixture.ctx();
+        ctx.kill(FORERUNNER, Cause::Rule);
+        settle(&mut ctx).unwrap();
+        resolve_chain(&mut ctx);
+        assert_eq!(
+            ctx.blob
+                .queue
+                .iter()
+                .filter(|pending| matches!(
+                    pending.item.kind,
+                    ItemKind::Trigger { source, index: 0 } if source == fixtures::LEGEND_CARD
+                ))
+                .count(),
+            MECHS
+        );
+        assert!(ctx.fault.is_none());
+    }
+
+    #[test]
     fn a_forerunner_of_the_other_seat_fills_their_base_and_a_bounce_is_no_death() {
         let mut fixture = vanguard(fixtures::BASE);
         fixture.table.card_mut(FORERUNNER).unwrap().seat = 1;
@@ -244,7 +241,6 @@ pub mod tests {
     }
 
     #[test]
-    #[ignore = "engine gap · Token::Mech: engine/ctx.rs has no Mech face, so mech_face_until_token_mech_lands builds it and spawn_mech replays Ctx::spawn; with the token, spawn_mech is spawn(ctx, owner, Token::Mech, at, MECH_ARRIVES_READY) and cards/mod.rs knows the name"]
     fn the_engine_knows_the_mech_as_a_token_name() {
         assert!(crate::cards::is_token_name(MECH_TOKEN));
     }

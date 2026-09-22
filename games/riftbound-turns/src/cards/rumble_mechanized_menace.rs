@@ -5,7 +5,7 @@ use crate::engine::ctx::Ctx;
 
 pub const SHIELD: Keyword = Keyword::Shield(1);
 pub const HEXPLATE: &str = "Experimental Hexplate";
-pub const MECH_TOKEN: &str = "Mech";
+pub use super::TOKEN_MECH as MECH_TOKEN;
 
 pub const MECHS: [&str; 17] = [
     "Adaptatron",

@@ -87,7 +87,8 @@ pub static CARD: Card = gear(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cards::ferrous_forerunner::{mech_face_until_token_mech_lands, MECH_MIGHT};
+    use crate::cards::ferrous_forerunner::MECH_MIGHT;
+    use crate::cards::prelude::Token;
     use crate::cards::rumble_mechanized_menace::{is_mech, MECH_TOKEN};
     use crate::cards::{script_of, SelfCost, Trigger, KIND_UNIT};
     use crate::engine::ctx::{Cause, Event};
@@ -188,7 +189,7 @@ mod tests {
         assert!(ability.targets.is_empty());
         assert_eq!(FUEL.energy, 1);
         assert_eq!(FUEL.power, [Power::Domain(Domain::Fury)]);
-        let face = mech_face_until_token_mech_lands();
+        let face = Token::Mech.face();
         assert_eq!(face.name, MECH_TOKEN);
         assert_eq!(face.kind.as_deref(), Some(KIND_UNIT));
         assert_eq!(face.might, Some(MECH_MIGHT));
@@ -376,7 +377,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "engine gap · Token::Mech: engine/ctx.rs has no Mech face, so ferrous_forerunner::mech_face_until_token_mech_lands builds it and spawn_mech replays Ctx::spawn; with the token, spawn_mech is spawn(ctx, owner, Token::Mech, at, MECH_ARRIVES_READY) and cards/mod.rs knows the name"]
     fn the_engine_knows_the_mech_as_a_token_name() {
         assert!(crate::cards::is_token_name(MECH_TOKEN));
     }

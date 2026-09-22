@@ -37,7 +37,8 @@ pub static CARD: Card = with_statics(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::cards::ferrous_forerunner::{mech_face_until_token_mech_lands, MECH_MIGHT};
+    use crate::cards::ferrous_forerunner::MECH_MIGHT;
+    use crate::cards::prelude::Token;
     use crate::cards::rumble_mechanized_menace::{is_mech, MECH_TOKEN};
     use crate::cards::{script_of, Keyword, Trigger, KIND_UNIT};
     use crate::engine::ctx::{EntryMove, Event};
@@ -99,7 +100,7 @@ mod tests {
         assert_eq!(CARD.abilities[0].trigger, Trigger::Play);
         assert!(CARD.abilities[0].targets.is_empty());
         assert!(CARD.has_static(Static::SelfDiscount(discount)));
-        let face = mech_face_until_token_mech_lands();
+        let face = Token::Mech.face();
         assert_eq!(face.name, MECH_TOKEN);
         assert_eq!(face.might, Some(MECH_MIGHT));
         assert_eq!(face.kind.as_deref(), Some(KIND_UNIT));
