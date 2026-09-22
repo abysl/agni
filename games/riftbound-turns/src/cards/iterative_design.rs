@@ -221,7 +221,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "engine gap · Token::Mech: engine/ctx.rs has no Mech face, so the Mech rides ferrous_forerunner::spawn_mech through play_mechs; with the token the spawn is spawn(ctx, seat, Token::Mech, at, false) and cards/mod.rs knows the name"]
     fn the_engine_knows_the_mech_as_a_token_name() {
         assert!(crate::cards::is_token_name(MECH_TOKEN));
     }
