@@ -1,8 +1,10 @@
 use super::prelude::{
-    a_card, activated, card_target, done, named, on_conquer_me, spawn, swap_units, unit, Location,
-    Swapped, Token,
+    a_card, activated, card_target, done, named, on_conquer_me, paying_with, spawn, swap_units,
+    unit, Location, Swapped, Token,
 };
-use super::{Card, Cost, Domain, Filter, Flow, Item, Power, Stage, Timing, TOKEN_SHADOW_CLONE};
+use super::{
+    Card, Cost, Domain, Filter, Flow, Item, Power, SelfCost, Stage, Timing, TOKEN_SHADOW_CLONE,
+};
 use crate::engine::ctx::Ctx;
 
 pub const SWAP: Cost = Cost {
@@ -50,14 +52,17 @@ pub static CARD: Card = unit(
     &[
         on_conquer_me(&[], conjure),
         named(
-            activated(
-                Timing::Action,
-                SWAP,
-                &[a_card(
-                    SHADOW_CLONE_ELSEWHERE,
-                    "a Shadow Clone to trade places with",
-                )],
-                shadow_swap,
+            paying_with(
+                activated(
+                    Timing::Action,
+                    SWAP,
+                    &[a_card(
+                        SHADOW_CLONE_ELSEWHERE,
+                        "a Shadow Clone to trade places with",
+                    )],
+                    shadow_swap,
+                ),
+                SelfCost::Free,
             ),
             "swap places with a Shadow Clone",
         ),
@@ -98,6 +103,13 @@ mod tests {
         }
     }
 
+    fn swap(ctx: &mut Ctx, clone: u32) {
+        activate::activate(ctx, 0, ZED, 1).unwrap();
+        crate::engine::settle(ctx).unwrap();
+        fixtures::choose(ctx, 0, &format!("{{card {clone}}}")).unwrap();
+        fixtures::pass_until_open(ctx);
+    }
+
     #[test]
     fn conquering_plays_an_exhausted_shadow_clone_to_the_base() {
         assert!(std::ptr::eq(
@@ -134,7 +146,9 @@ mod tests {
     }
 
     #[test]
-    fn the_action_swaps_zed_with_a_clone_elsewhere_and_marks_the_contest() {
+    fn the_swap_charges_only_its_printed_cost_and_keeps_zed_ready() {
+        assert_eq!(CARD.abilities[1].cost, Some(SWAP));
+        assert_eq!(CARD.abilities[1].self_cost, SelfCost::Free);
         let mut fixture = armed();
         fixture.table.cards.push(clone_at(CLONE, fixtures::BF2));
         fixture
@@ -145,28 +159,24 @@ mod tests {
         fixture.table.tokens.sort_unstable();
         fixture.resolve();
         let mut ctx = fixture.ctx();
+        let runes = ctx.runes_of(0).len();
+        let ready = ctx.ready_runes_of(0).len();
         let offers = activate::offers(&ctx, 0);
         let offer = offers
             .iter()
             .find(|offer| offer.source == ZED)
             .expect("the swap is offered");
         assert!(offer.enabled);
-        assert!(offer.label.contains("swap places with a Shadow Clone"));
+        assert!(offer.label.contains("1 energy and 1 Chaos power"));
+        assert!(!offer.label.contains("exhaust"));
         activate::activate(&mut ctx, 0, ZED, 1).unwrap();
         crate::engine::settle(&mut ctx).unwrap();
-        assert_eq!(
-            ctx.blob.why,
-            Some(PromptWhy::Target { item: 1, spec: 0 }),
-            "355: the Clone is chosen as the ability is finalized"
-        );
-        assert_eq!(
-            fixtures::labels(&ctx),
-            ["{card 91}", "cancel"],
-            "the Clone beside Zed is not a candidate"
-        );
-        assert!(!ctx.card(ZED).unwrap().exhausted);
+        assert_eq!(ctx.blob.why, Some(PromptWhy::Target { item: 1, spec: 0 }));
+        assert_eq!(fixtures::labels(&ctx), ["{card 91}", "cancel"]);
         fixtures::choose(&mut ctx, 0, "{card 91}").unwrap();
-        assert!(ctx.card(ZED).unwrap().exhausted, "the arrow is an exhaust");
+        assert!(!ctx.card(ZED).unwrap().exhausted);
+        assert_eq!(ctx.runes_of(0).len(), runes - 1);
+        assert_eq!(ctx.ready_runes_of(0).len(), ready - 1);
         assert_eq!(
             ctx.blob.chain.last().unwrap().targets,
             [crate::state::TargetRef::Card(CLONE)]
@@ -181,6 +191,117 @@ mod tests {
             Some(Location::Battlefield(fixtures::BF1))
         );
         assert_eq!(ctx.blob.contester(fixtures::BF2), Some(0));
+    }
+
+    #[test]
+    fn an_exhausted_zed_can_swap_with_a_clone() {
+        let mut fixture = armed();
+        fixture.table.cards.push(clone_at(CLONE, fixtures::BF2));
+        fixture.table.tokens.push(CLONE);
+        fixture.resolve();
+        fixture.table.card_mut(ZED).unwrap().exhausted = true;
+        let mut ctx = fixture.ctx();
+        assert!(activate::offers(&ctx, 0)
+            .iter()
+            .any(|offer| offer.source == ZED && offer.enabled));
+        swap(&mut ctx, CLONE);
+        assert_eq!(
+            ctx.location(ZED),
+            Some(Location::Battlefield(fixtures::BF2))
+        );
+    }
+
+    #[test]
+    fn the_swap_can_be_repeated_with_sufficient_resources() {
+        let mut fixture = armed();
+        fixture.table.cards.push(clone_at(CLONE, fixtures::BF2));
+        fixture
+            .table
+            .cards
+            .push(fixtures::rune(47, 0, "Chaos", false));
+        fixture.table.tokens.push(CLONE);
+        fixture.table.tokens.sort_unstable();
+        fixture.resolve();
+        let mut ctx = fixture.ctx();
+        swap(&mut ctx, CLONE);
+        assert!(!ctx.card(ZED).unwrap().exhausted);
+        swap(&mut ctx, CLONE);
+        assert!(!ctx.card(ZED).unwrap().exhausted);
+        assert_eq!(
+            ctx.location(ZED),
+            Some(Location::Battlefield(fixtures::BF1))
+        );
+        assert_eq!(
+            ctx.location(CLONE),
+            Some(Location::Battlefield(fixtures::BF2))
+        );
+    }
+
+    #[test]
+    fn the_swap_requires_chaos_power_and_cancels_without_costs() {
+        let mut fixture = armed();
+        fixture.table.cards.push(clone_at(CLONE, fixtures::BF2));
+        fixture.table.tokens.push(CLONE);
+        fixture.table.cards.retain(|card| card.id != 46);
+        fixture.resolve();
+        let mut ctx = fixture.ctx();
+        let runes = ctx
+            .runes_of(0)
+            .into_iter()
+            .map(|rune| (rune.id, rune.exhausted))
+            .collect::<Vec<_>>();
+        assert!(activate::offers(&ctx, 0)
+            .iter()
+            .any(|offer| offer.source == ZED && !offer.enabled));
+        assert!(activate::activate(&mut ctx, 0, ZED, 1).is_err());
+        assert_eq!(
+            ctx.runes_of(0)
+                .into_iter()
+                .map(|rune| (rune.id, rune.exhausted))
+                .collect::<Vec<_>>(),
+            runes
+        );
+        assert!(ctx.blob.chain.is_empty());
+        assert_eq!(
+            ctx.location(ZED),
+            Some(Location::Battlefield(fixtures::BF1))
+        );
+        assert_eq!(
+            ctx.location(CLONE),
+            Some(Location::Battlefield(fixtures::BF2))
+        );
+
+        drop(ctx);
+        let mut fixture = armed();
+        fixture.table.cards.push(clone_at(CLONE, fixtures::BF2));
+        fixture.table.tokens.push(CLONE);
+        fixture.resolve();
+        let mut ctx = fixture.ctx();
+        let runes = ctx
+            .runes_of(0)
+            .into_iter()
+            .map(|rune| (rune.id, rune.exhausted))
+            .collect::<Vec<_>>();
+        activate::activate(&mut ctx, 0, ZED, 1).unwrap();
+        crate::engine::settle(&mut ctx).unwrap();
+        fixtures::choose(&mut ctx, 0, "cancel").unwrap();
+        assert_eq!(
+            ctx.runes_of(0)
+                .into_iter()
+                .map(|rune| (rune.id, rune.exhausted))
+                .collect::<Vec<_>>(),
+            runes
+        );
+        assert!(!ctx.card(ZED).unwrap().exhausted);
+        assert!(ctx.blob.chain.is_empty());
+        assert_eq!(
+            ctx.location(ZED),
+            Some(Location::Battlefield(fixtures::BF1))
+        );
+        assert_eq!(
+            ctx.location(CLONE),
+            Some(Location::Battlefield(fixtures::BF2))
+        );
     }
 
     #[test]
