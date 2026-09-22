@@ -10,7 +10,7 @@ also failed before the fix. Movement and bounce control cases already passed.
 
 ## Fix
 
-- Save printed trigger/activation script identity on each queued chain item.
+- Save printed trigger/activation script identity centrally in `Ctx::enqueue`.
 - Use the saved identity during targeting, ordering, payment, and resolution.
 - Read departed tokens' last faces while collecting triggers in the same action.
 - Refresh static-source candidates immediately when existing copies transform.
@@ -28,8 +28,8 @@ matches remain pinned to their module hash.
 
 ## Verification
 
-- Nine Reflection regression tests pass, with state round-tripped per action.
-- Rules library: 4,572 passed; 172 pre-existing ignored tests not executed.
+- Ten Reflection regression tests pass, with state round-tripped per action.
+- Rules library: 4,573 passed; 172 pre-existing ignored tests not executed.
 - Blob compatibility: 13 passed, including independent v15/v16 chain rows.
 - Match-state integration: 10 passed.
 - Plugin library: 6 passed; projection integration: 4 passed.
@@ -41,3 +41,13 @@ matches remain pinned to their module hash.
 No game artwork or generated plugin is committed. Framework wire encoding is
 unchanged. Old states cannot reconstruct a vanished token's script identity
 if they were saved before this fix.
+
+## Additional integration check
+
+`native_and_hardened_riftbound_replays_match_at_every_entry` is blocked by the
+existing Temporal Portal / Rally the Troops fixture's assertion that Repeat
+payment has finished immediately after answering yes (line 1156). It fails
+identically with the unchanged 8765cdf test and a separately rebuilt baseline
+0.9.0 plugin. This unrelated fixture was not changed to make the check pass.
+The default gas-bench invocation contains three ignored benchmarks and is not
+counted as a passing validation.

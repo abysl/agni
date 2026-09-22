@@ -11,8 +11,8 @@ use crate::rules::{
 };
 use crate::state::{
     Amount, Ask, CardState, ChainItem, CostedGrant, DamageSource, Death, Delayed, Expiry, GameBlob,
-    ItemKind, NameKind, Noted, Origin, Pool, Prevention, Promise, PromiseEffect, PromiseKind,
-    PromptWhy, TargetRef, When, FLAG_ATTACKER, FLAG_DEFENDER, FLAG_NOT_PLAYED,
+    ItemKind, NameKind, Noted, Origin, Pending, Pool, Prevention, Promise, PromiseEffect,
+    PromiseKind, PromptWhy, TargetRef, When, FLAG_ATTACKER, FLAG_DEFENDER, FLAG_NOT_PLAYED,
     FLAG_NO_MOVE_BY_OWNER, FLAG_REVEALING, FLAG_SHROUDED, FLAG_STUNNED,
 };
 use agni_plugin_sdk::decide::{Action, Effect, TOP};
@@ -1606,6 +1606,13 @@ impl<'a> Ctx<'a> {
 
     pub fn is_on_chain(&self, item: u16) -> bool {
         self.chain_item(item).is_some()
+    }
+
+    pub fn enqueue(&mut self, mut pending: Pending) {
+        if pending.item.ability_script.is_none() {
+            crate::engine::targets::snapshot_ability(self, &mut pending.item);
+        }
+        self.blob.queue.push(pending);
     }
 
     pub fn delay(&mut self, when: When, source: u32, seat: u8, ability: u8, args: Vec<u32>) {

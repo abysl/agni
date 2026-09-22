@@ -168,8 +168,7 @@ pub fn collect_ordered(ctx: &mut Ctx, seats: &[u8]) -> usize {
             item.stage = play::STAGE_TARGET;
             item.subject = held.subject;
             item.noted = held.noted;
-            targets::snapshot_ability(ctx, &mut item);
-            ctx.blob.queue.push(Pending { item, needs });
+            ctx.enqueue(Pending { item, needs });
             queued += 1;
         }
     }
@@ -656,7 +655,7 @@ pub fn queue_delayed(ctx: &mut Ctx, when: When) -> usize {
             .map(|arg| TargetRef::Card(*arg))
             .collect();
         item.stage = play::STAGE_PAY;
-        ctx.blob.queue.push(Pending {
+        ctx.enqueue(Pending {
             item,
             needs: Needs::Choices,
         });

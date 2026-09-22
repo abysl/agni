@@ -69,8 +69,9 @@ Copying does not play the copied unit again or duplicate its damage, buffs,
 attachments, or separately granted abilities. LeBlanc grants Temporary to the
 Reflection after copying.
 
-Triggered and activated chain items save the canonical name of their printed
-ability's script when queued. Resolution uses that identity plus the ability
+`Ctx::enqueue` saves the canonical name of a triggered or activated item's
+printed ability script. Card-specific producers such as Reckoner's Arena use
+the same queue entry point. Resolution uses that identity plus the ability
 index, not the source's current face or continued existence. A despawned token's
 last face is available while its death triggers are collected. No vanished
 card is kept on the board or made targetable to preserve its ability.
@@ -96,4 +97,5 @@ The Reflection regression tests serialize state and rebuild the script cache
 between choices and priority passes. They cover simultaneous combat deaths,
 Temporary before Hold scoring, multi-stage Deathknell prompts, movement and
 activated abilities, changing a copy while its trigger waits, immediate aura
-changes, copying a copy, and bouncing without Deathknell.
+changes, copying a copy, bouncing without Deathknell, and Arena-queued
+Conquer abilities whose copied source dies before resolution.

@@ -153,7 +153,7 @@ fn begin_declining(
         }
         (_, None) => item.stage = STAGE_LOCATION,
     }
-    ctx.blob.queue.push(Pending {
+    ctx.enqueue(Pending {
         item,
         needs: Needs::Choices,
     });

@@ -262,3 +262,28 @@ fn copied_activated_ability_and_keywords_remain_usable() {
     assert!(!ctx.is_empowered(ORIGINAL));
     assert!(ctx.is_temporary(token));
 }
+
+#[test]
+fn arena_queued_copy_trigger_survives_its_reflection_leaving_play() {
+    let (mut fixture, token) = leblanc_copy("Kai'Sa - Survivor");
+    fixture.table.card_mut(ORIGINAL).unwrap().zone = Some(fixtures::BASE);
+    fixture.table.card_mut(fixtures::GROUNDS).unwrap().name = "Reckoner's Arena".into();
+    fixture.blob.clear_scored();
+    fixture.resolve();
+    step(&mut fixture, |ctx| {
+        cleanup::score_holds(ctx, 0);
+    });
+    while let Some(PromptWhy::OrderTriggers { seat }) = fixture.blob.why {
+        let label = fixtures::labels(&fixture.ctx())[0].clone();
+        choose(&mut fixture, seat, &label);
+    }
+    step(&mut fixture, |ctx| priority::pass(ctx, 0).unwrap());
+    step(&mut fixture, |ctx| priority::pass(ctx, 1).unwrap());
+    assert_eq!(fixture.blob.chain.len(), 1);
+    assert_eq!(fixture.blob.chain[0].kind.source(), token);
+    step(&mut fixture, |ctx| {
+        ctx.kill(token, Cause::Rule);
+    });
+    resolve(&mut fixture);
+    assert_eq!(fixture.ctx().blob.seat(0).draws, 1);
+}
