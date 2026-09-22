@@ -1,8 +1,8 @@
 use crate::cards::{
     self, Card, Cost, Domain, Grant, Keyword, Resolved, Source, Static, Suppresses,
-    KIND_BATTLEFIELD, KIND_GEAR, KIND_LEGEND, KIND_RUNE, KIND_SPELL, KIND_UNIT, RUNE_SUFFIX,
-    TOKEN_BARON_PIT, TOKEN_BRUSH, TOKEN_GOLD, TOKEN_SAND_SOLDIER, TOKEN_SHADOW_CLONE, TOKEN_SPRITE,
-    TOKEN_TENTACLE,
+    KIND_BATTLEFIELD, KIND_GEAR, KIND_LEGEND, KIND_RUNE, KIND_SPELL, KIND_UNIT, MECH_MIGHT,
+    RUNE_SUFFIX, TOKEN_BARON_PIT, TOKEN_BRUSH, TOKEN_GOLD, TOKEN_MECH, TOKEN_SAND_SOLDIER,
+    TOKEN_SHADOW_CLONE, TOKEN_SPRITE, TOKEN_TENTACLE,
 };
 use crate::engine::{attach, hide, kill, prevent, statics, triggers};
 use crate::rules::{
@@ -108,6 +108,7 @@ pub enum Token {
     Tentacle,
     Brush,
     BaronPit,
+    Mech,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -134,13 +135,20 @@ impl Token {
                 .with_might(Some(1)),
             Token::Brush => Face::named(TOKEN_BRUSH).with_kind(KIND_BATTLEFIELD),
             Token::BaronPit => Face::named(TOKEN_BARON_PIT).with_kind(KIND_BATTLEFIELD),
+            Token::Mech => Face::named(TOKEN_MECH)
+                .with_kind(KIND_UNIT)
+                .with_might(Some(MECH_MIGHT)),
         }
     }
 
     pub fn kind(self) -> &'static str {
         match self {
             Token::Gold => KIND_GEAR,
-            Token::Sprite | Token::SandSoldier | Token::ShadowClone | Token::Tentacle => KIND_UNIT,
+            Token::Sprite
+            | Token::SandSoldier
+            | Token::ShadowClone
+            | Token::Tentacle
+            | Token::Mech => KIND_UNIT,
             Token::Brush | Token::BaronPit => KIND_BATTLEFIELD,
         }
     }
