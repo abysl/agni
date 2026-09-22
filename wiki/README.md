@@ -14,6 +14,7 @@ environment to understand it.
 | [Contributing to Agni](../CONTRIBUTING.md) | New contributors with basic programming knowledge | Prepare, test, and submit a change |
 | [Agni](../README.md) | First-time visitors | What the project does, limitations, and where to start |
 | [Shared deck types](../games/deck/README.md) | Contributors to this subsystem | Read the stated prerequisites, then use as a focused reference |
+| [Riftbound constructed bans](riftbound-bans.md) | Deck and client contributors | Current ban policy, sources, and enforced seating requirements |
 | [Rule references and pool data](../games/riftbound/rules/README.md) | Rule and test-data contributors | Reference provenance and machine-readable pool constraints |
 | [Agni architecture](design/architecture.md) | Developers new to the codebase | Responsibilities, vocabulary, and code navigation |
 | [Two-player matchmaking](design/matchmaking.md) | Application and transport contributors | Gossip advertisements, authenticated reservations, cancellation, and tests |

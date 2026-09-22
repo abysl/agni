@@ -512,10 +512,22 @@ mod tests {
                 agni_riftbound::legality::check(&deck, agni_riftbound::legality::Mode::Standard);
             assert_eq!(
                 report.verdict,
-                agni_riftbound::legality::Verdict::Legal,
+                if slug == "kha-zix-hotkee" {
+                    agni_riftbound::legality::Verdict::Broken(1)
+                } else {
+                    agni_riftbound::legality::Verdict::Legal
+                },
                 "{slug}: {:?}",
                 report.findings
             );
+            if slug == "kha-zix-hotkee" {
+                assert_eq!(
+                    report.findings[0].rule,
+                    agni_riftbound::legality::Rule::Banned {
+                        name: "Stacked Deck".into()
+                    }
+                );
+            }
             let mut untagged = deck.clone();
             for card in untagged
                 .legend
@@ -538,10 +550,19 @@ mod tests {
                 &untagged,
                 agni_riftbound::legality::Mode::Standard,
             );
-            assert_eq!(report.breaks(), 0, "{slug}: {:?}", report.findings);
+            assert_eq!(
+                report.breaks(),
+                usize::from(slug == "kha-zix-hotkee"),
+                "{slug}: {:?}",
+                report.findings
+            );
             assert_eq!(
                 report.verdict,
-                agni_riftbound::legality::Verdict::Unverified,
+                if slug == "kha-zix-hotkee" {
+                    agni_riftbound::legality::Verdict::Broken(1)
+                } else {
+                    agni_riftbound::legality::Verdict::Unverified
+                },
                 "{slug}"
             );
         }
@@ -747,5 +768,61 @@ mod tests {
         let resolution = resolve(&parsed, &mut catalog).unwrap();
         assert_eq!(resolution.unresolved.len(), 1);
         assert_eq!(resolution.unresolved[0].identifier, "OGN-999");
+    }
+
+    #[test]
+    fn a_historical_banned_deck_still_imports_and_revalidates_after_storage() {
+        use super::super::snapshot;
+        use agni_riftbound::legality::{check, Mode, Rule, Verdict};
+        let (_, original) = fixtures::pool_decks()
+            .into_iter()
+            .find(|(slug, _)| slug == "kha-zix-hotkee")
+            .unwrap();
+        assert_eq!(
+            original
+                .main_deck
+                .iter()
+                .find(|entry| entry.card.name == "Stacked Deck")
+                .unwrap()
+                .count,
+            3
+        );
+        let restored = snapshot::deck(&snapshot::snapshot(&original)).unwrap();
+        assert_eq!(restored, original);
+        for mode in [Mode::Standard, Mode::Constructed2v2] {
+            let report = check(&restored, mode);
+            assert_eq!(report.verdict, Verdict::Broken(1));
+            assert_eq!(
+                report.findings[0].rule,
+                Rule::Banned {
+                    name: "Stacked Deck".into()
+                }
+            );
+            assert_eq!(report.findings[0].cards, ["ogn-183-298"]);
+        }
+    }
+
+    #[test]
+    fn a_real_opp_stacked_deck_print_remains_banned_after_catalog_resolution() {
+        use agni_riftbound::legality::{check, Mode, Rule};
+        let mut catalog = fixtures::raw_catalog();
+        let parsed = ParsedDeck {
+            entries: vec![ParsedEntry {
+                identifier: Identifier::Id("opp-183-298".into()),
+                count: 1,
+                section: Some(Section::Main),
+            }],
+        };
+        let resolved = resolve(&parsed, &mut catalog).unwrap();
+        assert!(resolved.unresolved.is_empty());
+        assert_eq!(resolved.deck.main_deck[0].card.name, "Stacked Deck");
+        assert_eq!(resolved.deck.main_deck[0].card.riftbound_id, "opp-183-298");
+        let report = check(&resolved.deck, Mode::Standard);
+        let banned = report
+            .findings
+            .iter()
+            .find(|finding| matches!(finding.rule, Rule::Banned { .. }))
+            .unwrap();
+        assert_eq!(banned.cards, ["opp-183-298"]);
     }
 }
